@@ -1,4 +1,5 @@
 import React from "react";
+import Link from "next/link";
 
 interface TextLinkProps {
   className?: string;
@@ -10,8 +11,8 @@ export const TextLink = ({
   text,
 }: TextLinkProps) => {
   return (
-    <a href="#" className={`${className} text-[16px] text-[#1E1E1E] underline font-inter transition-colors duration-300 hover:text-[#d4b866]`}>
+    <Link href="/forgotpassword" className={`${className} text-[16px] text-[#1E1E1E] underline font-inter transition-colors duration-300 hover:text-[#d4b866]`}>
       {text}
-    </a>
+    </Link>
   );
 };
