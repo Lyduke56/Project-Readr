@@ -1,5 +1,8 @@
+@import url('https://fonts.googleapis.com/css2?family=Merriweather&display=swap');
+
 .welcome-navbar{
     width: 100vw;
+    height: 10vh;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -17,7 +20,13 @@
 .nav-left{
     display: flex;
     align-items: center;
+    font-family: 'Merriweather', serif;
+    color:#d4af37;
     gap: 0.5rem;
+}
+
+.nav-left h1{
+    font-weight: 100;
 }
 
 .nav-right{

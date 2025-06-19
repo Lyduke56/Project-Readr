@@ -1,3 +1,6 @@
+@import url('https://fonts.googleapis.com/css2?family=Merriweather&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter&display=swap');
+
 body{
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     background-color: #ffffff;
@@ -10,8 +13,65 @@ body{
     align-items: center;
     text-align: center;
     flex-direction: column;
-    width: 30%;
+    font-family: 'Merriweather', serif;
+    font-size: 1.7rem;
+    width: 35%;
 }
+
+.leftyy p{
+    font-family: 'Inter', serif;
+    font-size: 20px;
+    margin-top: 0; /* Remove top margin */
+    margin-bottom: 4rem; /* Keep some space below for the buttons */
+}
+
+.leftyy h1{
+    margin-bottom: 0.5rem;
+}
+
+.leftyy h1 span{
+    color: #D4B866;
+    font-weight: 1500;
+}
+
+.hero-buttons{
+    display: flex;
+    gap: 2rem;
+}
+
+.hero-buttons button{
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition:all 0.3s ease;
+    min-width: 120px;
+}
+
+.sign-in-btn {
+    background-color: #26342D;
+    color: white;
+}
+
+.sign-in-btn:hover {
+    background-color: #3a4d3a;
+    transform: translateY(-2px);
+    color:#D4B866;
+}
+
+.get-started-btn {
+    background-color: #26342D;
+    color: white;
+}
+
+.get-started-btn:hover {
+    background-color: #3a4d3a;
+    transform: translateY(-2px);
+     color:#D4B866;
+}
+
 .welcome-hero {
     display: flex;
     align-items: center;
