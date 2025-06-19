@@ -13,9 +13,10 @@ export const AuthContextProvider = ({ children }) => {
       password: password,
     });
 
+    // Handle Supabase error explicitly
     if (error) {
-      console.error("Error signing up: ", error);
-      return { success: false, error };
+      console.error("Error signing up: ", error);// Signing up error for debugging
+      return { success: false, error }; // Return the error
     }
 
     return { success: true, data };

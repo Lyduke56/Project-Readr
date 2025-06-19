@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom"
-import "./WelcomeNavbar.css"
+import "../CSS files/WelcomeNavbar.css"
 
 export function WelcomeNavbar() {
     return(
