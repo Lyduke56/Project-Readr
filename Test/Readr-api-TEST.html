@@ -6,16 +6,23 @@
         <title>API TESTING</title>
 
         <!--External CSS File-->
-        <link rel="stylesheet" href="book-search.css">
-    </head>
+        <link rel="stylesheet" href="Readr-api.TEST.css"/>
 
     <body>
-        <input type="text" id="searchTitle" placeholder="Search for books...">
-        <button onclick="fetchData()">Search</button>
-        <div id="resultsContainer"></div>
-        
+        <div class="search-container">
+            <h1>📚 Book Search & Discovery</h1>
+            <div class="search-input-group">
+                <input type="text" id="searchTitle" placeholder="Search for books by title..." />
+                <button class="search-btn" onclick="fetchDataSearch()">Search Books</button>
+            </div>
+        </div>
 
-        <script src="Readr-api.js"></script>
+        <button class="back-btn" id="backBtn" onclick="showSearchResults()">← Back to Search Results</button>
+        
+        <div id="resultsContainer"></div>
+        <div id="bookDetailsContainer" class="book-details"></div>
+
+        <script src = "Readr-api.js"></script>
     </body>
     
 </html>
