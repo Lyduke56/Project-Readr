@@ -1,0 +1,147 @@
+.signin-container {
+    background-color: #f4f7f2;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    width: 100%;
+    height: 100vh;
+}
+
+.signin-content {
+    background-color: #f4f7f2;
+    overflow: hidden;
+    width: 1440px;
+    height: calc(100vh - 50px);
+    position: relative;
+    top: 50px;
+}
+
+.signin-form-container {
+    position: absolute;
+    width: 385px;
+    height: 749px;
+    top: 10px;
+    left: 41px;
+    background-color: white;
+    box-shadow: 0px 4px 4px 3px rgba(0, 0, 0, 0.25);
+}
+
+.signin-title {
+    position: absolute;
+    width: 336px;
+    top: 152px;
+    left: 25px;
+    font-family: 'Merriweather-Regular', Helvetica;
+    font-weight: normal;
+    color: #2d2d2d;
+    font-size: 30px;
+    text-align: center;
+    letter-spacing: 0.23px;
+}
+
+.readr-title {
+    color: #d4b866;
+}
+
+.input-group {
+    position: absolute;
+    left: 57px;
+    width: 272px;
+}
+
+.input-group label {
+    display: block;
+    color: #2d2d2d;
+    margin-bottom: 8px;
+}
+
+.input-group input {
+    width: 272px;
+    height: 40px;
+    padding: 0 16px;
+    border: 1px solid #D9D9D9;
+    border-radius: 16px;
+    color: black;
+    font-size: 16px;
+}
+
+.input-group input:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px #d4b866;
+}
+
+.email-input {
+    top: 276px;
+}
+
+.password-input {
+    top: 370px;
+}
+
+.signin-container .error-message {
+    color: #dc2626;
+    text-align: center;
+    position: absolute;
+    top: 460px;
+    left: 57px;
+    width: 272px;
+}
+
+.signin-button {
+    position: absolute;
+    left: 57px;
+    width: 272px;
+    top: 522px;
+    height: 40px;
+    background-color: #2C2C2C;
+    color: white;
+    border-radius: 16px;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    transition: all 0.3s;
+}
+
+.signin-button:hover {
+    background-color: #3a3a3a;
+    transform: scale(1.05);
+}
+
+.signin-link {
+    position: absolute;
+    left: 57px;
+    width: 272px;
+    top: 570px;
+    text-align: center;
+    color: #2d2d2d;
+}
+
+.signin-link a {
+    color: #d4b866;
+    text-decoration: none;
+}
+
+.signin-link a:hover {
+    text-decoration: underline;
+}
+
+.signin-image-container {
+    position: absolute;
+    width: 1011px;
+    height: 759px;
+    top: 6px;
+    left: 453px;
+}
+
+.signin-image {
+    position: absolute;
+    width: 987px;
+    height: 750px;
+    top: 7px;
+    left: 0;
+    background-color: #d9d9d9;
+    border: 1px solid black;
+    box-shadow: 0px 4px 4px 2px rgba(0, 0, 0, 0.25);
+}

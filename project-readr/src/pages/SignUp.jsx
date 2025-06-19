@@ -1,6 +1,7 @@
 import { useState } from "react"
-import { Link, useNavigate } from "react-router-dom" 
+import { Link, useNavigate } from "react-router-dom" // Added useNavigate import
 import { UserAuth } from "../context/AuthContext"
+import "./SignUp.css"
 
 
 export function SignUp(){
@@ -13,12 +14,16 @@ export function SignUp(){
     const {session, signUpNewUser} = UserAuth();
     console.log(session);
 
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [passwordMatchError, setPasswordMatchError] = useState('');
+
     const handleSignUp = async (e) => {
         e.preventDefault();
         setLoading(true);
+        setError('');
+        setPasswordMatchError('');
 
-
-        if (!email || !password) {
+        if (!email || !password || !confirmPassword) {
             setError("Please fill in all fields");
             setLoading(false);
             return;
@@ -30,37 +35,82 @@ export function SignUp(){
             return;
         }
 
-        try {
-        const result = await signUpNewUser(email, password); // Call context function
+        if (password !== confirmPassword) {
+            setError("Passwords do not match");
+            setLoading(false);
+            return;
+        }
 
-        if (result.success) {
-            navigate("/SignIn"); // Navigate to dashboard on success
-        } else {
-            setError(result.error.message); // Show error message on failure
-        }
+        try {
+            const result = await signUpNewUser(email, password);
+            if (result.success) {
+                navigate("/SignIn");
+            } else {
+                setError(result.error.message);
+            }
         } catch (err) {
-        setError("An unexpected error occurred."); // Catch unexpected errors
+            setError("An unexpected error occurred.");
         } finally {
-        setLoading(false); // End loading state
+            setLoading(false);
         }
-     };
+    };
 
     return (
-        <> 
-        <div> {/* Aaron set some className, all you have to do is to import the css file for UI */}
-            <form onSubmit={handleSignUp}  className="">
-                <h2 className="">Sign Up Brother!</h2>
-                <p>
-                    Already have an account? <Link to="/SignIn">Sign in!</Link>
-                </p>
-                <div className="up_div">
-                    <input onChange={(e) => setEmail(e.target.value)} className="up_email" placeholder="Email" type="email"></input> 
-                    <input onChange={(e) => setPassword(e.target.value)} className="up_pass" placeholder="Password" type="password"></input> 
-                    <button type="submit" disabled={loading} className="up_button">Sign Up</button> {/* Set button to check whether both pass and cpass are the same */}
-                {error && <p className="text-red-600 text-center pt-4">{error}</p>}
+        <div className="signup-container">
+            <div className="signup-content">
+                <div className="signup-form-container">
+                    <div className="signup-title">
+                        <p>
+                            <span className="tracking-[0.23px]">Welcome to <span className="readr-title">Readr</span></span>
+                        </p>
+                    </div>
+                        <form onSubmit={handleSignUp}>
+                        <div className="input-group email-input">
+                            <label>Email</label>
+                            <input 
+                                type="email" 
+                                value={email} 
+                                onChange={(e) => setEmail(e.target.value)} 
+                                placeholder="Enter your email" 
+                            />
+                        </div>
+                        <div className="input-group password-input">
+                            <label>Password</label>
+                            <input 
+                                type="password" 
+                                value={password} 
+                                onChange={(e) => setPassword(e.target.value)} 
+                                placeholder="Enter your password" 
+                            />
+                        </div>
+                        <div className="input-group confirm-password-input">
+                            <label>Confirm Password</label>
+                            <input 
+                                type="password" 
+                                value={confirmPassword} 
+                                onChange={(e) => setConfirmPassword(e.target.value)} 
+                                placeholder="Confirm your password" 
+                            />
+                        </div>
+                        {error && <p className="error-message">{error}</p>}
+                        {passwordMatchError && <p className="error-message">{passwordMatchError}</p>}
+                        <button 
+                            type="submit" 
+                            disabled={loading} 
+                            className="signup-button"
+                        >
+                            Register
+                        </button>
+                    </form>
+                    <p className="signup-link">
+                        Already have an account? <Link to="/SignIn">Sign in!</Link>
+                    </p>
                 </div>
-            </form>
+                <div className="signup-image-container">
+                    <img src="/LibraryPic.png" alt="Library" className="signup-image" />
+                    <p></p>
+                </div>
+            </div>
         </div>
-        </>
-    )
+    );
 }
