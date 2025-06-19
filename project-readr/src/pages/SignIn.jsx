@@ -39,7 +39,7 @@ export function SignIn(){
         try {
             const result = await signInUser(email, password);
             if (result.success) {
-                navigate("/");
+                navigate("/Homepage");
             } else {
                 setError(result.error.message);
             }
