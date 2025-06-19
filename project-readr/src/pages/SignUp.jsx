@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Link, useNavigate } from "react-router-dom" // Added useNavigate import
+import { Link, useNavigate } from "react-router-dom" 
 import { UserAuth } from "../context/AuthContext"
 
 
@@ -46,8 +46,8 @@ export function SignUp(){
      };
 
     return (
-        <>
-        <div>
+        <> 
+        <div> {/* Aaron set some className, all you have to do is to import the css file for UI */}
             <form onSubmit={handleSignUp}  className="">
                 <h2 className="">Sign Up Brother!</h2>
                 <p>
