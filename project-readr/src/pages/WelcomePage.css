@@ -4,6 +4,14 @@ body{
     min-height: 100vh;
 }
 
+.leftyy {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    flex-direction: column;
+    width: 30%;
+}
 .welcome-hero {
     display: flex;
     align-items: center;
@@ -11,7 +19,7 @@ body{
     max-width: 1500px;
     margin: 0 auto;
     padding: 80px 40px;
-    min-height: 100vh;
+    min-height: 65vh;
     position: relative;
 }
 
@@ -29,7 +37,7 @@ body{
             rgba(255,255,255,0.8) 30%, 
             rgba(255,255,255,0.1) 100%
         ), 
-        url('C:\Users\Dell\Desktop\Project-Readr\project-readr\src\pictures\WelcomePage.jpg');
+        url('../pictures/WelcomePage.jpg');
     background-size: cover;
     background-position: 80% center;
     background-repeat: no-repeat;

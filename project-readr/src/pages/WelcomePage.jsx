@@ -5,6 +5,7 @@ export function WelcomePage(){
     return (
         <>
             <div className="welcome-hero">
+                <div className="leftyy">
                 <h1>Welcome to <span>Readr</span></h1>
                 <p>Swipe. Shelve. Read</p>
       
@@ -16,6 +17,8 @@ export function WelcomePage(){
                     <button className="get-started-btn">Get Started</button>
                     </Link>
                 </div>
+                </div>
+                
             </div>
         </>
     )
