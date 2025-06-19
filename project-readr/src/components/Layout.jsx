@@ -1,10 +1,14 @@
 import { WelcomeNavbar } from "./WelcomeNavbar"
-import { Outlet } from "react-router-dom"
+import { HomepageNavbar } from "./HomepageNavbar"
+import { Outlet, useLocation } from "react-router-dom"
 
 export function Layout(){
+    const location = useLocation();
+    const isHomepage = location.pathname === "/Homepage";
+    
     return(
         <>
-            <WelcomeNavbar/>
+            {isHomepage ? <HomepageNavbar /> : <WelcomeNavbar />}
             <main>
                 <Outlet/>
             </main>

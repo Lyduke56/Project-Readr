@@ -1,0 +1,52 @@
+@import url('https://fonts.googleapis.com/css2?family=Merriweather&display=swap');
+@import url('./WelcomeNavbar.css');
+
+.overlap-2 {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.icon-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.icon {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+}
+
+.mask-group {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.group {
+    display: flex;
+    align-items: center;
+}
+
+.overlap-group-2 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.arrow-drop-down {
+    font-size: 0.8rem;
+    color: white;
+}
+
+.text-wrapper-18 {
+    font-size: 1rem;
+    color: white;
+}
