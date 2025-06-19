@@ -1,11 +1,12 @@
 import { Link } from "react-router-dom"
+import './WelcomePage.css'
 
 export function WelcomePage(){
     return (
         <>
             <div className="welcome-hero">
-                <h1>Welcome to Readr</h1>
-                <p>Your all-in-one document reader</p>
+                <h1>Welcome to <span>Readr</span></h1>
+                <p>Swipe. Shelve. Read</p>
       
                 <div className="hero-buttons">
                     <Link to="/SignIn">

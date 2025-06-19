@@ -1,0 +1,37 @@
+body{
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: #ffffff;
+    min-height: 100vh;
+}
+
+.welcome-hero {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 1500px;
+    margin: 0 auto;
+    padding: 80px 40px;
+    min-height: 100vh;
+    position: relative;
+}
+
+.welcome-hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 40%; /* shift left edge */
+    right: 0;
+    width: auto;
+    height: 100%;
+    background: 
+        linear-gradient(90deg, 
+            rgba(255,255,255,1) 0%, 
+            rgba(255,255,255,0.8) 30%, 
+            rgba(255,255,255,0.1) 100%
+        ), 
+        url('C:\Users\Dell\Desktop\Project-Readr\project-readr\src\pictures\WelcomePage.jpg');
+    background-size: cover;
+    background-position: 80% center;
+    background-repeat: no-repeat;
+    z-index: -1;
+}
