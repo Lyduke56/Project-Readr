@@ -1,0 +1,45 @@
+.welcome-navbar{
+    width: 100vw;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #26342D;
+    padding: 0.1rem 2rem;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+    position: relative;
+    color: white;
+    top: 0;
+    left: 0;
+    z-index: 10;
+}
+
+.nav-left{
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.nav-right{
+    display: flex;
+    gap: 1.25rem;
+}
+
+.wnavbar-button{
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: color 0.3s;
+}
+
+.wnavbar-button:hover{
+    color: #d4af37;
+}
+
+body{
+    margin: 0;
+    padding: 0;
+    font-family: 'Poppins', sans-serif;
+}
