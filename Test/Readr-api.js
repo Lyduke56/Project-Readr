@@ -4,8 +4,22 @@ let currentSearchTitle = '';
 let currentPage = 1; // track current page number
 let totalResults = 0; // track total number of results
 let resultsPerPage = 10; // 10 per page for now
+let currentFilter = 'All'; // Track current filter selection
 
-// fetch search results based on title
+const filterSelect = document.getElementById('filter');
+
+// Handle filter changes
+filterSelect.addEventListener('change', () => {
+    const selectedValue = filterSelect.value;
+    currentFilter = selectedValue;
+    
+    // Re-search with current filter if we have a search term
+    if (currentSearchTitle) {
+        fetchDataSearch(1); // Start from page 1 with new filter
+    }
+});
+
+// fetch search results based on title and filter
 async function fetchDataSearch(page = 1) {
     const searchTitle = document.getElementById("searchTitle")?.value?.trim();
     const resultsContainer = document.getElementById("resultsContainer");
@@ -39,7 +53,37 @@ async function fetchDataSearch(page = 1) {
     try {
         // offset pagination
         const offset = (page - 1) * resultsPerPage;
-        const response = await fetch(`https://openlibrary.org/search.json?q=${encodeURIComponent(currentSearchTitle)}&limit=${resultsPerPage}&offset=${offset}`);
+        
+        // Build search URL based on filter selection
+        let searchUrl;
+        const encodedTitle = encodeURIComponent(currentSearchTitle);
+        
+        switch (currentFilter) {
+            case 'Title':
+                searchUrl = `https://openlibrary.org/search.json?title=${encodedTitle}&limit=${resultsPerPage}&offset=${offset}`;
+                break;
+            case 'Author':
+                searchUrl = `https://openlibrary.org/search.json?author=${encodedTitle}&limit=${resultsPerPage}&offset=${offset}`;
+                break;
+            case 'Subject':
+                searchUrl = `https://openlibrary.org/search.json?subject=${encodedTitle}&limit=${resultsPerPage}&offset=${offset}`;
+                break;
+            case 'Text':
+                // Full text search - use 'q' parameter with specific syntax
+                searchUrl = `https://openlibrary.org/search.json?q=${encodedTitle}&mode=everything&limit=${resultsPerPage}&offset=${offset}`;
+                break;
+            case 'Lists':
+                // Search in lists - this might need different handling depending on API capabilities
+                searchUrl = `https://openlibrary.org/search.json?q=${encodedTitle}&limit=${resultsPerPage}&offset=${offset}`;
+                break;
+            case 'All':
+            default:
+                // General search across all fields
+                searchUrl = `https://openlibrary.org/search.json?q=${encodedTitle}&limit=${resultsPerPage}&offset=${offset}`;
+                break;
+        }
+
+        const response = await fetch(searchUrl);
 
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
@@ -55,7 +99,7 @@ async function fetchDataSearch(page = 1) {
             resultsContainer.innerHTML = `
                 <div class="no-results">
                     <h3>No books found</h3>
-                    <p>Try a different search term or check your spelling.</p>
+                    <p>Try a different search term, filter option, or check your spelling.</p>
                 </div>
             `;
         }
@@ -63,7 +107,7 @@ async function fetchDataSearch(page = 1) {
     } catch (error) {
         console.error("Fetch error:", error);
 
-        // error
+        // error handling
         let errorMessage = "Error fetching data. Please try again.";
         if (error.name === 'TypeError' && error.message.includes('fetch')) {
             errorMessage = "Network error. Please check your connection.";
@@ -88,7 +132,7 @@ function displayResults(data) {
 
     let htmlContent = `
         <div class="results-header">
-            <h2>Search Results for "${currentSearchTitle}"</h2>
+            <h2>Search Results for "${currentSearchTitle}" (${currentFilter})</h2>
             <p>Found ${totalResults.toLocaleString()} books total, showing ${((currentPage - 1) * resultsPerPage) + 1}-${Math.min(currentPage * resultsPerPage, totalResults)} on page ${currentPage}</p>
         </div>
         <div class="results-table">
@@ -204,7 +248,7 @@ function generatePagination() {
     return paginationHtml;
 }
 
-// switch to diff results
+// switch to different page
 function changePage(page) {
     const totalPages = Math.ceil(totalResults / resultsPerPage);
     if (page < 1 || page > totalPages || page === currentPage) return;
