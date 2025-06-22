@@ -44,7 +44,7 @@ export function SignUp(){
         try {
             const result = await signUpNewUser(email, password);
             if (result.success) {
-                navigate("/SignIn");
+                navigate("/AddInfo");
             } else {
                 setError(result.error.message);
             }

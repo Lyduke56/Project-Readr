@@ -8,6 +8,7 @@ import { SignIn } from './pages/SignIn'
 import { SignUp } from './pages/SignUp'
 import { Home } from './pages/Home'
 import { Homepage } from './pages/Homepage'
+import { AddInfo } from './pages/AddInfo'
 
 function App() {
 
@@ -22,6 +23,7 @@ function App() {
           <Route path="/SignUp" element={<SignUp/>} />
           <Route path="/Home" element={<Home/>} />
           <Route path="/Homepage" element={<Homepage />} />
+          <Route path="/AddInfo" element={<AddInfo />} />
         </Route>
       </Routes>
     </Router>
