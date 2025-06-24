@@ -65,17 +65,6 @@ async function fetchDataSearch(page = 1) {
             case 'Author':
                 searchUrl = `https://openlibrary.org/search.json?author=${encodedTitle}&limit=${resultsPerPage}&offset=${offset}`;
                 break;
-            case 'Subject':
-                searchUrl = `https://openlibrary.org/search.json?subject=${encodedTitle}&limit=${resultsPerPage}&offset=${offset}`;
-                break;
-            case 'Text':
-                // Full text search - use 'q' parameter with specific syntax
-                searchUrl = `https://openlibrary.org/search.json?q=${encodedTitle}&mode=everything&limit=${resultsPerPage}&offset=${offset}`;
-                break;
-            case 'Lists':
-                // Search in lists - this might need different handling depending on API capabilities
-                searchUrl = `https://openlibrary.org/search.json?q=${encodedTitle}&limit=${resultsPerPage}&offset=${offset}`;
-                break;
             case 'All':
             default:
                 // General search across all fields
@@ -94,11 +83,15 @@ async function fetchDataSearch(page = 1) {
         totalResults = data.numFound;
 
         if (data && data.docs && Array.isArray(data.docs) && data.docs.length > 0) {
-            displayResults(data);
+            if (currentFilter === 'Author') {
+                displayAuthorResults(data);
+            } else {
+                displayResults(data);
+            }
         } else if (page === 1) {
             resultsContainer.innerHTML = `
                 <div class="no-results">
-                    <h3>No books found</h3>
+                    <h3>No ${currentFilter === 'Author' ? 'authors' : 'books'} found</h3>
                     <p>Try a different search term, filter option, or check your spelling.</p>
                 </div>
             `;
@@ -126,14 +119,171 @@ async function fetchDataSearch(page = 1) {
     }
 }
 
-// Display search results
-function displayResults(data) {
+// Generate filter summary to show what's being displayed
+function generateFilterSummary(data) {
+    if (!data.docs || data.docs.length === 0) return '';
+    
+    let summary = '';
+    
+    if (currentFilter === 'Author') {
+        // Show unique authors found
+        const uniqueAuthors = [...new Set(
+            data.docs.flatMap(book => book.author_name || [])
+                .filter(author => author && author.toLowerCase().includes(currentSearchTitle.toLowerCase()))
+        )];
+        
+        if (uniqueAuthors.length > 0) {
+            summary = `<div class="filter-summary">
+                <strong>Matching Authors:</strong> ${uniqueAuthors.slice(0, 5).join(', ')}
+                ${uniqueAuthors.length > 5 ? ` and ${uniqueAuthors.length - 5} more...` : ''}
+            </div>`;
+        }
+    } else if (currentFilter === 'Title') {
+        // Show publication year range
+        const years = data.docs
+            .map(book => book.first_publish_year)
+            .filter(year => year && !isNaN(year))
+            .sort((a, b) => a - b);
+        
+        if (years.length > 0) {
+            const earliestYear = years[0];
+            const latestYear = years[years.length - 1];
+            summary = `<div class="filter-summary">
+                <strong>Publication Range:</strong> ${earliestYear === latestYear ? earliestYear : `${earliestYear} - ${latestYear}`}
+            </div>`;
+        }
+    }
+    
+    return summary;
+}
+
+// Helper function to escape regex characters
+function escapeRegex(string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+// Helper function to truncate text
+function truncateText(text, maxLength = 150) {
+    if (!text || text.length <= maxLength) return text;
+    return text.substring(0, maxLength).trim() + '...';
+}
+
+// Helper function to get author image HTML
+function getAuthorImageHtml(authorKey, authorName, isLarge = false) {
+    const sizeClass = isLarge ? 'author-photo-large' : 'author-photo';
+    const placeholderClass = isLarge ? 'author-photo-placeholder-large' : 'author-photo-placeholder';
+    
+    if (authorKey) {
+        const imageSize = isLarge ? 'L' : 'S';
+        return `<img src="https://covers.openlibrary.org/a/olid/${authorKey}-${imageSize}.jpg"
+                     alt="Photo of ${authorName}" 
+                     class="${sizeClass}"
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                <div class="${placeholderClass}" style="display:none;">👤</div>`;
+    } else {
+        return `<div class="${placeholderClass}">👤</div>`;
+    }
+}
+
+// Display author results in a separate table format
+function displayAuthorResults(data) {
     const resultsContainer = document.getElementById("resultsContainer");
+    
+    // Extract unique authors from the search results
+    const authorMap = new Map();
+    
+    data.docs.forEach(book => {
+        if (book.author_name && Array.isArray(book.author_name)) {
+            book.author_name.forEach((authorName, index) => {
+                if (authorName && authorName.toLowerCase().includes(currentSearchTitle.toLowerCase())) {
+                    const authorKey = book.author_key && book.author_key[index] ? book.author_key[index] : null;
+                    
+                    if (!authorMap.has(authorName)) {
+                        authorMap.set(authorName, {
+                            name: authorName,
+                            key: authorKey,
+                            bookCount: 1,
+                            books: [book.title].filter(Boolean)
+                        });
+                    } else {
+                        const existingAuthor = authorMap.get(authorName);
+                        existingAuthor.bookCount++;
+                        if (book.title && !existingAuthor.books.includes(book.title)) {
+                            existingAuthor.books.push(book.title);
+                        }
+                    }
+                }
+            });
+        }
+    });
+
+    const authors = Array.from(authorMap.values());
+    const displayedAuthors = authors.slice(0, resultsPerPage);
+
+    let headerText = `Authors matching "${currentSearchTitle}"`;
+    let countText = `Found ${authors.length} unique authors, showing ${Math.min(resultsPerPage, authors.length)} on page ${currentPage}`;
 
     let htmlContent = `
         <div class="results-header">
-            <h2>Search Results for "${currentSearchTitle}" (${currentFilter})</h2>
-            <p>Found ${totalResults.toLocaleString()} books total, showing ${((currentPage - 1) * resultsPerPage) + 1}-${Math.min(currentPage * resultsPerPage, totalResults)} on page ${currentPage}</p>
+            <h2>${headerText}</h2>
+            <p>${countText}</p>
+        </div>
+        <div class="results-table author-table">
+            <div class="table-header">
+                <div class="header-cell author-photo-header">Photo</div>
+                <div class="header-cell author-name-header">Author Name</div>
+                <div class="header-cell author-books-header">Book Count</div>
+                <div class="header-cell author-sample-header">Sample Works</div>
+            </div>
+    `;
+
+    displayedAuthors.forEach((author, index) => {
+        const highlightedName = author.name.replace(
+            new RegExp(`(${escapeRegex(currentSearchTitle)})`, 'gi'),
+            '<mark>$1</mark>'
+        );
+
+        // Author photo using the new helper function
+        const photoHtml = getAuthorImageHtml(author.key, author.name);
+        
+        // Sample works (truncated)
+        const sampleWorks = truncateText(author.books.slice(0, 3).join(', '), 100);
+
+        htmlContent += `
+            <div class="table-row author-row" data-index="${index}" onclick="fetchSelectedAuthor(${index}, '${author.key}', '${author.name.replace(/'/g, "\\'")}')">
+                <div class="table-cell author-photo-cell">${photoHtml}</div>
+                <div class="table-cell author-name-cell"><strong>${highlightedName}</strong></div>
+                <div class="table-cell author-books-cell">${author.bookCount} book${author.bookCount !== 1 ? 's' : ''}</div>
+                <div class="table-cell author-sample-cell">${sampleWorks}</div>
+            </div>
+        `;
+    });
+
+    htmlContent += `</div>`; // Close .results-table
+    
+    // For now, simplified pagination for authors (since we're working with processed data)
+    if (authors.length > resultsPerPage) {
+        htmlContent += `<div class="pagination-info">Showing first ${resultsPerPage} authors of ${authors.length} found</div>`;
+    }
+    
+    resultsContainer.innerHTML = htmlContent;
+}
+
+// Display search results (for books)
+function displayResults(data) {
+    const resultsContainer = document.getElementById("resultsContainer");
+
+    let headerText = currentFilter === 'Title' 
+        ? `Books with title matching "${currentSearchTitle}"`
+        : `Search Results for "${currentSearchTitle}" (${currentFilter})`;
+    
+    let countText = `Found ${totalResults.toLocaleString()} books total, showing ${((currentPage - 1) * resultsPerPage) + 1}-${Math.min(currentPage * resultsPerPage, totalResults)} on page ${currentPage}`;
+
+    let htmlContent = `
+        <div class="results-header">
+            <h2>${headerText}</h2>
+            <p>${countText}</p>
+            ${generateFilterSummary(data)}
         </div>
         <div class="results-table">
             <div class="table-header">
@@ -183,12 +333,21 @@ function displayResults(data) {
                <div class="no-cover" style="display:none;">No Cover</div>`
             : `<div class="no-cover">No Cover</div>`;
 
+        // Highlight matching terms based on filter
+        let highlightedTitle = title;
+        let highlightedAuthor = author;
+        
+        if (currentFilter === 'Title' && currentSearchTitle) {
+            const regex = new RegExp(`(${escapeRegex(currentSearchTitle)})`, 'gi');
+            highlightedTitle = title.replace(regex, '<mark>$1</mark>');
+        }
+
         // Add row to table
         htmlContent += `
             <div class="table-row" data-index="${index}" onclick="fetchSelectedBook(${index})">
                 <div class="table-cell cover-cell">${coverHtml}</div>
-                <div class="table-cell title-cell"><strong>${title}</strong></div>
-                <div class="table-cell author-cell">${author}</div>
+                <div class="table-cell title-cell"><strong>${highlightedTitle}</strong></div>
+                <div class="table-cell author-cell">${highlightedAuthor}</div>
                 <div class="table-cell date-cell">${publishInfo}</div>
                 <div class="table-cell edition-cell">${editionCount} edition${editionCount !== 1 ? 's' : ''}</div>
             </div>
@@ -331,6 +490,94 @@ async function fetchSelectedBook(index) {
             <div class="error-message">
                 <h3>Error Loading Book Details</h3>
                 <p>Unable to load detailed information for this book. Please try again.</p>
+            </div>
+        `;
+    }
+}
+
+// Fetch detailed info of SELECTED AUTHOR
+async function fetchSelectedAuthor(index, authorKey, authorName) {
+    const resultsContainer = document.getElementById("resultsContainer");
+    const bookDetailsContainer = document.getElementById("bookDetailsContainer");
+    const backBtn = document.getElementById("backBtn");
+
+    resultsContainer.style.display = "none";
+    bookDetailsContainer.innerHTML = '<div class="loading">Loading author details...</div>';
+    bookDetailsContainer.classList.add("show");
+    backBtn.style.display = "block";
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    try {
+        let authorDetails = null;
+        let authorBio = "No biography available.";
+
+        // Try to fetch author details if we have an author key
+        if (authorKey) {
+            try {
+                const authorUrl = `https://openlibrary.org/authors/${authorKey}.json`;
+                const authorResponse = await fetch(authorUrl);
+                if (authorResponse.ok) {
+                    authorDetails = await authorResponse.json();
+                    if (authorDetails.bio) {
+                        authorBio = typeof authorDetails.bio === 'string' 
+                            ? authorDetails.bio 
+                            : authorDetails.bio.value || "No biography available.";
+                    }
+                }
+            } catch (authorError) {
+                console.warn("Could not fetch author details:", authorError);
+            }
+        }
+
+        // Fetch some books by this author
+        const booksUrl = `https://openlibrary.org/search.json?author=${encodeURIComponent(authorName)}&limit=5`;
+        const booksResponse = await fetch(booksUrl);
+        let authorBooks = [];
+        
+        if (booksResponse.ok) {
+            const booksData = await booksResponse.json();
+            authorBooks = booksData.docs || [];
+        }
+
+        const birthDate = authorDetails?.birth_date || "Unknown";
+        const deathDate = authorDetails?.death_date || (authorDetails?.death_date === null ? "Present" : "Unknown");
+        const fullName = authorDetails?.name || authorName;
+
+        // Author photo using the new helper function
+        const photoHtml = getAuthorImageHtml(authorKey, fullName, true);
+
+        const detailsHtml = `
+            <div class="book-detail-header author-detail-header">
+                <div class="book-detail-cover author-detail-photo">${photoHtml}</div>
+                <div class="book-detail-info author-detail-info">
+                    <h1>${fullName}</h1>
+                    <div class="authors author-dates">${birthDate}${deathDate !== "Unknown" ? ` - ${deathDate}` : ''}</div>
+                    <div class="meta">
+                        <div class="meta-item"><div class="label">Known Works</div><div class="value">${authorBooks.length} book${authorBooks.length !== 1 ? 's' : ''} found</div></div>
+                        ${authorDetails?.alternate_names ? `<div class="meta-item"><div class="label">Also Known As</div><div class="value">${authorDetails.alternate_names.slice(0, 3).join(', ')}</div></div>` : ''}
+                    </div>
+                </div>
+            </div>
+            <div class="description"><h3>📝 Biography</h3><p>${authorBio}</p></div>
+            ${authorBooks.length > 0 ? `
+                <div class="description" style="margin-top: 20px;">
+                    <h3>📚 Notable Works</h3>
+                    <ul>
+                        ${authorBooks.slice(0, 5).map(book => `<li><strong>${book.title}</strong>${book.first_publish_year ? ` (${book.first_publish_year})` : ''}</li>`).join('')}
+                    </ul>
+                </div>
+            ` : ''}
+        `;
+
+        bookDetailsContainer.innerHTML = detailsHtml;
+
+    } catch (err) {
+        console.error("Error fetching author details:", err);
+        bookDetailsContainer.innerHTML = `
+            <div class="error-message">
+                <h3>Error Loading Author Details</h3>
+                <p>Unable to load detailed information for this author. Please try again.</p>
             </div>
         `;
     }
