@@ -4,8 +4,9 @@ import { Outlet, useLocation } from "react-router-dom"
 
 export function Layout(){
     const location = useLocation();
-    const isHomepage = location.pathname === "/Homepage";
+    const isHomepage = location.pathname === "/Homepage" || location.pathname === "/Profile";
     
+
     return(
         <>
             {isHomepage ? <HomepageNavbar /> : <WelcomeNavbar />}
