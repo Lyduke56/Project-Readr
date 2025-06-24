@@ -31,16 +31,14 @@ export const AuthContextProvider = ({ children }) => {
 
       // Handle Supabase error explicitly
       if (error) {
-        console.error("Sign-in error:", error.message); // Log the error for debugging
-        return { success: false, error: error.message }; // Return the error
+        console.error("Sign-in error:", error.message);
+        return { success: false, error: error.message };
       }
 
-      // If no error, return success
       console.log("Sign-in success:", data);
-      return { success: true, data }; // Return the user data
+      return { success: true, data }; 
     } catch (error) {
-      // Handle unexpected issues
-      console.error("Unexpected error during sign-in:", err.message);
+      console.error("Unexpected error during sign-in:", error.message);
       return {
         success: false,
         error: "An unexpected error occurred. Please try again.",
@@ -66,13 +64,31 @@ export const AuthContextProvider = ({ children }) => {
     }
   }
 
+  //insert user data
+  const insertUser = async (userData) => {
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .insert([userData])
+        .select();
+
+      if (error) {
+        console.error("Insert user error:", error);
+        return { success: false, error };
+      }
+      return { success: true, data };
+    } catch (err) {
+      console.error("Unexpected error in insertUser:", err);
+      return { success: false, error: err };
+    }
+  };
+
     return (
-        <AuthContext.Provider value={{ session, signUpNewUser, signInUser, signOut }}>
+        <AuthContext.Provider value={{ session, signUpNewUser, signInUser, signOut, insertUser }}>
             {children}
         </AuthContext.Provider>
     );
 };
-
 
 export const UserAuth = () => {
     return useContext(AuthContext);
