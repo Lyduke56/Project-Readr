@@ -28,27 +28,35 @@ export function SignIn(){
     const handleSignIn = async (e) => {
         e.preventDefault();
         setLoading(true);
-        setError('');
 
+        //Error Handling for user's inputs
         if (!email || !password) {
             setError("Please fill in all fields");
             setLoading(false);
             return;
         }
 
-        try {
-            const result = await signInUser(email, password);
-            if (result.success) {
-                navigate("/Homepage");
-            } else {
-                setError(result.error.message);
-            }
-        } catch (err) {
-            setError("An unexpected error occurred.");
-        } finally {
+        if (password.length < 6) {
+            setError("Password must be at least 6 characters");
             setLoading(false);
+            return;
         }
-    };
+
+        try {
+        const result = await signInUser(email, password); 
+
+        if (result.success) {
+            navigate("/Homepage"); 
+        } else {
+            setError(result.error.message); 
+            setError("Invalid login, please try again!")
+        }
+        } catch (err) {
+        setError("An unexpected error occurred."); 
+        } finally {
+        setLoading(false); 
+        }
+     };
 
     return (
         <div className="signin-container">

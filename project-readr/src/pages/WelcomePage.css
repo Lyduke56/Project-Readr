@@ -7,7 +7,7 @@ body{
     min-height: 100vh;
 }
 
-.leftyy {
+.left-div {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -15,21 +15,22 @@ body{
     flex-direction: column;
     font-family: 'Merriweather', serif;
     font-size: 1.7rem;
-    width: 35%;
+    width: 40%;
+    padding-left: 5%;
 }
 
-.leftyy p{
+.left-div p{
     font-family: 'Inter', serif;
     font-size: 20px;
-    margin-top: 0; /* Remove top margin */
-    margin-bottom: 4rem; /* Keep some space below for the buttons */
+    margin-top: 0;
+    margin-bottom: 2.5rem; /* Keep some space below for the buttons */
 }
 
-.leftyy h1{
+.left-div h1{
     margin-bottom: 0.5rem;
 }
 
-.leftyy h1 span{
+.left-div h1 span{
     color: #D4B866;
     font-weight: 1500;
 }
@@ -78,8 +79,8 @@ body{
     justify-content: space-between;
     max-width: 1500px;
     margin: 0 auto;
-    padding: 80px 40px;
-    min-height: 65vh;
+    padding: 40px; 
+    min-height: 90vh; 
     position: relative;
 }
 
@@ -87,7 +88,7 @@ body{
     content: '';
     position: absolute;
     top: 0;
-    left: 40%; /* shift left edge */
+    left: 50%; 
     right: 0;
     width: auto;
     height: 100%;

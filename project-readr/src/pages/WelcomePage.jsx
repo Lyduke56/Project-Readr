@@ -5,7 +5,7 @@ export function WelcomePage(){
     return (
         <>
             <div className="welcome-hero">
-                <div className="leftyy">
+                <div className="left-div">
                 <h1>Welcome to <span>Readr</span></h1>
                 <p>Swipe. Shelve. Read</p>
       
