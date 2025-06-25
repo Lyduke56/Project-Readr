@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Link } from 'react-router-dom';
 import './Homepage.css';
 
 export const Homepage = () => {
@@ -222,47 +223,6 @@ export const Homepage = () => {
 
   return (
     <div className="home-page">
-      
-
-      {/* Navigation Tabs */}
-      <div className="navigation-section">
-        <div className="container">
-          <div className="navigation-content">
-            <div className="tab-buttons">
-              {['Books', 'Authors', 'Discover'].map(tab => (
-                <button
-                  key={tab}
-                  onClick={() => handleTabChange(tab)}
-                  className={`tab-button ${activeTab === tab ? 'active' : ''}`}
-                >
-                  {tab}
-                </button>
-              ))}
-            </div>
-            
-            <div className="search-controls">
-              <select 
-                value={activeTab}
-                onChange={(e) => handleTabChange(e.target.value)}
-                className="filter-select"
-              >
-                <option value="All">All</option>
-                <option value="Books">Books</option>
-                <option value="Authors">Authors</option>
-              </select>
-              
-              <input
-                type="text"
-                placeholder="Search Books, Authors, and more..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleSearch(searchQuery)}
-                className="search-input"
-              />
-            </div>
-          </div>
-        </div>
-      </div>
 
       {/* Recommendations Section */}
       <div className="recommendations-section">
@@ -293,6 +253,16 @@ export const Homepage = () => {
               &#8250;
             </button>
           </div>
+
+          <div className="overlap-6">
+            <div className="text-wrapper-21">All</div>
+          </div>
+
+          <Link to="/Book" className="text-wrapper-22">Books</Link>
+
+          <div className="text-wrapper-23">Authors</div>
+
+          <Link to="/Discover" className="text-wrapper-24">Discover</Link>
         </div>
       </div>
 
