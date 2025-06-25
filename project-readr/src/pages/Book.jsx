@@ -1,95 +1,125 @@
 import React, { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
 import x31493481 from "/Element.png";
 import { HomepageNavbar } from "../components/HomepageNavbar";
 import image6 from "/LibraryPic.png";
 import "./Book.css";
 
 export const Book = () => {
+  const { bookId } = useParams(); // Get book ID from URL params
   const [bookData, setBookData] = useState(null);
   const [userReviews, setUserReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [userScore, setUserScore] = useState(0);
   const [status, setStatus] = useState('PLAN_TO_READ');
+  const [error, setError] = useState(null);
 
-  // Mock data structure - replace with actual API calls
-  const mockBookData = {
-    id: 1,
-    title: "Animal Farm",
-    author: "Orwell, George",
-    genres: "Satire, Fable, Classic Literature, Dystopian Fiction",
-    editionCount: "15,320",
-    yearPublished: 1945,
-    score: 8.98,
-    rank: 25,
-    popularity: 83,
-    users: "125,250",
-    synopsis: "In this classic allegorical novella, a group of farm animals band together to create a society where all are equal and free. What begins as a hopeful revolution soon unfolds into a gripping tale of leadership, ideals, and the cost of power. Orwell's sharp and timeless storytelling offers profound insights into society, making Animal Farm a must-read for readers of all ages."
+  // API integration functions
+  const fetchBookData = async (id) => {
+    try {
+      const response = await fetch(`/api/books/${id}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch book data');
+      }
+      const data = await response.json();
+      setBookData(data);
+      
+      // Set initial user score and status if available in book data
+      if (data.userScore !== undefined) {
+        setUserScore(data.userScore);
+      }
+      if (data.userStatus) {
+        setStatus(data.userStatus);
+      }
+    } catch (error) {
+      console.error('Error fetching book data:', error);
+      setError(error.message);
+      setBookData(null);
+    }
   };
 
-  const mockUserReviews = [
-    {
-      id: 1,
-      username: "imissyoy143",
-      score: 9,
-      comment: "fun read, very cool actually. ong it cool really awesomesauce ...",
-      summary: "it gud"
+  const fetchUserReviews = async (id) => {
+    try {
+      const response = await fetch(`/api/books/${id}/reviews`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch reviews');
+      }
+      const data = await response.json();
+      setUserReviews(data);
+    } catch (error) {
+      console.error('Error fetching user reviews:', error);
+      setUserReviews([]);
     }
-  ];
+  };
 
-  // Simulate API calls
+  // Fetch data on component mount or when bookId changes
   useEffect(() => {
     const fetchData = async () => {
+      if (!bookId) {
+        setError('No book ID provided');
+        setLoading(false);
+        return;
+      }
+
       setLoading(true);
+      setError(null);
+      
       try {
-        // Simulate API delay
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        // Replace these with actual API calls
-        setBookData(mockBookData);
-        setUserReviews(mockUserReviews);
+        await Promise.all([
+          fetchBookData(bookId),
+          fetchUserReviews(bookId)
+        ]);
       } catch (error) {
         console.error('Error fetching data:', error);
+        setError('Failed to load book information');
       } finally {
         setLoading(false);
       }
     };
 
     fetchData();
-  }, []);
-
-  // API integration functions - replace with actual implementations
-  const fetchBookData = async (bookId) => {
-    // Replace with actual API call
-    // const response = await fetch(`/api/books/${bookId}`);
-    // const data = await response.json();
-    // setBookData(data);
-  };
-
-  const fetchUserReviews = async (bookId) => {
-    // Replace with actual API call
-    // const response = await fetch(`/api/books/${bookId}/reviews`);
-    // const data = await response.json();
-    // setUserReviews(data);
-  };
+  }, [bookId]);
 
   const handleStatusChange = async (newStatus) => {
-    // Replace with actual API call
-    // const response = await fetch(`/api/books/${bookData.id}/status`, {
-    //   method: 'PUT',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify({ status: newStatus })
-    // });
-    setStatus(newStatus);
+    if (!bookData) return;
+
+    try {
+      const response = await fetch(`/api/books/${bookData.id}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update status');
+      }
+
+      setStatus(newStatus);
+    } catch (error) {
+      console.error('Error updating status:', error);
+      // Optionally show error message to user
+    }
   };
 
   const handleScoreChange = async (newScore) => {
-    // Replace with actual API call
-    // const response = await fetch(`/api/books/${bookData.id}/score`, {
-    //   method: 'PUT',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify({ score: newScore })
-    // });
-    setUserScore(newScore);
+    if (!bookData) return;
+
+    try {
+      const response = await fetch(`/api/books/${bookData.id}/score`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ score: newScore })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update score');
+      }
+
+      setUserScore(newScore);
+    } catch (error) {
+      console.error('Error updating score:', error);
+      // Optionally show error message to user
+    }
   };
 
   if (loading) {
@@ -103,15 +133,40 @@ export const Book = () => {
     );
   }
 
+  if (error) {
+    return (
+      <div className="error-container">
+        <div className="error-message">
+          <h2>Error Loading Book</h2>
+          <p>{error}</p>
+          <button onClick={() => window.location.reload()} className="retry-button">
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (!bookData) {
-    return <div className="error-message">Failed to load book data</div>;
+    return (
+      <div className="error-container">
+        <div className="error-message">
+          <h2>Book Not Found</h2>
+          <p>The requested book could not be found.</p>
+        </div>
+      </div>
+    );
   }
 
   return (
     <div className="book-page">
       <div className="book-container">
         <div className="book-detail-header">
-          <img className="book-detail-cover" alt="Book cover" src={x31493481} />
+          <img 
+            className="book-detail-cover" 
+            alt={`${bookData.title} cover`} 
+            src={bookData.coverImage || x31493481} 
+          />
           <div className="book-detail-info">
             <h1>{bookData.title}</h1>
             <div className="authors">by {bookData.author}</div>
@@ -163,23 +218,29 @@ export const Book = () => {
 
         <div className="description">
           <h3>Synopsis</h3>
-          <p>{bookData.synopsis}</p>
+          <p>{bookData.synopsis || 'No synopsis available.'}</p>
         </div>
 
         <div className="subjects">
           <h3>Subjects</h3>
-          <p>{bookData.genres}</p>
+          <p>{bookData.genres || 'No genres specified.'}</p>
         </div>
 
         <div className="book-reviews">
           <h3>User Reviews</h3>
-          {userReviews.map(review => (
-            <div key={review.id} className="book-review">
-              <div className="book-review-user">{review.username}</div>
-              <p className="book-review-text">{review.comment}</p>
-              <div className="book-review-score">{review.score}/10</div>
+          {userReviews.length > 0 ? (
+            userReviews.map(review => (
+              <div key={review.id} className="book-review">
+                <div className="book-review-user">{review.username}</div>
+                <p className="book-review-text">{review.comment}</p>
+                <div className="book-review-score">{review.score}/10</div>
+              </div>
+            ))
+          ) : (
+            <div className="no-reviews">
+              <p>No reviews available for this book yet.</p>
             </div>
-          ))}
+          )}
         </div>
       </div>
     </div>

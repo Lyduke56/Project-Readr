@@ -13,86 +13,38 @@ export const Homepage = () => {
   // Ref for recommendations scroll container
   const recommendationsRef = useRef(null);
 
-  // Mock data structure - replace with actual API calls
-  const mockTopRatedBooks = [
-    {
-      id: 1,
-      rank: 1,
-      title: "1984",
-      author: "Orwell, George",
-      users: "251,320 Users",
-      score: 9.50,
-      userScore: 10,
-      status: "COMPLETED"
-    },
-    {
-      id: 2,
-      rank: 2,
-      title: "The Great Gatsby",
-      author: "Fitzgerald, F. Scott",
-      users: "201,587 Users",
-      score: 9.48,
-      userScore: 9,
-      status: "COMPLETED"
-    },
-    {
-      id: 3,
-      rank: 3,
-      title: "The Metamorphosis",
-      author: "Kafka, Franz",
-      users: "285,301 Users",
-      score: 9.24,
-      userScore: 10,
-      status: "COMPLETED"
-    },
-    {
-      id: 4,
-      rank: 4,
-      title: "Les Miserables",
-      author: "Hugo, Victor",
-      users: "220,464 Users",
-      score: 9.21,
-      userScore: 9,
-      status: "COMPLETED"
-    },
-    {
-      id: 5,
-      rank: 5,
-      title: "To Kill a Mockingbird",
-      author: "Lee, Harper",
-      users: "123,456 Members",
-      score: 9.20,
-      userScore: 9,
-      status: "COMPLETED"
+  // API integration functions
+  const fetchTopRatedBooks = async () => {
+    try {
+      const response = await fetch('/api/books/top-rated');
+      const data = await response.json();
+      setTopRatedBooks(data);
+    } catch (error) {
+      console.error('Error fetching top rated books:', error);
+      setTopRatedBooks([]);
     }
-  ];
+  };
 
-  const mockRecommendedBooks = [
-    { id: 1, title: "[Title]", author: "[Author]" },
-    { id: 2, title: "[Title]", author: "[Author]" },
-    { id: 3, title: "[Title]", author: "[Author]" },
-    { id: 4, title: "[Title]", author: "[Author]" },
-    { id: 5, title: "[Title]", author: "[Author]" },
-    { id: 6, title: "[Title]", author: "[Author]" },
-    { id: 7, title: "[Title]", author: "[Author]" },
-    { id: 8, title: "[Title]", author: "[Author]" },
-    { id: 9, title: "[Title]", author: "[Author]" },
-    { id: 10, title: "[Title]", author: "[Author]" },
-    { id: 11, title: "[Title]", author: "[Author]" },
-    { id: 12, title: "[Title]", author: "[Author]" }
-  ];
+  const fetchRecommendedBooks = async () => {
+    try {
+      const response = await fetch('/api/books/recommended');
+      const data = await response.json();
+      setRecommendedBooks(data);
+    } catch (error) {
+      console.error('Error fetching recommended books:', error);
+      setRecommendedBooks([]);
+    }
+  };
 
-  // Simulate API calls
+  // Fetch data on component mount
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        // Simulate API delay
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        // Replace these with actual API calls
-        setTopRatedBooks(mockTopRatedBooks);
-        setRecommendedBooks(mockRecommendedBooks);
+        await Promise.all([
+          fetchTopRatedBooks(),
+          fetchRecommendedBooks()
+        ]);
       } catch (error) {
         console.error('Error fetching data:', error);
       } finally {
@@ -122,27 +74,16 @@ export const Homepage = () => {
     }
   };
 
-  // API integration functions - replace with actual implementations
-  const fetchTopRatedBooks = async () => {
-    // Replace with actual API call
-    // const response = await fetch('/api/books/top-rated');
-    // const data = await response.json();
-    // setTopRatedBooks(data);
-  };
-
-  const fetchRecommendedBooks = async () => {
-    // Replace with actual API call
-    // const response = await fetch('/api/books/recommended');
-    // const data = await response.json();
-    // setRecommendedBooks(data);
-  };
-
   const handleSearch = async (query) => {
     setSearchQuery(query);
-    // Replace with actual search API call
-    // const response = await fetch(`/api/books/search?q=${query}&type=${activeTab}`);
-    // const results = await response.json();
-    // Handle search results
+    try {
+      const response = await fetch(`/api/books/search?q=${query}&type=${activeTab}`);
+      const results = await response.json();
+      // Handle search results - you may want to update state or navigate
+      console.log('Search results:', results);
+    } catch (error) {
+      console.error('Error searching books:', error);
+    }
   };
 
   const handleTabChange = (tab) => {
@@ -154,19 +95,24 @@ export const Homepage = () => {
   };
 
   const handleStatusChange = async (bookId, newStatus) => {
-    // Replace with actual API call to update book status
-    // const response = await fetch(`/api/books/${bookId}/status`, {
-    //   method: 'PUT',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify({ status: newStatus })
-    // });
-    
-    // Update local state
-    setTopRatedBooks(prev => 
-      prev.map(book => 
-        book.id === bookId ? { ...book, status: newStatus } : book
-      )
-    );
+    try {
+      const response = await fetch(`/api/books/${bookId}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus })
+      });
+      
+      if (response.ok) {
+        // Update local state
+        setTopRatedBooks(prev => 
+          prev.map(book => 
+            book.id === bookId ? { ...book, status: newStatus } : book
+          )
+        );
+      }
+    } catch (error) {
+      console.error('Error updating book status:', error);
+    }
   };
 
   const BookCard = ({ book }) => (
@@ -239,9 +185,15 @@ export const Homepage = () => {
             
             <div className="recommendations-scroll-wrapper">
               <div className="recommendations-grid" ref={recommendationsRef}>
-                {recommendedBooks.map(book => (
-                  <RecommendationCard key={book.id} book={book} />
-                ))}
+                {recommendedBooks.length > 0 ? (
+                  recommendedBooks.map(book => (
+                    <RecommendationCard key={book.id} book={book} />
+                  ))
+                ) : (
+                  <div className="no-recommendations">
+                    <p>No recommendations available</p>
+                  </div>
+                )}
               </div>
             </div>
             
@@ -288,9 +240,15 @@ export const Homepage = () => {
             
             {/* Book List */}
             <div className="book-list">
-              {topRatedBooks.map(book => (
-                <BookCard key={book.id} book={book} />
-              ))}
+              {topRatedBooks.length > 0 ? (
+                topRatedBooks.map(book => (
+                  <BookCard key={book.id} book={book} />
+                ))
+              ) : (
+                <div className="no-books">
+                  <p>No top rated books available</p>
+                </div>
+              )}
             </div>
           </div>
         </div>
