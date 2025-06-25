@@ -1,5 +1,4 @@
 import { useNavigate, useLocation  } from "react-router-dom"
-import { Link, useNavigate } from "react-router-dom"
 import { useState, useRef, useEffect } from "react"
 import { supabase } from '../supabaseClient';
 import "./HomepageNavbar.css"
