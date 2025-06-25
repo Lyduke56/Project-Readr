@@ -10,6 +10,7 @@ import { Home } from './pages/Home'
 import { Homepage } from './pages/Homepage'
 import { AddInfo } from './pages/AddInfo'
 import { Profile } from './pages/Profile'
+import { ReadingList } from './pages/ReadingList'
 
 function App() {
 
@@ -26,6 +27,7 @@ function App() {
           <Route path="/Homepage" element={<Homepage />} />
           <Route path="/AddInfo" element={<AddInfo />} />
           <Route path="/Profile" element={<Profile />} />
+          <Route path="/ReadingList" element={<ReadingList />} />
         </Route>
       </Routes>
     </Router>
