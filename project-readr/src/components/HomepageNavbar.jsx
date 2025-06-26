@@ -29,7 +29,7 @@ export function HomepageNavbar() {
         // Navigate to different routes based on option
         switch(option) {
             case 'Top Rated Books':
-                navigate('/top-rated-books');
+                navigate('/Home');
                 break;
             case 'My Reading List':
                 navigate('/ReadingList');
