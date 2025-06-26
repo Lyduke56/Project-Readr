@@ -76,8 +76,8 @@ body{
 .welcome-hero {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    max-width: 1500px;
+    justify-content: left;
+    max-width: 1600px;
     margin: 0 auto;
     padding: 40px; 
     min-height: 90vh; 
@@ -98,7 +98,7 @@ body{
             rgba(255,255,255,0.8) 30%, 
             rgba(255,255,255,0.1) 100%
         ), 
-        url('../pictures/WelcomePage.jpg');
+        url('../pictures/WelcomePage2.jpg');
     background-size: cover;
     background-position: 80% center;
     background-repeat: no-repeat;
