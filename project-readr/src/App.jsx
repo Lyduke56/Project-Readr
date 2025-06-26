@@ -11,6 +11,9 @@ import { Homepage } from './pages/Homepage'
 import { AddInfo } from './pages/AddInfo'
 import { Profile } from './pages/Profile'
 import { Book } from './pages/Book'
+import Author from './pages/Author'
+
+
 function App() {
 
   return (
@@ -27,6 +30,7 @@ function App() {
           <Route path="/AddInfo" element={<AddInfo />} />
           <Route path="/Profile" element={<Profile />} />
           <Route path="/Book" element={<Book />} />
+          <Route path="/Author" element={<Author />} />
         </Route>
       </Routes>
     </Router>
