@@ -14,7 +14,7 @@ export const Home = () => {
   const [hasSearched, setHasSearched] = useState(false);
   
   const navigate = useNavigate();
-  const resultsPerPage = 10;
+  const resultsPerPage = 8;
 
   // Helper function to truncate text
   const truncateText = (text, maxLength = 50) => {
@@ -217,7 +217,7 @@ export const Home = () => {
                 <img 
                   src={`https://covers.openlibrary.org/b/id/${coverId}-M.jpg`}
                   alt={`Cover of ${title}`} 
-                  className="book-cover-img"
+                  className="book-cover-holder"
                   onError={(e) => {
                     e.target.style.display = 'none';
                     e.target.nextElementSibling.style.display = 'block';
