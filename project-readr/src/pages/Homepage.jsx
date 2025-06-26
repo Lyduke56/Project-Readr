@@ -294,10 +294,6 @@ export const Homepage = () => {
               &#8250;
             </button>
           </div>
-
-          <Link to="/Author" className="author-link">Author</Link>
-          <br />
-          <Link to="/Book" className="book-link">Book</Link>
         </div>
       </div>
 
