@@ -146,7 +146,17 @@ export const Home = () => {
     const handleCardClick = (book) => {
       // Store book data for the next page
       localStorage.setItem('selectedBook', JSON.stringify(book));
-      navigate('/Book');
+      
+      if (filterBy === 'Author') {
+        // For author searches, navigate to author page with first author
+        const authorName = Array.isArray(book.author_name) && book.author_name.length > 0 
+          ? book.author_name[0]
+          : 'Unknown Author';
+        navigate('/Author', { state: { authorName } });
+      } else {
+        // For title/all searches, navigate to book page
+        navigate('/Book');
+      }
     };
 
   // Handle add to reading list
@@ -257,7 +267,11 @@ export const Home = () => {
     });
 
     return Array.from(uniqueAuthors.values()).map((author, index) => (
-    <div className="book-card" key={index} onClick={() => fetchSelectedAuthor(index, author.key, author.name)}>
+    <div className="book-card" key={index} onClick={() => handleCardClick({
+      author_name: [author.name],
+      author_key: [author.key],
+      title: author.books[0] || 'Unknown Book'
+    })}>
       
       <div className="book-cover">
         <div className="book-cover-holder">
