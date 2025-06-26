@@ -24,10 +24,25 @@
 }
 
 .mask-group {
-    width: 40px;
-    height: 40px;
+    width: 55px;
+    height: 55px;
     border-radius: 50%;
     object-fit: cover;
+    overflow: hidden;
+    background-color: transparent;
+}
+
+.mask-group-background {
+    width: 55px;
+    height: 55px;
+    border-radius: 55%;
+    overflow: hidden;
+    padding: 0;
+    border: none;
+    background: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .group {
