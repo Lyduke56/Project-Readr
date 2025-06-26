@@ -174,7 +174,6 @@
   color: #666;
   margin: 0 0 20px 0;
   font-weight: 400;
-  
 }
 
 .add-to-list-btn {
@@ -199,6 +198,88 @@
 .add-to-list-btn:active {
   transform: translateY(0);
 }
+
+/* Authors */
+.author-card{
+  background-color: white;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  max-width: 230px;
+  max-height: 400px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.author-card:hover{
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.author-photo-holder{
+  padding: 10px;
+  width: 140px;
+  height: 190px;
+  background-color: #d3d3d3;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #999;
+  font-size: 0.9rem;
+  font-weight: 400;
+  margin-bottom: 0px;
+}
+
+.author-photo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+}
+
+.author-photo img {
+  width: 120px;
+  height: 160px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.author-info {
+  padding: 10px;
+  background-color: white;
+  flex-grow: 1;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.author-name{
+  font-size: 15px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin: 0 0 0 0;
+  line-height: 1.3;
+}
+
+.author-books-written{
+  font-size: 13px;
+  color: #666;
+  margin: 0 0 20px 0;
+  font-weight: 400;
+}
+
+.author-books-truncate{
+  font-size: 13px;
+  color: #666;
+  margin: 0 0 20px 0;
+  font-weight: 400;
+}
+
 
 /* Responsive Design */
 @media (max-width: 768px) {
