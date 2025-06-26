@@ -14,7 +14,7 @@ export const Home = () => {
   const [hasSearched, setHasSearched] = useState(false);
   
   const navigate = useNavigate();
-  const resultsPerPage = 8;
+  const resultsPerPage = 40;
 
   // Helper function to truncate text
   const truncateText = (text, maxLength = 50) => {
@@ -88,6 +88,38 @@ export const Home = () => {
     }
   };
 
+  // Fetch author details or filter author matches
+  const fetchSelectedAuthor = async (index, key, name) => {
+    try {
+      setIsLoading(true);
+      setError('');
+      setSearchResults([]); // optional: clear previous results
+      setHasSearched(true);
+
+      // Search books by selected author name
+      const encodedAuthor = encodeURIComponent(name);
+      const response = await fetch(`https://openlibrary.org/search.json?author=${encodedAuthor}&limit=${resultsPerPage}&offset=0`);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      setSearchTerm(name);        // Update search bar with author
+      setFilterBy('Author');      // Optional: auto-set filter
+      setSearchResults(data.docs || []);
+      setTotalResults(data.numFound || 0);
+      setCurrentPage(1);
+    } catch (error) {
+      console.error("Fetch author error:", error);
+      setError("Error loading author details. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+
   // Handle search
   const handleSearch = (e) => {
     if (e) e.preventDefault();
@@ -160,100 +192,161 @@ export const Home = () => {
 
   // Render book cards
   const renderBookCards = () => {
-    if (!hasSearched) {
-      return (
-        <div className="book-card">
-          <div className='book-cover'>
+  if (!hasSearched) {
+    return (
+      <div className="book-card">
+        <div className='book-cover'>
+          <div className="book-cover-holder">
+            <span>Book Cover</span>
+          </div>
+        </div>
+        <div className='book-information'>
+          <h3 className="book-titles">The Great Gatsby</h3>
+          <p className="book-authors">by F. Scott Fitzgerald</p>
+          <button className="add-to-list-btn">
+            Add to Reading List
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (isLoading && searchResults.length === 0) {
+    return <div className="loading">Searching for books...</div>;
+  }
+
+  if (error) {
+    return (
+      <div className="error-message">
+        <h3>Error</h3>
+        <p>{error}</p>
+      </div>
+    );
+  }
+
+  if (searchResults.length === 0 && hasSearched) {
+    return (
+      <div className="no-results">
+        <h3>No results found</h3>
+        <p>Try a different search term or check your spelling.</p>
+      </div>
+    );
+  }
+
+  // 📘 If author view
+  if (filterBy === 'Author' && searchResults.length > 0) {
+    const uniqueAuthors = new Map();
+
+    searchResults.forEach(book => {
+      if (Array.isArray(book.author_name)) {
+        book.author_name.forEach((authorName, i) => {
+          if (!uniqueAuthors.has(authorName)) {
+            uniqueAuthors.set(authorName, {
+              name: authorName,
+              key: Array.isArray(book.author_key) ? book.author_key[i] : null,
+              books: [book.title]
+            });
+          } else {
+            const existing = uniqueAuthors.get(authorName);
+            if (book.title && !existing.books.includes(book.title)) {
+              existing.books.push(book.title);
+            }
+          }
+        });
+      }
+    });
+
+    return Array.from(uniqueAuthors.values()).map((author, index) => (
+    <div className="book-card" key={index} onClick={() => fetchSelectedAuthor(index, author.key, author.name)}>
+      
+      <div className="book-cover">
+        <div className="book-cover-holder">
+          <img
+            src={`https://covers.openlibrary.org/a/olid/${author.key}-M.jpg`}
+            alt={`Photo of ${author.name}`}
+            className="book-cover-holder"
+            onError={(e) => {
+              e.target.style.display = 'none';
+              e.target.nextElementSibling.style.display = 'block';
+            }}
+          />
+          <div className="book-cover-holder" style={{ display: 'none' }}>
+            <span>Author Photo</span>
+          </div>
+        </div>
+      </div>
+
+      <div className="book-information">
+        <h3 className="book-titles" title={author.name}>
+          {truncateText(author.name, 50)}
+        </h3>
+        <p className="book-authors">
+          {author.books.length} book{author.books.length !== 1 ? 's' : ''}
+        </p>
+        <p className="book-year">
+          {truncateText(author.books.join(', '), 80)}
+        </p>
+      </div>
+
+    </div>
+  ));
+  }
+
+  // 📚 Otherwise, render books
+  return searchResults.map((book, index) => {
+    const title = book.title?.trim() || "No title available";
+    const author = Array.isArray(book.author_name) && book.author_name.length > 0
+      ? book.author_name.filter(name => name?.trim()).slice(0, 2).join(", ")
+      : "Unknown author";
+    const coverId = book.cover_i?.toString().trim() ? book.cover_i : null;
+    const publishYear = book.first_publish_year || '';
+
+    return (
+      <div key={`${book.key}-${index}`} className="book-card" onClick={() => handleCardClick(book)}>
+        <div className='book-cover'>
+          {coverId ? (
+            <>
+              <img 
+                src={`https://covers.openlibrary.org/b/id/${coverId}-M.jpg`}
+                alt={`Cover of ${title}`} 
+                className="book-cover-holder"
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                  e.target.nextElementSibling.style.display = 'block';
+                }}
+              />
+              <div className="book-cover-holder" style={{display: 'none'}}>
+                <span>Book Cover</span>
+              </div>
+            </>
+          ) : (
             <div className="book-cover-holder">
               <span>Book Cover</span>
             </div>
-          </div>
-          <div className='book-information'>
-            <h3 className="book-titles">The Great Gatsby</h3>
-            <p className="book-authors">by F. Scott Fitzgerald</p>
-            <button className="add-to-list-btn">
-              Add to Reading List
-            </button>
-          </div>
+          )}
         </div>
-      );
-    }
-
-    if (isLoading && searchResults.length === 0) {
-      return <div className="loading">Searching for books...</div>;
-    }
-
-    if (error) {
-      return (
-        <div className="error-message">
-          <h3>Error</h3>
-          <p>{error}</p>
+      
+        <div className='book-information'>
+          <h3 className="book-titles" title={title}>
+            {truncateText(title, 50)}
+          </h3>
+          <p className="book-authors" title={author}>
+            by {truncateText(author, 40)}
+          </p>
+          {publishYear && <p className="book-year">({publishYear})</p>}
+          
+          <button 
+            className="add-to-list-btn"
+            onClick={(e) => handleAddToReadingList(e, book, index)}
+          >
+            Add to Reading List
+          </button>
         </div>
-      );
-    }
+      </div>
+    );
+  });
+};
 
-    if (searchResults.length === 0 && hasSearched) {
-      return (
-        <div className="no-results">
-          <h3>No books found</h3>
-          <p>Try a different search term or check your spelling.</p>
-        </div>
-      );
-    }
-
-    return searchResults.map((book, index) => {
-      const title = book.title?.trim() || "No title available";
-      const author = Array.isArray(book.author_name) && book.author_name.length > 0
-        ? book.author_name.filter(name => name?.trim()).slice(0, 2).join(", ")
-        : "Unknown author";
-      const coverId = book.cover_i?.toString().trim() ? book.cover_i : null;
-      const publishYear = book.first_publish_year || '';
-
-      return (
-        <div key={`${book.key}-${index}`} className="book-card" onClick={() => handleCardClick(book)}>
-          <div className='book-cover'>
-            {coverId ? (
-              <>
-                <img 
-                  src={`https://covers.openlibrary.org/b/id/${coverId}-M.jpg`}
-                  alt={`Cover of ${title}`} 
-                  className="book-cover-holder"
-                  onError={(e) => {
-                    e.target.style.display = 'none';
-                    e.target.nextElementSibling.style.display = 'block';
-                  }}
-                />
-                <div className="book-cover-holder" style={{display: 'none'}}>
-                  <span>Book Cover</span>
-                </div>
-              </>
-            ) : (
-              <div className="book-cover-holder">
-                <span>Book Cover</span>
-              </div>
-            )}
-          </div>
-        
-          <div className='book-information'>
-            <h3 className="book-titles" title={title}>
-              {truncateText(title, 50)}
-            </h3>
-            <p className="book-authors" title={author}>
-              by {truncateText(author, 40)}
-            </p>
-            {publishYear && <p className="book-year">({publishYear})</p>}
-            
-            <button 
-              className="add-to-list-btn"
-              onClick={(e) => handleAddToReadingList(e, book, index)}
-            >
-              Add to Reading List
-            </button>
-          </div>
-        </div>
-      );
-    });
-  };
 
   const totalPages = Math.ceil(totalResults / resultsPerPage);
   const hasMoreResults = currentPage < totalPages;
