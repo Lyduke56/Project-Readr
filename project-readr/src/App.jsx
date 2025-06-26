@@ -11,6 +11,8 @@ import { Homepage } from './pages/Homepage'
 import { AddInfo } from './pages/AddInfo'
 import { Profile } from './pages/Profile'
 import { ReadingList } from './pages/ReadingList'
+import  Author  from './pages/Author'
+import { Book } from './pages/Book' 
 
 function App() {
 
@@ -28,6 +30,8 @@ function App() {
           <Route path="/AddInfo" element={<AddInfo />} />
           <Route path="/Profile" element={<Profile />} />
           <Route path="/ReadingList" element={<ReadingList />} />
+          <Route path="/Author" element={<Author />} />
+          <Route path="/Book" element={<Book />} />
         </Route>
       </Routes>
     </Router>

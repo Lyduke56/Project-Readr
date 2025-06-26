@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './Homepage.css';
+import { Link } from 'react-router-dom';
 
 export const Homepage = () => {
   // State for different sections
@@ -293,8 +294,14 @@ export const Homepage = () => {
               &#8250;
             </button>
           </div>
+
+          <Link to="/Author" className="author-link">Author</Link>
+          <br />
+          <Link to="/Book" className="book-link">Book</Link>
         </div>
       </div>
+
+      <></>
 
       {/* Top Rated Books Section */}
       <div className="top-rated-section">

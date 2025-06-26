@@ -1,0 +1,111 @@
+.author-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 2rem;
+    color: #333;
+}
+
+.author-header {
+    display: flex;
+    gap: 2rem;
+    margin-bottom: 2rem;
+    align-items: flex-start;
+}
+
+.author-photo-container {
+    flex-shrink: 0;
+    width: 200px;
+    height: 200px;
+    border-radius: 8px;
+    background-color: #f0f0f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.author-photo-placeholder {
+    font-size: 4rem;
+    color: #666;
+}
+
+.author-info {
+    flex: 1;
+}
+
+.author-info h1 {
+    margin: 0 0 0.5rem 0;
+    font-size: 2rem;
+    color: #222;
+}
+
+.author-dates {
+    color: #666;
+    margin-bottom: 1.5rem;
+    font-style: italic;
+}
+
+.author-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    margin-top: 1rem;
+}
+
+.meta-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.meta-item .label {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 0.25rem;
+}
+
+.meta-item .value {
+    font-weight: 500;
+}
+
+.author-section {
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #eee;
+}
+
+.author-section:last-child {
+    border-bottom: none;
+}
+
+.author-section h3 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    font-size: 1.25rem;
+}
+
+.works-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.works-list li {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #f5f5f5;
+}
+
+.works-list li:last-child {
+    border-bottom: none;
+}
+
+@media (max-width: 768px) {
+    .author-header {
+        flex-direction: column;
+    }
+
+    .author-photo-container {
+        width: 150px;
+        height: 150px;
+        margin-bottom: 1rem;
+    }
+}
