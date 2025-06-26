@@ -110,12 +110,12 @@ export const Home = () => {
     }
   }, [filterBy]);
 
-  // Handle book card click
-  const handleCardClick = (book) => {
-    // Store book data for the next page
-    localStorage.setItem('selectedBook', JSON.stringify(book));
-    navigate('/BookInformation');
-  };
+    // Handle book card click
+    const handleCardClick = (book) => {
+      // Store book data for the next page
+      localStorage.setItem('selectedBook', JSON.stringify(book));
+      navigate('/Book');
+    };
 
   // Handle add to reading list
   const handleAddToReadingList = (e, book, index) => {
