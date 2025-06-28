@@ -294,6 +294,8 @@ export const Homepage = () => {
               &#8250;
             </button>
           </div>
+          <Link to="/DiscoverPage" className="view-all-link">
+            Discover Books  </Link>
         </div>
       </div>
 
