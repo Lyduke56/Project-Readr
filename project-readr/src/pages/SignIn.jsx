@@ -1,17 +1,21 @@
-import { useState, useEffect } from "react"
-import { Link, useNavigate } from "react-router-dom"
-import { UserAuth } from "../context/AuthContext"
-import "./SignIn.css"
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { UserAuth } from "../context/AuthContext";
+import { ForgotPass } from '../Modal/forgotPass';
+import { Modal } from "../Modal/Modal";
+import "./SignIn.css";
 
-export function SignIn(){
-    const [email, setEmail] = useState('')
-    const [password, setPassword] = useState('')
-    const [error, setError] = useState('')
-    const [loading, setLoading] = useState(false)
-    const [greeting, setGreeting] = useState('')
-    
+export function SignIn() {
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [greeting, setGreeting] = useState('');
+    const [isOpened, setIsOpened] = useState(false);
+
     const navigate = useNavigate();
-    const { session, signInUser } = UserAuth();
+    const { signInUser } = UserAuth();
+    const {doesEmailExist} = UserAuth();
 
     useEffect(() => {
         const greetings = [
@@ -28,8 +32,8 @@ export function SignIn(){
     const handleSignIn = async (e) => {
         e.preventDefault();
         setLoading(true);
+        setError('');
 
-        //Error Handling for user's inputs
         if (!email || !password) {
             setError("Please fill in all fields");
             setLoading(false);
@@ -43,20 +47,39 @@ export function SignIn(){
         }
 
         try {
-        const result = await signInUser(email, password); 
+            const result = await signInUser(email, password);
 
-        if (result.success) {
-            navigate("/Homepage"); 
-        } else {
-            setError(result.error.message); 
-            setError("Invalid login, please try again!")
-        }
+            if (result.success) {
+                navigate("/Homepage");
+            } else {
+                setError("Invalid login, please try again!");
+            }
         } catch (err) {
-        setError("An unexpected error occurred."); 
+            setError("An unexpected error occurred.");
         } finally {
-        setLoading(false); 
+            setLoading(false);
         }
-     };
+    };
+
+    const handleForgotPass = async (e) => {
+    e.preventDefault();
+
+    if (!email) {
+        setError("Please input your email!");
+        return;
+    }
+    
+    const exist = await doesEmailExist(email);
+
+    if(!exist){
+        console.log("Email does not exist!");
+        setError("Email does not exist!");
+        return;
+    }
+
+    console.log("Email exist!");
+    setIsOpened(true);
+};
 
     return (
         <div className="signin-container">
@@ -64,45 +87,62 @@ export function SignIn(){
                 <div className="signin-form-container">
                     <div className="signin-title">
                         <p>
-                            <span className="tracking-[0.23px]">{greeting.split('Readr')[0]}<span className="readr-title">Readr</span>{greeting.split('Readr')[1] || ''}</span>
+                            <span className="tracking-[0.23px]">
+                                {greeting.split('Readr')[0]}
+                                <span className="readr-title">Readr</span>
+                                {greeting.split('Readr')[1] || ''}
+                            </span>
                         </p>
                     </div>
                     <form onSubmit={handleSignIn}>
                         <div className="input-group email-input">
                             <label>Email</label>
-                            <input 
-                                type="email" 
-                                value={email} 
-                                onChange={(e) => setEmail(e.target.value)} 
-                                placeholder="Enter your email" 
+                            <input
+                                type="email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                placeholder="Enter your email"
                             />
                         </div>
                         <div className="input-group password-input">
                             <label>Password</label>
-                            <input 
-                                type="password" 
-                                value={password} 
-                                onChange={(e) => setPassword(e.target.value)} 
-                                placeholder="Enter your password" 
+                            <input
+                                type="password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                placeholder="Enter your password"
                             />
                         </div>
                         {error && <p className="error-message">{error}</p>}
-                        <button 
-                            type="submit" 
-                            disabled={loading} 
+
+                        <button
+                            type="submit"
+                            disabled={loading}
                             className="signin-button"
                         >
                             Sign In
                         </button>
                     </form>
-                    <p className="signin-link">
-                        Don't have an account? <Link to="/SignUp">Sign up!</Link>
-                    </p>
+
+                    <div className="below-signin">
+                        <p className="signin-link">
+                            Don't have an account? <Link to="/SignUp">Sign up!</Link>
+                        </p>
+                        <button onClick={handleForgotPass} className="forgot-password-button">
+                            Forgot Password
+                        </button>
+                    </div>
                 </div>
+
                 <div className="signin-image-container">
                     <img src="/LibraryPic.png" alt="Library" className="signin-image" />
-                    <p></p>
                 </div>
+
+                {isOpened && (
+                    <Modal isOpened={isOpened} onClose={() => setIsOpened(false)}>
+                        <ForgotPass email={email} />
+                    </Modal>
+                )}
             </div>
         </div>
     );

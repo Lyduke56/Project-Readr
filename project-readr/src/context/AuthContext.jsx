@@ -6,7 +6,7 @@ const AuthContext = createContext();
 export const AuthContextProvider = ({ children }) => {
     const [session, setSession] = useState(undefined);
 
-// Sign up
+  // Sign up
   const signUpNewUser = async (email, password) => {
     const { data, error } = await supabase.auth.signUp({
       email: email.toLowerCase(),
@@ -21,7 +21,7 @@ export const AuthContextProvider = ({ children }) => {
     return { success: true, data };
   };
 
-// Sign in
+  // Sign in
   const signInUser = async (email, password) => {
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -55,7 +55,28 @@ export const AuthContextProvider = ({ children }) => {
       setSession(session);
     });
   }, []);
+  
+  //Forgot Password
+  const forgotPass = async (email) => {
+    try {
+    const { data, error } = await supabase.auth.resetPasswordForEmail(email);
 
+    if (error) {
+      console.error("Error sending password reset email:", error.message);
+      return { success: false, error: error.message };
+    }
+
+    console.log("Password reset email sent:", data);
+    return { success: true, data };
+  } catch (error) {
+    console.error("Unexpected error during password reset:", error.message);
+    return {
+      success: false,
+      error: "An unexpected error occurred. Please try again.",
+    };
+  }
+  };
+  
   // Sign out
   async function signOut() {
     const { error } = await supabase.auth.signOut();
@@ -83,12 +104,33 @@ export const AuthContextProvider = ({ children }) => {
     }
   };
 
+  const doesEmailExist = async (email) => {
+    const { data, error } = await supabase
+        .from('users')
+        .select('id')
+        .eq('email', email)
+        .single();
+
+    if (error) {
+        if (error.code === 'PGRST116') {
+            return false
+        }
+        console.error('Error querying Supabase:', error)
+        return false
+    }
+
+    return !!data  
+}
+
+
     return (
-        <AuthContext.Provider value={{ session, signUpNewUser, signInUser, signOut, insertUser }}>
+        <AuthContext.Provider value={{ session, signUpNewUser, signInUser, signOut, insertUser, forgotPass, doesEmailExist }}>
             {children}
         </AuthContext.Provider>
     );
 };
+
+
 
 export const UserAuth = () => {
     return useContext(AuthContext);

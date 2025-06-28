@@ -105,7 +105,6 @@ export function AddInfo() {
         return;
       }
 
-      // Update form data with the public URL
       setFormData(prev => ({
         ...prev,
         profile_image: publicData.publicUrl,
