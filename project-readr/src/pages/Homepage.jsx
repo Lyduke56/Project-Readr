@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import './Homepage.css';
 import { useNavigate } from 'react-router-dom';
 
+
 export const Homepage = () => {
   // State for different sections
   const [topRatedBooks, setTopRatedBooks] = useState([]);
@@ -297,6 +298,8 @@ export const Homepage = () => {
           </div>
         </div>
       </div>
+
+      <></>
 
       {/* Top Rated Books Section */}
       <div className="top-rated-section">
