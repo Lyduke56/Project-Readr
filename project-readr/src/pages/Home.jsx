@@ -15,6 +15,7 @@ export const Home = () => {
   const [trendingBooks, setTrendingBooks] = useState([]);
   const [classicBooks, setClassicBooks] = useState([]);
   const [booksWeLove, setBooksWeLove] = useState([]);
+  const [sectionsLoading, setSectionsLoading] = useState(true);
   
   const navigate = useNavigate();
   const trendingRef = useRef(null);
@@ -22,108 +23,188 @@ export const Home = () => {
   const booksWeLoveRef = useRef(null);
   const resultsPerPage = 50;
 
-  // Trending books - popular contemporary titles
-  const initialTrendingBooks = [
-    {
-      key: '/works/OL24280842W',
-      title: 'Fourth Wing',
-      author_name: ['Rebecca Yarros'],
-      first_publish_year: 2023,
-      cover_i: 13518504
-    },
-    {
-      key: '/works/OL19993487W',
-      title: 'The Seven Husbands of Evelyn Hugo',
-      author_name: ['Taylor Jenkins Reid'],
-      first_publish_year: 2017,
-      cover_i: 8236945
-    },
-    {
-      key: '/works/OL20028261W',
-      title: 'It Ends with Us',
-      author_name: ['Colleen Hoover'],
-      first_publish_year: 2016,
-      cover_i: 8204516
-    },
-    {
-      key: '/works/OL21177379W',
-      title: 'The Silent Patient',
-      author_name: ['Alex Michaelides'],
-      first_publish_year: 2019,
-      cover_i: 9260156
-    }
-  ];
-
-  // Classic books - timeless literature
-  const initialClassicBooks = [
-    {
-      key: '/works/OL455969W',
-      title: 'Pride and Prejudice',
-      author_name: ['Jane Austen'],
-      first_publish_year: 1813,
-      cover_i: 8506154
-    },
-    {
-      key: '/works/OL45804W',
-      title: 'The Great Gatsby',
-      author_name: ['F. Scott Fitzgerald'],
-      first_publish_year: 1925,
-      cover_i: 8225261
-    },
-    {
-      key: '/works/OL362427W',
-      title: 'To Kill a Mockingbird',
-      author_name: ['Harper Lee'],
-      first_publish_year: 1960,
-      cover_i: 8486371
-    },
-    {
-      key: '/works/OL27349W',
-      title: '1984',
-      author_name: ['George Orwell'],
-      first_publish_year: 1949,
-      cover_i: 8194465
-    }
-  ];
-
-  // Books we love - staff picks and community favorites
-  const initialBooksWeLove = [
-    {
-      key: '/works/OL82592W',
-      title: 'The Lord of the Rings',
-      author_name: ['J.R.R. Tolkien'],
-      first_publish_year: 1954,
-      cover_i: 6979861
-    },
-    {
-      key: '/works/OL5735363W',
-      title: 'Educated',
-      author_name: ['Tara Westover'],
-      first_publish_year: 2018,
-      cover_i: 8909498
-    },
-    {
-      key: '/works/OL1818892W',
-      title: 'The Handmaid\'s Tale',
-      author_name: ['Margaret Atwood'],
-      first_publish_year: 1985,
-      cover_i: 8506161
-    },
-    {
-      key: '/works/OL15062W',
-      title: 'Beloved',
-      author_name: ['Toni Morrison'],
-      first_publish_year: 1987,
-      cover_i: 8194467
-    }
-  ];
-
-  // Load default books on component mount
+  // Load sections data on component mount
   useEffect(() => {
-    setTrendingBooks(initialTrendingBooks);
-    setClassicBooks(initialClassicBooks);
-    setBooksWeLove(initialBooksWeLove);
+    loadSectionsData();
   }, []);
+
+  // Function to load all sections data
+  const loadSectionsData = async () => {
+    setSectionsLoading(true);
+    try {
+      await Promise.all([
+        loadTrendingBooks(),
+        loadClassicBooks(),
+        loadBooksWeLove()
+      ]);
+    } catch (error) {
+      console.error('Error loading sections:', error);
+    } finally {
+      setSectionsLoading(false);
+    }
+  };
+
+  // Load trending books (popular recent books)
+  const loadTrendingBooks = async () => {
+    try {
+      // Search for popular books from recent years (2020-2024)
+      const queries = [
+        'subject:fiction trending',
+        'subject:romance popular',
+        'subject:fantasy bestseller',
+        'subject:mystery thriller'
+      ];
+      
+      const allBooks = [];
+      
+      for (const query of queries) {
+        const response = await fetch(
+          `https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&limit=8&sort=rating&publish_year=2020,2021,2022,2023,2024`
+        );
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data.docs) {
+            allBooks.push(...data.docs);
+          }
+        }
+      }
+      
+      // Remove duplicates and filter books with covers
+      const uniqueBooks = allBooks
+        .filter((book, index, self) => 
+          index === self.findIndex(b => b.key === book.key) && 
+          book.cover_i && 
+          book.title && 
+          book.author_name
+        )
+        .slice(0, 20);
+      
+      setTrendingBooks(uniqueBooks);
+    } catch (error) {
+      console.error('Error loading trending books:', error);
+      // Fallback to a simple search if the complex query fails
+      try {
+        const response = await fetch(
+          `https://openlibrary.org/search.json?q=fiction&limit=20&sort=rating`
+        );
+        if (response.ok) {
+          const data = await response.json();
+          setTrendingBooks(data.docs?.filter(book => book.cover_i) || []);
+        }
+      } catch (fallbackError) {
+        console.error('Fallback trending books failed:', fallbackError);
+      }
+    }
+  };
+
+  // Load classic books (books published before 1980)
+  const loadClassicBooks = async () => {
+    try {
+      const queries = [
+        'subject:classics literature',
+        'subject:american_literature',
+        'subject:english_literature',
+        'subject:world_literature'
+      ];
+      
+      const allBooks = [];
+      
+      for (const query of queries) {
+        const response = await fetch(
+          `https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&limit=8&sort=rating&publish_year=[* TO 1980]`
+        );
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data.docs) {
+            allBooks.push(...data.docs);
+          }
+        }
+      }
+      
+      // Remove duplicates and filter books with covers
+      const uniqueBooks = allBooks
+        .filter((book, index, self) => 
+          index === self.findIndex(b => b.key === book.key) && 
+          book.cover_i && 
+          book.title && 
+          book.author_name &&
+          book.first_publish_year && 
+          book.first_publish_year <= 1980
+        )
+        .slice(0, 20);
+      
+      setClassicBooks(uniqueBooks);
+    } catch (error) {
+      console.error('Error loading classic books:', error);
+      // Fallback search
+      try {
+        const response = await fetch(
+          `https://openlibrary.org/search.json?q=classics&limit=20&sort=rating`
+        );
+        if (response.ok) {
+          const data = await response.json();
+          setClassicBooks(data.docs?.filter(book => book.cover_i && book.first_publish_year && book.first_publish_year <= 1980) || []);
+        }
+      } catch (fallbackError) {
+        console.error('Fallback classic books failed:', fallbackError);
+      }
+    }
+  };
+
+  // Load books we love (highly rated books across genres)
+  const loadBooksWeLove = async () => {
+    try {
+      const queries = [
+        'subject:award_winners',
+        'subject:bestsellers',
+        'subject:prize_winners',
+        'subject:literary_fiction'
+      ];
+      
+      const allBooks = [];
+      
+      for (const query of queries) {
+        const response = await fetch(
+          `https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&limit=8&sort=rating`
+        );
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data.docs) {
+            allBooks.push(...data.docs);
+          }
+        }
+      }
+      
+      // Remove duplicates and filter books with covers
+      const uniqueBooks = allBooks
+        .filter((book, index, self) => 
+          index === self.findIndex(b => b.key === book.key) && 
+          book.cover_i && 
+          book.title && 
+          book.author_name
+        )
+        .slice(0, 20);
+      
+      setBooksWeLove(uniqueBooks);
+    } catch (error) {
+      console.error('Error loading books we love:', error);
+      // Fallback search
+      try {
+        const response = await fetch(
+          `https://openlibrary.org/search.json?q=award winners&limit=20&sort=rating`
+        );
+        if (response.ok) {
+          const data = await response.json();
+          setBooksWeLove(data.docs?.filter(book => book.cover_i) || []);
+        }
+      } catch (fallbackError) {
+        console.error('Fallback books we love failed:', fallbackError);
+      }
+    }
+  };
 
   // Scroll functions for different sections
   const scrollSection = (ref, direction) => {
@@ -370,6 +451,25 @@ export const Home = () => {
     );
   };
 
+  // Loading component for sections
+  const SectionLoading = () => (
+    <div className="recommendations-grid">
+      {[...Array(8)].map((_, index) => (
+        <div key={index} className="book-card loading-card">
+          <div className="book-cover">
+            <div className="book-cover-holder loading-placeholder">
+              <span>Loading...</span>
+            </div>
+          </div>
+          <div className="book-information">
+            <div className="loading-text"></div>
+            <div className="loading-text short"></div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+
   // Render book cards
   const renderBookCards = () => {
     if (!hasSearched) {
@@ -589,9 +689,13 @@ export const Home = () => {
                 
                 <div className="recommendations-scroll-wrapper">
                   <div className="recommendations-grid" ref={trendingRef}>
-                    {trendingBooks.map(book => (
-                      <RecommendationCard key={book.key} book={book} />
-                    ))}
+                    {sectionsLoading ? (
+                      <SectionLoading />
+                    ) : (
+                      trendingBooks.map(book => (
+                        <RecommendationCard key={book.key} book={book} />
+                      ))
+                    )}
                   </div>
                 </div>
                 
@@ -621,9 +725,13 @@ export const Home = () => {
                 
                 <div className="recommendations-scroll-wrapper">
                   <div className="recommendations-grid" ref={classicsRef}>
-                    {classicBooks.map(book => (
-                      <RecommendationCard key={book.key} book={book} />
-                    ))}
+                    {sectionsLoading ? (
+                      <SectionLoading />
+                    ) : (
+                      classicBooks.map(book => (
+                        <RecommendationCard key={book.key} book={book} />
+                      ))
+                    )}
                   </div>
                 </div>
                 
@@ -653,9 +761,13 @@ export const Home = () => {
                 
                 <div className="recommendations-scroll-wrapper">
                   <div className="recommendations-grid" ref={booksWeLoveRef}>
-                    {booksWeLove.map(book => (
-                      <RecommendationCard key={book.key} book={book} />
-                    ))}
+                    {sectionsLoading ? (
+                      <SectionLoading />
+                    ) : (
+                      booksWeLove.map(book => (
+                        <RecommendationCard key={book.key} book={book} />
+                      ))
+                    )}
                   </div>
                 </div>
                 
