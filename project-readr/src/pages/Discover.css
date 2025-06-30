@@ -1,0 +1,97 @@
+.discover-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 20px;
+  background-color: #f5f5f5;
+}
+
+.discover-title {
+  font-size: 2rem;
+  margin-bottom: 2rem;
+  color: #333;
+}
+
+.book-card-container {
+  position: relative;
+  width: 100%;
+  max-width: 500px;
+  height: 650px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.book-card {
+  width: 100%;
+  height: 100%;
+  max-width: 400px;
+  max-height: 600px;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  padding: 25px;
+  user-select: none;
+}
+
+.book-image {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(0deg, rgba(227, 227, 227, 1) 0%, rgba(227, 227, 227, 1) 100%);
+  margin-bottom: 20px;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.book-cover {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+.book-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 8px;
+  color: #333;
+}
+
+.book-author {
+  font-size: 1.1rem;
+  margin-bottom: 12px;
+  color: #666;
+}
+
+.book-genres {
+  font-size: 1rem;
+  color: #666;
+  margin-top: 10px;
+  font-weight: 500;
+}
+
+.swipe-instructions {
+  margin-top: 20px;
+  text-align: center;
+  color: #666;
+  font-style: italic;
+}
+
+/* Swipe animation classes */
+.book-card.swiping-right {
+  transform: translateX(50px) rotate(5deg);
+  opacity: 0.7;
+  background-color: rgba(200, 255, 200, 0.3);
+}
+
+.book-card.swiping-left {
+  transform: translateX(-50px) rotate(-5deg);
+  opacity: 0.7;
+  background-color: rgba(255, 200, 200, 0.3);
+}
