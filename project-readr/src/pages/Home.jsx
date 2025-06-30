@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from "react-router-dom"
 import './Home.css';
 
@@ -12,9 +12,126 @@ export const Home = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [hasSearched, setHasSearched] = useState(false);
+  const [trendingBooks, setTrendingBooks] = useState([]);
+  const [classicBooks, setClassicBooks] = useState([]);
+  const [booksWeLove, setBooksWeLove] = useState([]);
   
   const navigate = useNavigate();
+  const trendingRef = useRef(null);
+  const classicsRef = useRef(null);
+  const booksWeLoveRef = useRef(null);
   const resultsPerPage = 50;
+
+  // Trending books - popular contemporary titles
+  const initialTrendingBooks = [
+    {
+      key: '/works/OL24280842W',
+      title: 'Fourth Wing',
+      author_name: ['Rebecca Yarros'],
+      first_publish_year: 2023,
+      cover_i: 13518504
+    },
+    {
+      key: '/works/OL19993487W',
+      title: 'The Seven Husbands of Evelyn Hugo',
+      author_name: ['Taylor Jenkins Reid'],
+      first_publish_year: 2017,
+      cover_i: 8236945
+    },
+    {
+      key: '/works/OL20028261W',
+      title: 'It Ends with Us',
+      author_name: ['Colleen Hoover'],
+      first_publish_year: 2016,
+      cover_i: 8204516
+    },
+    {
+      key: '/works/OL21177379W',
+      title: 'The Silent Patient',
+      author_name: ['Alex Michaelides'],
+      first_publish_year: 2019,
+      cover_i: 9260156
+    }
+  ];
+
+  // Classic books - timeless literature
+  const initialClassicBooks = [
+    {
+      key: '/works/OL455969W',
+      title: 'Pride and Prejudice',
+      author_name: ['Jane Austen'],
+      first_publish_year: 1813,
+      cover_i: 8506154
+    },
+    {
+      key: '/works/OL45804W',
+      title: 'The Great Gatsby',
+      author_name: ['F. Scott Fitzgerald'],
+      first_publish_year: 1925,
+      cover_i: 8225261
+    },
+    {
+      key: '/works/OL362427W',
+      title: 'To Kill a Mockingbird',
+      author_name: ['Harper Lee'],
+      first_publish_year: 1960,
+      cover_i: 8486371
+    },
+    {
+      key: '/works/OL27349W',
+      title: '1984',
+      author_name: ['George Orwell'],
+      first_publish_year: 1949,
+      cover_i: 8194465
+    }
+  ];
+
+  // Books we love - staff picks and community favorites
+  const initialBooksWeLove = [
+    {
+      key: '/works/OL82592W',
+      title: 'The Lord of the Rings',
+      author_name: ['J.R.R. Tolkien'],
+      first_publish_year: 1954,
+      cover_i: 6979861
+    },
+    {
+      key: '/works/OL5735363W',
+      title: 'Educated',
+      author_name: ['Tara Westover'],
+      first_publish_year: 2018,
+      cover_i: 8909498
+    },
+    {
+      key: '/works/OL1818892W',
+      title: 'The Handmaid\'s Tale',
+      author_name: ['Margaret Atwood'],
+      first_publish_year: 1985,
+      cover_i: 8506161
+    },
+    {
+      key: '/works/OL15062W',
+      title: 'Beloved',
+      author_name: ['Toni Morrison'],
+      first_publish_year: 1987,
+      cover_i: 8194467
+    }
+  ];
+
+  // Load default books on component mount
+  useEffect(() => {
+    setTrendingBooks(initialTrendingBooks);
+    setClassicBooks(initialClassicBooks);
+    setBooksWeLove(initialBooksWeLove);
+  }, []);
+
+  // Scroll functions for different sections
+  const scrollSection = (ref, direction) => {
+    if (ref.current) {
+      const scrollAmount = direction === 'left' ? -300 : 300;
+      ref.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    }
+  };
 
   // Helper function to truncate text
   const truncateText = (text, maxLength = 50) => {
@@ -119,7 +236,6 @@ export const Home = () => {
     }
   };
 
-
   // Handle search
   const handleSearch = (e) => {
     if (e) e.preventDefault();
@@ -142,22 +258,22 @@ export const Home = () => {
     }
   }, [filterBy]);
 
-    // Handle book card click
-    const handleCardClick = (book) => {
-      // Store book data for the next page
-      localStorage.setItem('selectedBook', JSON.stringify(book));
-      
-      if (filterBy === 'Author') {
-        // For author searches, navigate to author page with first author
-        const authorName = Array.isArray(book.author_name) && book.author_name.length > 0 
-          ? book.author_name[0]
-          : 'Unknown Author';
-        navigate('/Author', { state: { authorName } });
-      } else {
-        // For title/all searches, navigate to book page
-        navigate('/Book');
-      }
-    };
+  // Handle book card click
+  const handleCardClick = (book) => {
+    // Store book data for the next page
+    localStorage.setItem('selectedBook', JSON.stringify(book));
+    
+    if (filterBy === 'Author') {
+      // For author searches, navigate to author page with first author
+      const authorName = Array.isArray(book.author_name) && book.author_name.length > 0 
+        ? book.author_name[0]
+        : 'Unknown Author';
+      navigate('/Author', { state: { authorName } });
+    } else {
+      // For title/all searches, navigate to book page
+      navigate('/Book');
+    }
+  };
 
   // Handle add to reading list
   const handleAddToReadingList = (e, book, index) => {
@@ -200,114 +316,8 @@ export const Home = () => {
     }
   };
 
-  // Render book cards
-  const renderBookCards = () => {
-  if (!hasSearched) {
-    return (
-      <div className="book-card">
-        <div className='book-cover'>
-          <div className="book-cover-holder">
-            <span>Book Cover</span>
-          </div>
-        </div>
-        <div className='book-information'>
-          <h3 className="book-titles">The Great Gatsby</h3>
-          <p className="book-authors">by F. Scott Fitzgerald</p>
-          <button className="add-to-list-btn">
-            Add to Reading List
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  if (isLoading && searchResults.length === 0) {
-    return <div className="loading">Searching for books...</div>;
-  }
-
-  if (error) {
-    return (
-      <div className="error-message">
-        <h3>Error</h3>
-        <p>{error}</p>
-      </div>
-    );
-  }
-
-  if (searchResults.length === 0 && hasSearched) {
-    return (
-      <div className="no-results">
-        <h3>No results found</h3>
-        <p>Try a different search term or check your spelling.</p>
-      </div>
-    );
-  }
-
-  // 📘 If author view
-  if (filterBy === 'Author' && searchResults.length > 0) {
-    const uniqueAuthors = new Map();
-
-    searchResults.forEach(book => {
-      if (Array.isArray(book.author_name)) {
-        book.author_name.forEach((authorName, i) => {
-          if (!uniqueAuthors.has(authorName)) {
-            uniqueAuthors.set(authorName, {
-              name: authorName,
-              key: Array.isArray(book.author_key) ? book.author_key[i] : null,
-              books: [book.title]
-            });
-          } else {
-            const existing = uniqueAuthors.get(authorName);
-            if (book.title && !existing.books.includes(book.title)) {
-              existing.books.push(book.title);
-            }
-          }
-        });
-      }
-    });
-
-    return Array.from(uniqueAuthors.values()).map((author, index) => (
-    <div className="book-card" key={index} onClick={() => handleCardClick({
-      author_name: [author.name],
-      author_key: [author.key],
-      title: author.books[0] || 'Unknown Book'
-    })}>
-      
-      <div className="book-cover">
-        <div className="book-cover-holder">
-          <img
-            src={`https://covers.openlibrary.org/a/olid/${author.key}-M.jpg`}
-            alt={`Photo of ${author.name}`}
-            className="book-cover-holder"
-            onError={(e) => {
-              e.target.style.display = 'none';
-              e.target.nextElementSibling.style.display = 'block';
-            }}
-          />
-          <div className="book-cover-holder" style={{ display: 'none' }}>
-            <span>Author Photo</span>
-          </div>
-        </div>
-      </div>
-
-      <div className="author-info">
-        <h3 className="book-titles" title={author.name}>
-          {truncateText(author.name, 50)}
-        </h3>
-        <p className="book-authors">
-          {author.books.length} book{author.books.length !== 1 ? 's' : ''}
-        </p>
-        <p className="author-books-written">
-          {truncateText(author.books.join(', '), 80)}
-        </p>
-      </div>
-
-    </div>
-  ));
-  }
-
-  // 📚 Otherwise, render books
-  return searchResults.map((book, index) => {
+  // Recommendation Card Component
+  const RecommendationCard = ({ book }) => {
     const title = book.title?.trim() || "No title available";
     const author = Array.isArray(book.author_name) && book.author_name.length > 0
       ? book.author_name.filter(name => name?.trim()).slice(0, 2).join(", ")
@@ -316,7 +326,7 @@ export const Home = () => {
     const publishYear = book.first_publish_year || '';
 
     return (
-      <div key={`${book.key}-${index}`} className="book-card" onClick={() => handleCardClick(book)}>
+      <div className="book-card" onClick={() => handleCardClick(book)}>
         <div className='book-cover'>
           {coverId ? (
             <>
@@ -341,39 +351,185 @@ export const Home = () => {
         </div>
       
         <div className='book-information'>
-          <h3 
-              className={`book-titles ${
-                title.length > 30 ? 'very-long' : 
-                title.length > 20 ? 'long' : ''
-              }`} 
-              title={title}
-          >
-              {truncateText(title, 50)}
+          <h3 className="book-titles" title={title}>
+            {truncateText(title, 50)}
           </h3>
-          <p 
-              className={`book-authors ${
-                author.length > 25 ? 'very-long' : 
-                author.length > 15 ? 'long' : ''
-              }`} 
-              title={author}
-          >
-              by {truncateText(author, 40)}
+          <p className="book-authors" title={author}>
+            by {truncateText(author, 40)}
           </p>
           {publishYear && <p className="book-year">({publishYear})</p>}
-          <div className="home-btn-section">
-              <button 
-                className="add-to-list-btn"
-                onClick={(e) => handleAddToReadingList(e, book, index)}
-              >
-                Add to Reading List
-              </button>
-          </div>
+          
+          <button 
+            className="add-to-list-btn"
+            onClick={(e) => handleAddToReadingList(e, book, 0)}
+          >
+            Add to Reading List
+          </button>
         </div>
       </div>
     );
-  });
-};
+  };
 
+  // Render book cards
+  const renderBookCards = () => {
+    if (!hasSearched) {
+      return (
+        <div className="book-card">
+          <div className='book-cover'>
+            <div className="book-cover-holder">
+              <span>Book Cover</span>
+            </div>
+          </div>
+          <div className='book-information'>
+            <h3 className="book-titles">The Great Gatsby</h3>
+            <p className="book-authors">by F. Scott Fitzgerald</p>
+            <button className="add-to-list-btn">
+              Add to Reading List
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    if (isLoading && searchResults.length === 0) {
+      return <div className="loading">Searching for books...</div>;
+    }
+
+    if (error) {
+      return (
+        <div className="error-message">
+          <h3>Error</h3>
+          <p>{error}</p>
+        </div>
+      );
+    }
+
+    if (searchResults.length === 0 && hasSearched) {
+      return (
+        <div className="no-results">
+          <h3>No results found</h3>
+          <p>Try a different search term or check your spelling.</p>
+        </div>
+      );
+    }
+
+    // 📘 If author view
+    if (filterBy === 'Author' && searchResults.length > 0) {
+      const uniqueAuthors = new Map();
+
+      searchResults.forEach(book => {
+        if (Array.isArray(book.author_name)) {
+          book.author_name.forEach((authorName, i) => {
+            if (!uniqueAuthors.has(authorName)) {
+              uniqueAuthors.set(authorName, {
+                name: authorName,
+                key: Array.isArray(book.author_key) ? book.author_key[i] : null,
+                books: [book.title]
+              });
+            } else {
+              const existing = uniqueAuthors.get(authorName);
+              if (book.title && !existing.books.includes(book.title)) {
+                existing.books.push(book.title);
+              }
+            }
+          });
+        }
+      });
+
+      return Array.from(uniqueAuthors.values()).map((author, index) => (
+      <div className="book-card" key={index} onClick={() => handleCardClick({
+        author_name: [author.name],
+        author_key: [author.key],
+        title: author.books[0] || 'Unknown Book'
+      })}>
+        
+        <div className="book-cover">
+          <div className="book-cover-holder">
+            <img
+              src={`https://covers.openlibrary.org/a/olid/${author.key}-M.jpg`}
+              alt={`Photo of ${author.name}`}
+              className="book-cover-holder"
+              onError={(e) => {
+                e.target.style.display = 'none';
+                e.target.nextElementSibling.style.display = 'block';
+              }}
+            />
+            <div className="book-cover-holder" style={{ display: 'none' }}>
+              <span>Author Photo</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="book-information">
+          <h3 className="book-titles" title={author.name}>
+            {truncateText(author.name, 50)}
+          </h3>
+          <p className="book-authors">
+            {author.books.length} book{author.books.length !== 1 ? 's' : ''}
+          </p>
+          <p className="book-year">
+            {truncateText(author.books.join(', '), 80)}
+          </p>
+        </div>
+
+      </div>
+    ));
+    }
+
+    // 📚 Otherwise, render books
+    return searchResults.map((book, index) => {
+      const title = book.title?.trim() || "No title available";
+      const author = Array.isArray(book.author_name) && book.author_name.length > 0
+        ? book.author_name.filter(name => name?.trim()).slice(0, 2).join(", ")
+        : "Unknown author";
+      const coverId = book.cover_i?.toString().trim() ? book.cover_i : null;
+      const publishYear = book.first_publish_year || '';
+
+      return (
+        <div key={`${book.key}-${index}`} className="book-card" onClick={() => handleCardClick(book)}>
+          <div className='book-cover'>
+            {coverId ? (
+              <>
+                <img 
+                  src={`https://covers.openlibrary.org/b/id/${coverId}-M.jpg`}
+                  alt={`Cover of ${title}`} 
+                  className="book-cover-holder"
+                  onError={(e) => {
+                    e.target.style.display = 'none';
+                    e.target.nextElementSibling.style.display = 'block';
+                  }}
+                />
+                <div className="book-cover-holder" style={{display: 'none'}}>
+                  <span>Book Cover</span>
+                </div>
+              </>
+            ) : (
+              <div className="book-cover-holder">
+                <span>Book Cover</span>
+              </div>
+            )}
+          </div>
+        
+          <div className='book-information'>
+            <h3 className="book-titles" title={title}>
+              {truncateText(title, 50)}
+            </h3>
+            <p className="book-authors" title={author}>
+              by {truncateText(author, 40)}
+            </p>
+            {publishYear && <p className="book-year">({publishYear})</p>}
+            
+            <button 
+              className="add-to-list-btn"
+              onClick={(e) => handleAddToReadingList(e, book, index)}
+            >
+              Add to Reading List
+            </button>
+          </div>
+        </div>
+      );
+    });
+  };
 
   const totalPages = Math.ceil(totalResults / resultsPerPage);
   const hasMoreResults = currentPage < totalPages;
@@ -415,9 +571,113 @@ export const Home = () => {
         </div>
       </header>
 
-      <div className="books-grid-home">
-        {renderBookCards()}
-      </div>
+      {/* Show default sections when no search has been performed */}
+      {!hasSearched && (
+        <div className="home-sections">
+          {/* Trending Books Section */}
+          <div className="recommendations-section">
+            <div className="container">
+              <h2 className="section-title">Trending Books</h2>
+              <div className="recommendations-container">
+                <button 
+                  className="scroll-button left" 
+                  onClick={() => scrollSection(trendingRef, 'left')}
+                  aria-label="Scroll left"
+                >
+                  &#8249;
+                </button>
+                
+                <div className="recommendations-scroll-wrapper">
+                  <div className="recommendations-grid" ref={trendingRef}>
+                    {trendingBooks.map(book => (
+                      <RecommendationCard key={book.key} book={book} />
+                    ))}
+                  </div>
+                </div>
+                
+                <button 
+                  className="scroll-button right" 
+                  onClick={() => scrollSection(trendingRef, 'right')}
+                  aria-label="Scroll right"
+                >
+                  &#8250;
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Classic Books Section */}
+          <div className="recommendations-section">
+            <div className="container">
+              <h2 className="section-title">Classic Books</h2>
+              <div className="recommendations-container">
+                <button 
+                  className="scroll-button left" 
+                  onClick={() => scrollSection(classicsRef, 'left')}
+                  aria-label="Scroll left"
+                >
+                  &#8249;
+                </button>
+                
+                <div className="recommendations-scroll-wrapper">
+                  <div className="recommendations-grid" ref={classicsRef}>
+                    {classicBooks.map(book => (
+                      <RecommendationCard key={book.key} book={book} />
+                    ))}
+                  </div>
+                </div>
+                
+                <button 
+                  className="scroll-button right" 
+                  onClick={() => scrollSection(classicsRef, 'right')}
+                  aria-label="Scroll right"
+                >
+                  &#8250;
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Books We Love Section */}
+          <div className="recommendations-section">
+            <div className="container">
+              <h2 className="section-title">Books We Love</h2>
+              <div className="recommendations-container">
+                <button 
+                  className="scroll-button left" 
+                  onClick={() => scrollSection(booksWeLoveRef, 'left')}
+                  aria-label="Scroll left"
+                >
+                  &#8249;
+                </button>
+                
+                <div className="recommendations-scroll-wrapper">
+                  <div className="recommendations-grid" ref={booksWeLoveRef}>
+                    {booksWeLove.map(book => (
+                      <RecommendationCard key={book.key} book={book} />
+                    ))}
+                  </div>
+                </div>
+                
+                <button 
+                  className="scroll-button right" 
+                  onClick={() => scrollSection(booksWeLoveRef, 'right')}
+                  aria-label="Scroll right"
+                >
+                  &#8250;
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Show search results when search has been performed */}
+      {hasSearched && (
+        <div className="books-grid">
+          {renderBookCards()}
+        </div>
+      )}
 
       {/* Load more button for pagination */}
       {hasSearched && searchResults.length > 0 && hasMoreResults && (

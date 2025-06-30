@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './Homepage.css';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+
 
 export const Homepage = () => {
   // State for different sections
@@ -9,6 +10,7 @@ export const Homepage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('All');
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
   
   // Ref for recommendations scroll container
   const recommendationsRef = useRef(null);
@@ -233,7 +235,7 @@ export const Homepage = () => {
               {['Books', 'Authors', 'Discover'].map(tab => (
                 <button
                   key={tab}
-                  onClick={() => handleTabChange(tab)}
+                  onClick={() => tab === 'Discover' ? navigate('/Discover') : handleTabChange(tab)}
                   className={`tab-button ${activeTab === tab ? 'active' : ''}`}
                 >
                   {tab}

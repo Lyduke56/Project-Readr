@@ -13,6 +13,8 @@ import { Profile } from './pages/Profile'
 import { ReadingList } from './pages/ReadingList'
 import  Author  from './pages/Author'
 import { Book } from './pages/Book' 
+import DiscoverPage from './pages/Discover'
+import { ResetPass } from './pages/ResetPass'
 
 function App() {
 
@@ -32,6 +34,9 @@ function App() {
           <Route path="/ReadingList" element={<ReadingList />} />
           <Route path="/Author" element={<Author />} />
           <Route path="/Book" element={<Book />} />
+          <Route path="/Discover" element={<DiscoverPage />} />
+          <Route path="/ResetPass" element={<ResetPass />} />
+
         </Route>
       </Routes>
     </Router>

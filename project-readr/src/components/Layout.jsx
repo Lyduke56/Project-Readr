@@ -4,8 +4,9 @@ import { Outlet, useLocation } from "react-router-dom"
 
 export function Layout(){
     const location = useLocation();
-    const isHomepage = location.pathname === "/Homepage" || location.pathname === "/Profile" || location.pathname ==="/ReadingList" || location.pathname ==="/Home" || location.pathname ==="/Book"  || location.pathname ==="/Author" ;
-    
+
+    const isHomepage = location.pathname === "/Homepage" || location.pathname === "/Profile" || location.pathname ==="/ReadingList" || location.pathname ==="/Home" || location.pathname ==="/Discover" || location.pathname ==="/Book" || location.pathname ==="/Author";
+
 
     return(
         <>
