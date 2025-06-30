@@ -20,7 +20,7 @@ export const Home = () => {
   const trendingRef = useRef(null);
   const classicsRef = useRef(null);
   const booksWeLoveRef = useRef(null);
-  const resultsPerPage = 40;
+  const resultsPerPage = 50;
 
   // Trending books - popular contemporary titles
   const initialTrendingBooks = [
@@ -372,6 +372,25 @@ export const Home = () => {
 
   // Render book cards
   const renderBookCards = () => {
+    if (!hasSearched) {
+      return (
+        <div className="book-card">
+          <div className='book-cover'>
+            <div className="book-cover-holder">
+              <span>Book Cover</span>
+            </div>
+          </div>
+          <div className='book-information'>
+            <h3 className="book-titles">The Great Gatsby</h3>
+            <p className="book-authors">by F. Scott Fitzgerald</p>
+            <button className="add-to-list-btn">
+              Add to Reading List
+            </button>
+          </div>
+        </div>
+      );
+    }
+
     if (isLoading && searchResults.length === 0) {
       return <div className="loading">Searching for books...</div>;
     }
