@@ -14,7 +14,7 @@ export const Home = () => {
   const [hasSearched, setHasSearched] = useState(false);
   
   const navigate = useNavigate();
-  const resultsPerPage = 40;
+  const resultsPerPage = 50;
 
   // Helper function to truncate text
   const truncateText = (text, maxLength = 50) => {
@@ -290,14 +290,14 @@ export const Home = () => {
         </div>
       </div>
 
-      <div className="book-information">
+      <div className="author-info">
         <h3 className="book-titles" title={author.name}>
           {truncateText(author.name, 50)}
         </h3>
         <p className="book-authors">
           {author.books.length} book{author.books.length !== 1 ? 's' : ''}
         </p>
-        <p className="book-year">
+        <p className="author-books-written">
           {truncateText(author.books.join(', '), 80)}
         </p>
       </div>
@@ -341,20 +341,33 @@ export const Home = () => {
         </div>
       
         <div className='book-information'>
-          <h3 className="book-titles" title={title}>
-            {truncateText(title, 50)}
+          <h3 
+              className={`book-titles ${
+                title.length > 30 ? 'very-long' : 
+                title.length > 20 ? 'long' : ''
+              }`} 
+              title={title}
+          >
+              {truncateText(title, 50)}
           </h3>
-          <p className="book-authors" title={author}>
-            by {truncateText(author, 40)}
+          <p 
+              className={`book-authors ${
+                author.length > 25 ? 'very-long' : 
+                author.length > 15 ? 'long' : ''
+              }`} 
+              title={author}
+          >
+              by {truncateText(author, 40)}
           </p>
           {publishYear && <p className="book-year">({publishYear})</p>}
-          
-          <button 
-            className="add-to-list-btn"
-            onClick={(e) => handleAddToReadingList(e, book, index)}
-          >
-            Add to Reading List
-          </button>
+          <div className="home-btn-section">
+              <button 
+                className="add-to-list-btn"
+                onClick={(e) => handleAddToReadingList(e, book, index)}
+              >
+                Add to Reading List
+              </button>
+          </div>
         </div>
       </div>
     );
@@ -402,7 +415,7 @@ export const Home = () => {
         </div>
       </header>
 
-      <div className="books-grid">
+      <div className="books-grid-home">
         {renderBookCards()}
       </div>
 
