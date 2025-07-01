@@ -10,7 +10,9 @@ export function Profile() {
   const user = session?.user;
 
   const [profileData, setProfileData] = useState(null);
+  const [readingList, setReadingList] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [readingListLoading, setReadingListLoading] = useState(true);
   const [error, setError] = useState('');
 
   // Fetch user profile data
@@ -45,6 +47,82 @@ export function Profile() {
     fetchProfile();
   }, [user?.id]);
 
+  // Fetch user's reading list
+  useEffect(() => {
+    const fetchReadingList = async () => {
+      if (!user?.id) {
+        setReadingListLoading(false);
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from('reading_list')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('added_at', { ascending: false });
+
+        if (error) {
+          console.error('Error fetching reading list:', error);
+        } else {
+          setReadingList(data || []);
+        }
+      } catch (err) {
+        console.error('Error fetching reading list:', err);
+      } finally {
+        setReadingListLoading(false);
+      }
+    };
+
+    fetchReadingList();
+  }, [user?.id]);
+
+  // Remove book from reading list
+  const removeFromReadingList = async (bookKey) => {
+    if (!user?.id) return;
+
+    try {
+      const { error } = await supabase
+        .from('reading_list')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('book_key', bookKey);
+
+      if (error) {
+        console.error('Error removing book:', error);
+        alert('Failed to remove book from reading list');
+      } else {
+        // Update local state
+        setReadingList(prev => prev.filter(book => book.book_key !== bookKey));
+        
+        // Also remove from localStorage
+        const localReadingList = JSON.parse(localStorage.getItem('readingList') || '[]');
+        const updatedLocalList = localReadingList.filter(book => book.key !== bookKey);
+        localStorage.setItem('readingList', JSON.stringify(updatedLocalList));
+        
+        alert('Book removed from reading list');
+      }
+    } catch (err) {
+      console.error('Error removing book:', err);
+      alert('An error occurred while removing the book');
+    }
+  };
+
+  // Handle book click - navigate to book details
+  const handleBookClick = (book) => {
+    // Convert reading list format back to search result format
+    const bookData = {
+      key: book.book_key,
+      title: book.title,
+      author_name: book.author ? [book.author] : ['Unknown Author'],
+      cover_i: book.cover_id,
+      first_publish_year: book.publish_year
+    };
+    
+    localStorage.setItem('selectedBook', JSON.stringify(bookData));
+    navigate('/Book');
+  };
+
   const formatDate = (dateString) => {
     if (!dateString) return 'Not specified';
     return new Date(dateString).toLocaleDateString('en-US', {
@@ -56,7 +134,7 @@ export function Profile() {
 
   const formatGender = (gender) => {
     if (!gender) return 'Not specified';
-    return gender.charAt(0).toUpperCase() + gender.slice(1).replace('_', ' ');
+    return gender.charAt(0).toUpperCase() + gender.slice(1).replaceAll('_', ' ');
   };
 
   const handleSignOut = async () => {
@@ -68,12 +146,117 @@ export function Profile() {
     }
   };
 
+  // Helper function to truncate text
+  const truncateText = (text, maxLength = 40) => {
+    if (!text || text.length <= maxLength) return text;
+    return text.substring(0, maxLength).trim() + '...';
+  };
+
+  // Reading List Component
+  const ReadingListSection = () => {
+    if (readingListLoading) {
+      return (
+        <div className="profile-section">
+          <h3>My Reading List</h3>
+          <div className="reading-list-loading">
+            <div className="loading-spinner"></div>
+            <p>Loading your reading list...</p>
+          </div>
+        </div>
+      );
+    }
+
+    if (readingList.length === 0) {
+      return (
+        <div className="profile-section">
+          <h3>My Reading List</h3>
+          <div className="empty-reading-list">
+            <p>📚 Your reading list is empty</p>
+            <p>Start exploring books and add them to your list!</p>
+            <Link to="/" className="browse-books-btn">
+              Browse Books
+            </Link>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="profile-section">
+        <h3>My Reading List ({readingList.length})</h3>
+        <div className="reading-list-grid">
+          {readingList.map((book) => (
+            <div key={book.id} className="reading-list-book-card">
+              <div className="book-cover" onClick={() => handleBookClick(book)}>
+                {book.cover_id ? (
+                  <>
+                    <img 
+                      src={`https://covers.openlibrary.org/b/id/${book.cover_id}-M.jpg`}
+                      alt={`Cover of ${book.title}`} 
+                      className="book-cover-image"
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                        e.target.nextElementSibling.style.display = 'flex';
+                      }}
+                    />
+                    <div className="book-cover-placeholder" style={{display: 'none'}}>
+                      <span>📖</span>
+                    </div>
+                  </>
+                ) : (
+                  <div className="book-cover-placeholder">
+                    <span>📖</span>
+                  </div>
+                )}
+              </div>
+              
+              <div className="book-info">
+                <h4 className="book-title" title={book.title}>
+                  {truncateText(book.title, 50)}
+                </h4>
+                <p className="book-author" title={book.author}>
+                  by {truncateText(book.author, 35)}
+                </p>
+                {book.publish_year && (
+                  <p className="book-year">({book.publish_year})</p>
+                )}
+                <p className="book-added-date">
+                  Added {formatDate(book.added_at)}
+                </p>
+                
+                <div className="book-actions">
+                  <button 
+                    className="view-book-btn"
+                    onClick={() => handleBookClick(book)}
+                  >
+                    View Details
+                  </button>
+                  <button 
+                    className="remove-book-btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (window.confirm('Are you sure you want to remove this book from your reading list?')) {
+                        removeFromReadingList(book.book_key);
+                      }
+                    }}
+                  >
+                    Remove
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   if (loading) {
     return (
       <div className="loading-container">
         <div className="loading-content">
           <div className="loading-spinner"></div>
-          <p className="loading-text">Loading books...</p>
+          <p className="loading-text">Loading profile...</p>
         </div>
       </div>
     );
@@ -205,7 +388,10 @@ export function Profile() {
         <div className="profile-stats">
           <div className="stat-card">
             <h4>Reading Stats</h4>
-            <p>Coming soon...</p>
+            <div className="stat-number">
+              <span className="stat-value">{readingList.length}</span>
+              <span className="stat-label">Books in Reading List</span>
+            </div>
           </div>
           
           <div className="stat-card">
@@ -213,10 +399,9 @@ export function Profile() {
             <p>Coming soon...</p>
           </div>
           
-          <div className="stat-card">
-            <h4>Reading Goals</h4>
-            <p>Coming soon...</p>
-          </div>
+          {/* Reading List Section - Now displayed prominently */}
+         <ReadingListSection />
+         
         </div>
       </div>
     </div>
