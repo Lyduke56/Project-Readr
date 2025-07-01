@@ -220,6 +220,34 @@ export const Home = () => {
     return text.substring(0, maxLength).trim() + '...';
   };
 
+  // Helper function to get title class based on length
+  const getTitleClass = (title) => {
+      if (!title) return 'book-titles';
+      const length = title.length;
+      if (length > 45) return 'book-titles very-long-title';
+      if (length > 30) return 'book-titles long-title';
+      return 'book-titles';
+    };
+
+    // Helper function to get author class based on length
+    const getAuthorClass = (author) => {
+      if (!author) return 'book-authors';
+      const length = author.length;
+      if (length > 40) return 'book-authors very-long-author';
+      if (length > 20) return 'book-authors long-author';
+      return 'book-authors';
+    };
+
+    // Helper function to get year class (smaller if title/author are long)
+    const getYearClass = (title, author) => {
+      const titleLength = title ? title.length : 0;
+      const authorLength = author ? author.length : 0;
+      const totalLength = titleLength + authorLength;
+      
+      if (totalLength > 80) return 'book-year small-year';
+      return 'book-year';
+    };
+
   // Fetch search results
   const fetchDataSearch = async (page = 1, searchQuery = searchTerm) => {
     if (!searchQuery?.trim()) {
@@ -407,39 +435,40 @@ export const Home = () => {
     const publishYear = book.first_publish_year || '';
 
     return (
-      <div className="book-card" onClick={() => handleCardClick(book)}>
-        <div className='book-cover'>
+      <div className="books-card" onClick={() => handleCardClick(book)}>
+        <div className='books-cover'>
           {coverId ? (
             <>
               <img 
                 src={`https://covers.openlibrary.org/b/id/${coverId}-M.jpg`}
                 alt={`Cover of ${title}`} 
-                className="book-cover-holder"
+                className="books-cover-holder"
                 onError={(e) => {
                   e.target.style.display = 'none';
                   e.target.nextElementSibling.style.display = 'block';
                 }}
               />
-              <div className="book-cover-holder" style={{display: 'none'}}>
+              <div className="books-cover-holder" style={{display: 'none'}}>
                 <span>Book Cover</span>
               </div>
             </>
           ) : (
-            <div className="book-cover-holder">
+            <div className="books-cover-holder">
               <span>Book Cover</span>
             </div>
           )}
         </div>
       
         <div className='book-information'>
-          <h3 className="book-titles" title={title}>
-            {truncateText(title, 50)}
-          </h3>
-          <p className="book-authors" title={author}>
-            by {truncateText(author, 40)}
-          </p>
-          {publishYear && <p className="book-year">({publishYear})</p>}
-          
+          <div className='book-text-group'>
+            <h3 className={getTitleClass(title)} title={title}>
+              {truncateText(title, 50)}
+            </h3>
+            <p className={getAuthorClass(author)} title={author}>
+              by {truncateText(author, 40)}
+            </p>
+            {publishYear && <p className={getYearClass(title, author)}>({publishYear})</p>}
+          </div>
           <button 
             className="add-to-list-btn"
             onClick={(e) => handleAddToReadingList(e, book, 0)}
@@ -455,9 +484,9 @@ export const Home = () => {
   const SectionLoading = () => (
     <div className="recommendations-grid">
       {[...Array(8)].map((_, index) => (
-        <div key={index} className="book-card loading-card">
-          <div className="book-cover">
-            <div className="book-cover-holder loading-placeholder">
+        <div key={index} className="books-card loading-card">
+          <div className="books-cover">
+            <div className="books-cover-holder loading-placeholder">
               <span>Loading...</span>
             </div>
           </div>
@@ -474,15 +503,17 @@ export const Home = () => {
   const renderBookCards = () => {
     if (!hasSearched) {
       return (
-        <div className="book-card">
-          <div className='book-cover'>
-            <div className="book-cover-holder">
+        <div className="books-card">
+          <div className='books-cover'>
+            <div className="books-cover-holder">
               <span>Book Cover</span>
             </div>
           </div>
           <div className='book-information'>
-            <h3 className="book-titles">The Great Gatsby</h3>
-            <p className="book-authors">by F. Scott Fitzgerald</p>
+            <div className="book-text-group">
+              <h3 className="book-titles">The Great Gatsby</h3>
+              <p className="book-authors">by F. Scott Fitzgerald</p>
+            </div>
             <button className="add-to-list-btn">
               Add to Reading List
             </button>
@@ -537,39 +568,39 @@ export const Home = () => {
       });
 
       return Array.from(uniqueAuthors.values()).map((author, index) => (
-      <div className="book-card" key={index} onClick={() => handleCardClick({
+      <div className="books-card" key={index} onClick={() => handleCardClick({
         author_name: [author.name],
         author_key: [author.key],
         title: author.books[0] || 'Unknown Book'
       })}>
         
-        <div className="book-cover">
-          <div className="book-cover-holder">
+        <div className="books-cover">
+          <div className="books-cover-holder">
             <img
               src={`https://covers.openlibrary.org/a/olid/${author.key}-M.jpg`}
               alt={`Photo of ${author.name}`}
-              className="book-cover-holder"
+              className="books-cover-holder"
               onError={(e) => {
                 e.target.style.display = 'none';
                 e.target.nextElementSibling.style.display = 'block';
               }}
             />
-            <div className="book-cover-holder" style={{ display: 'none' }}>
+            <div className="books-cover-holder" style={{ display: 'none' }}>
               <span>Author Photo</span>
             </div>
           </div>
         </div>
 
         <div className="book-information">
-          <h3 className="book-titles" title={author.name}>
-            {truncateText(author.name, 50)}
-          </h3>
-          <p className="book-authors">
-            {author.books.length} book{author.books.length !== 1 ? 's' : ''}
-          </p>
-          <p className="book-year">
-            {truncateText(author.books.join(', '), 80)}
-          </p>
+          <div className='book-text-group'>
+            <h3 className={getTitleClass(title)} title={title}>
+              {truncateText(title, 50)}
+            </h3>
+            <p className={getAuthorClass(author)} title={author}>
+              by {truncateText(author, 40)}
+            </p>
+            {publishYear && <p className={getYearClass(title, author)}>({publishYear})</p>}
+          </div>
         </div>
 
       </div>
@@ -586,39 +617,40 @@ export const Home = () => {
       const publishYear = book.first_publish_year || '';
 
       return (
-        <div key={`${book.key}-${index}`} className="book-card" onClick={() => handleCardClick(book)}>
-          <div className='book-cover'>
+        <div key={`${book.key}-${index}`} className="books-card" onClick={() => handleCardClick(book)}>
+          <div className='books-cover'>
             {coverId ? (
               <>
                 <img 
                   src={`https://covers.openlibrary.org/b/id/${coverId}-M.jpg`}
                   alt={`Cover of ${title}`} 
-                  className="book-cover-holder"
+                  className="books-cover-holder"
                   onError={(e) => {
                     e.target.style.display = 'none';
                     e.target.nextElementSibling.style.display = 'block';
                   }}
                 />
-                <div className="book-cover-holder" style={{display: 'none'}}>
+                <div className="books-cover-holder" style={{display: 'none'}}>
                   <span>Book Cover</span>
                 </div>
               </>
             ) : (
-              <div className="book-cover-holder">
+              <div className="books-cover-holder">
                 <span>Book Cover</span>
               </div>
             )}
           </div>
         
           <div className='book-information'>
-            <h3 className="book-titles" title={title}>
-              {truncateText(title, 50)}
-            </h3>
-            <p className="book-authors" title={author}>
-              by {truncateText(author, 40)}
-            </p>
-            {publishYear && <p className="book-year">({publishYear})</p>}
-            
+            <div className='book-text-group'>
+              <h3 className={getTitleClass(title)} title={title}>
+                {truncateText(title, 50)}
+              </h3>
+              <p className={getAuthorClass(author)} title={author}>
+                by {truncateText(author, 40)}
+              </p>
+              {publishYear && <p className={getYearClass(title, author)}>({publishYear})</p>}
+            </div>
             <button 
               className="add-to-list-btn"
               onClick={(e) => handleAddToReadingList(e, book, index)}
@@ -676,7 +708,7 @@ export const Home = () => {
         <div className="home-sections">
           {/* Trending Books Section */}
           <div className="recommendations-section">
-            <div className="container">
+            <div className="rcontainer">
               <h2 className="section-title">Trending Books</h2>
               <div className="recommendations-container">
                 <button 
@@ -712,7 +744,7 @@ export const Home = () => {
 
           {/* Classic Books Section */}
           <div className="recommendations-section">
-            <div className="container">
+            <div className="rcontainer">
               <h2 className="section-title">Classic Books</h2>
               <div className="recommendations-container">
                 <button 
@@ -748,7 +780,7 @@ export const Home = () => {
 
           {/* Books We Love Section */}
           <div className="recommendations-section">
-            <div className="container">
+            <div className="rcontainer">
               <h2 className="section-title">Books We Love</h2>
               <div className="recommendations-container">
                 <button 
@@ -786,8 +818,10 @@ export const Home = () => {
 
       {/* Show search results when search has been performed */}
       {hasSearched && (
-        <div className="books-grid">
-          {renderBookCards()}
+        <div className= "rcontainer">
+          <div className="books-grid-home">
+            {renderBookCards()}
+          </div>
         </div>
       )}
 
