@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from "react-router-dom"
+import { UserAuth } from '../context/AuthContext';
 import './Home.css';
 
 export const Home = () => {
@@ -22,6 +23,9 @@ export const Home = () => {
   const classicsRef = useRef(null);
   const booksWeLoveRef = useRef(null);
   const resultsPerPage = 50;
+
+  const { session, insertReadingList } = UserAuth();
+  const user = session?.user;
 
   // Load sections data on component mount
   useEffect(() => {
@@ -385,7 +389,7 @@ export const Home = () => {
   };
 
   // Handle add to reading list
-  const handleAddToReadingList = (e, book, index) => {
+  const handleAddToReadingList = async (e, book, index) => {
     e.stopPropagation();
     
     const title = book.title?.trim() || "No title available";
@@ -414,6 +418,33 @@ export const Home = () => {
     } else {
       alert('Book already in reading list!');
     }
+
+      // Insert to Supabase - uwu duje
+     try {
+
+          console.log("Book title: ", title);
+          console.log("Author: ", author);
+          const toBeRead = "TO_BE_READ";
+
+          const bookData = {
+          user_id: user.id,
+          book_key: book.key,
+          title: title,
+          author: author,
+          cover_id: book.cover_i,
+          publish_year: book.first_publish_year,
+          isbn: book.isbn ? book.isbn[0] : null,
+          subject: book.subject ? book.subject.slice(0, 5).join(", ") : null,
+          added_at: new Date().toISOString(),
+          status: toBeRead
+         };
+         
+    const result = await insertReadingList(bookData, book, user.id);
+
+     }catch (error) {
+    console.error('Error handling add to reading list:', error);
+    alert('An error occurred. Please try again.');
+     }
   };
 
   // Load more results (pagination)
