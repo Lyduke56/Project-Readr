@@ -113,7 +113,7 @@ export function SignIn() {
                                 placeholder="Enter your password"
                             />
                         </div>
-                        {error && <p className="error-message">{error}</p>}
+                        {error && <p className="signin-error-message">{error}</p>}
 
                         <button
                             type="submit"

@@ -78,7 +78,7 @@
     top: 370px;
 }
 
-.signin-container .error-message {
+.signin-container .signin-error-message {
     color: #dc2626;
     text-align: center;
     position: absolute;

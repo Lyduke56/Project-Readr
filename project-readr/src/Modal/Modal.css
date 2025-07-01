@@ -24,9 +24,15 @@ border-radius: 8px;
 .icon-mask {
   width: 40px;
   height: 40px;
-  background-color: #494c4f; /* Your desired icon color */
+  background-color: #494c4f; 
   mask: url('arrow.png') no-repeat center;
   -webkit-mask: url('arrow.png') no-repeat center;
   background-size: contain;
   mask-size: contain;
+
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 10000; 
+  cursor: pointer;
 }

@@ -1,5 +1,5 @@
 import './App.css'
-import { HashRouter as Router, Routes, Route } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { Layout } from './components/Layout'
 import { About } from './pages/About' 
 import { Features } from './pages/Features'
@@ -11,13 +11,12 @@ import { Homepage } from './pages/Homepage'
 import { AddInfo } from './pages/AddInfo'
 import { Profile } from './pages/Profile'
 import { ReadingList } from './pages/ReadingList'
-import  Author  from './pages/Author'
+import Author from './pages/Author'
 import { Book } from './pages/Book' 
 import DiscoverPage from './pages/Discover'
 import { ResetPass } from './pages/ResetPass'
 
 function App() {
-
   return (
     <Router>
       <Routes>
@@ -35,8 +34,7 @@ function App() {
           <Route path="/Author" element={<Author />} />
           <Route path="/Book" element={<Book />} />
           <Route path="/Discover" element={<DiscoverPage />} />
-          <Route path="/ResetPass" element={<ResetPass />} />
-
+          <Route path="/reset-password" element={<ResetPass />} />
         </Route>
       </Routes>
     </Router>
