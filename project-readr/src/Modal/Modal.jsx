@@ -17,3 +17,21 @@ export const Modal = ({ isOpened, onClose, children }) => {
         </div>
     );
 };
+
+function ParentComponent() {
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
+  const handleCloseModal = () => {
+    setIsEditModalOpen(false);
+  };
+
+  return (
+    <div>
+      {isEditModalOpen && (
+        <Modal>
+          <EditProfile onClose={handleCloseModal} />
+        </Modal>
+      )}
+    </div>
+  );
+}

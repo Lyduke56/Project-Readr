@@ -2,6 +2,8 @@ import { useState, useRef } from "react";
 import { UserAuth } from "../context/AuthContext";
 import { supabase } from "../supabaseClient";
 import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { FaFacebook, FaInstagram, FaTimes } from "react-icons/fa";
 
 import "./AddInfo.css";
 
@@ -11,6 +13,7 @@ export function AddInfo() {
   const { session, insertUser } = UserAuth();
   const user = session?.user;
 
+  const navigate = useNavigate();
   //initialization user's info
   const [formData, setFormData] = useState({
     email: "",
@@ -19,7 +22,9 @@ export function AddInfo() {
     bio: "",
     profile_image: "",
     location: "",
-    website_url: "",
+    facebook_url: "",
+    instagram_url: "",
+    x_url: "",
     gender: "", 
     birth_date: "",
     is_private: false,
@@ -151,9 +156,11 @@ export function AddInfo() {
         full_name: formData.full_name || null,
         display_name: formData.display_name || null,
         bio: formData.bio || null,
-        profile_image: formData.profile_image || null, // This should not be null if upload succeeded
+        profile_image: formData.profile_image || null, 
         location: formData.location || null,
-        website_url: formData.website_url || null,
+        facebook_url: formData.facebook_url || null,
+        instagram_url: formData.instagram_url || null,
+        x_url: formData.x_url || null,
         gender: formData.gender || null,
         birth_date: formData.birth_date || null,
         is_private: formData.is_private,
@@ -172,11 +179,16 @@ export function AddInfo() {
           bio: "",
           profile_image: "",
           location: "",
-          website_url: "",
+          facebook_url: "",
+          instagram_url: "",
+          x_url: "",
           gender: "",
           birth_date: "",
           is_private: false,
         });
+
+        navigate("/");
+        
       } else {
         setError(result.error?.message || "Failed to create user profile");
         console.error("Insert user error:", result.error);
@@ -225,13 +237,8 @@ export function AddInfo() {
             onChange={handleImageUpload}
             accept="image/*"
             className="hidden"
+            required
           />
-          {/* Debug info - remove in production */}
-          {formData.profile_image && (
-            <small style={{display: 'block', marginTop: '5px', color: 'green'}}>
-              Image URL: {formData.profile_image}
-            </small>
-          )}
         </div>
 
         {/* Email */}
@@ -300,15 +307,46 @@ export function AddInfo() {
 
         {/* Website */}
         <div className="form-group">
-          <label>Website</label>
-          <input
-            type="url"
-            name="website_url"
-            value={formData.website_url}
-            onChange={handleInputChange}
-            placeholder="https://your-website.com"
-            required
-          />
+          <label>Websites</label>
+            <div className="web-url">
+            <FaFacebook size={42} className="web-icon"/>
+            <input
+              type="url"
+              name="facebook_url"
+              value={formData.facebook_url}
+              onChange={handleInputChange}
+              placeholder="https://your-facebook-website.com"
+              required
+            />
+            </div>
+            <div className="web-url">
+            <FaInstagram size={42} className="web-icon"/>
+            <input
+              type="url"
+              name="instagram_url"
+              value={formData.instagram_url}
+              onChange={handleInputChange}
+              placeholder="https://your-instagram-website.com"
+              required
+            />
+            </div>
+            <div className="web-url">
+                <img
+                  className="web-icon"
+                  src="./x.svg"
+                  alt="X"
+                  width={38}
+                  height={38}
+                />
+            <input
+              type="url"
+              name="x_url"
+              value={formData.x_url}
+              onChange={handleInputChange}
+              placeholder="https://your-twitter-x-website.com"
+              required
+            />
+            </div>
         </div>
 
         {/* Gender - Updated with proper options */}
@@ -320,9 +358,10 @@ export function AddInfo() {
             onChange={handleInputChange}
             required
           >
-            <option value="">Select Gender (Optional)</option>
+            <option value="">Select Gender</option>
             <option value="male">Male</option>
             <option value="female">Female</option>
+            <option value="non_binary">Non-binary</option>
             <option value="other">Other</option>
             <option value="prefer_not_to_say">Prefer not to say</option>
           </select>
