@@ -3,6 +3,10 @@ import { UserAuth } from '../context/AuthContext';
 import { supabase } from '../supabaseClient';
 import { Link, useNavigate } from "react-router-dom"
 import './Profile.css';
+import { FaFacebook, FaInstagram } from 'react-icons/fa';
+import { ResetPass } from './ResetPass';
+import { Modal } from '../Modal/Modal';
+import { EditProfile } from './editProfile';
 
 export function Profile() {
   const { session, signOut } = UserAuth();
@@ -13,6 +17,9 @@ export function Profile() {
   const [readingList, setReadingList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [readingListLoading, setReadingListLoading] = useState(true);
+  
+  const [isEditProfileOpened, setIsEditProfileOpened] = useState(false);
+  const [isResetPasswordOpened, setIsResetPasswordOpened] = useState(false);
   const [error, setError] = useState('');
 
   // Fetch user profile data
@@ -146,11 +153,24 @@ export function Profile() {
     }
   };
 
+//Edit profile function   
+  const handleEditProfile = (e) => {
+    e.preventDefault();
+    setIsEditProfileOpened(true);
+  };
+
+  //Reset password function 
+  const handleResetPassword = (e) => {
+    e.preventDefault();
+    setIsResetPasswordOpened(true);
+  };
+
   // Helper function to truncate text
   const truncateText = (text, maxLength = 40) => {
     if (!text || text.length <= maxLength) return text;
     return text.substring(0, maxLength).trim() + '...';
   };
+
 
   // Reading List Component
   const ReadingListSection = () => {
@@ -316,14 +336,34 @@ export function Profile() {
           </div>
         </div>
 
-        <div className="profile-actions">
-          <button className="edit-profile-btn">Edit Profile</button>
+       <div className="profile-actions">
+          <button className="edit-profile-btn" onClick={handleEditProfile}>
+            Edit Profile
+          </button>
+
+          <button className="reset-password-btn" onClick={handleResetPassword}>
+            Reset Password
+          </button>
+          
           <button className="sign-out-btn" onClick={handleSignOut}>
             Sign Out
           </button>
         </div>
       </div>
 
+      {/* Modal part uwu */}
+      {isEditProfileOpened && (
+        <Modal isOpened={isEditProfileOpened} onClose={() => setIsEditProfileOpened(false)}>
+          <EditProfile />
+        </Modal>
+      )}
+
+      {isResetPasswordOpened && (
+        <Modal isOpened={isResetPasswordOpened} onClose={() => setIsResetPasswordOpened(false)}>
+          <ResetPass />
+        </Modal>
+      )}
+                
       <div className="profile-content">
         {profileData.bio && (
           <div className="profile-section">
@@ -348,17 +388,34 @@ export function Profile() {
                 </div>
               )}
               
-              {profileData.website_url && (
+              {(profileData.facebook_url || profileData.instagram_url || profileData.x_url) && (
                 <div className="detail-item">
-                  <span className="detail-label">Website:</span>
-                  <a 
-                    href={profileData.website_url} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="detail-link"
-                  >
-                    🔗 {profileData.website_url}
-                  </a>
+                  <span className="detail-label">Website/s:</span>
+                  <div className="websites">
+                    {profileData.facebook_url && (
+                      <a href={profileData.facebook_url} target="_blank" rel="noopener noreferrer">
+                        <FaFacebook size={35} color="black" />
+                      </a>
+                    )}
+
+                    {profileData.instagram_url && (
+                      <a href={profileData.instagram_url} target="_blank" rel="noopener noreferrer">
+                        <FaInstagram size={35} color="black" />
+                      </a>
+                    )}
+
+                    {profileData.x_url && (
+                      <a href={profileData.x_url} target="_blank" rel="noopener noreferrer">
+                        <img
+                          src="./x.svg"
+                          alt="X"
+                          width={35}
+                          height={35}
+                          className="black-logo"
+                        />
+                      </a>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
@@ -385,6 +442,9 @@ export function Profile() {
           </div>
         </div>
 
+          {/* Reading List Section */}
+         <ReadingListSection />
+
         <div className="profile-stats">
           <div className="stat-card">
             <h4>Reading Stats</h4>
@@ -399,9 +459,6 @@ export function Profile() {
             <p>Coming soon...</p>
           </div>
           
-          {/* Reading List Section - Now displayed prominently */}
-         <ReadingListSection />
-         
         </div>
       </div>
     </div>
