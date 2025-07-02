@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react"
+import { useNavigate } from "react-router-dom" // Add this import
 import { UserAuth } from '../context/AuthContext';
 import { supabase } from '../supabaseClient';
 import "./ReadingList.css"
@@ -8,6 +9,7 @@ export const ReadingList = () => {
   
   const { session, signOut } = UserAuth();
   const user = session?.user;
+  const navigate = useNavigate(); // Add this hook
 
   const [books, setBooks] = useState([]);
   const [filteredBooks, setFilteredBooks] = useState([]);
@@ -86,8 +88,32 @@ export const ReadingList = () => {
     setSearchQuery(query);
   };
 
+  // Add this function to handle book card clicks
+  const handleBookCardClick = (book) => {
+    // Convert your reading list book data to the format expected by the Book page
+    const bookData = {
+      key: book.book_key,
+      title: book.title,
+      author_name: [book.author], // Convert to array format like OpenLibrary API
+      cover_i: book.cover_id,
+      first_publish_year: book.publish_year,
+      isbn: book.isbn ? [book.isbn] : undefined,
+      subject: book.subject ? book.subject.split(", ") : undefined
+    };
+
+    // Store book data for the Book page (same as in Home component)
+    localStorage.setItem('selectedBook', JSON.stringify(bookData));
+    
+    // Navigate to Book page
+    navigate('/Book');
+  };
+
   const BookCard = ({ book }) => (
-    <div className="reading-list-book-card">
+    <div 
+      className="reading-list-book-card"
+      onClick={() => handleBookCardClick(book)} // Add click handler
+      style={{ cursor: 'pointer' }} // Add pointer cursor to indicate clickability
+    >
       <div className="book-cover-section">
         <div className="book-cover-placeholder">
           <span className="cover-text"><img src={`https://covers.openlibrary.org/b/id/${book.cover_id}-M.jpg`} /></span>
@@ -114,15 +140,24 @@ export const ReadingList = () => {
         <div className="book-actions">
           <select 
             value={book.status}
-            onChange={(e) => handleStatusChange(book.id, e.target.value)}
+            onChange={(e) => {
+              e.stopPropagation(); // Prevent card click when changing status
+              handleStatusChange(book.id, e.target.value);
+            }}
             className="status-select"
+            onClick={(e) => e.stopPropagation()} // Prevent card click when clicking select
           >
             <option value="TO_BE_READ">To Be Read</option>
             <option value="COMPLETED">Completed</option>
             <option value="FAVORITES">Favorites</option>
           </select>
           
-          <button className="remove-button">Remove</button>
+          <button 
+            className="remove-button"
+            onClick={(e) => e.stopPropagation()} // Prevent card click when clicking remove
+          >
+            Remove
+          </button>
         </div>
       </div>
     </div>
@@ -179,7 +214,7 @@ export const ReadingList = () => {
                 onClick={() => setActiveFilter('TO_BE_READ')}
                 className={`filter-button ${activeFilter === 'TO_BE_READ' ? 'active' : ''}`}
               >
-                TO BE READ <span className="count">({toBeReadCount})</span>
+                TO BE read <span className="count">({toBeReadCount})</span>
               </button>
               
               <button
@@ -225,5 +260,3 @@ export const ReadingList = () => {
 };
 
 export default ReadingList;
-
-

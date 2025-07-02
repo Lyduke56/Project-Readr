@@ -200,6 +200,8 @@
 }
 
 .recommendation-card {
+  width: 160px;
+  height: 260px;
   background-color: white;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -247,6 +249,31 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+.add-to-list-btn-small {
+  background-color: #26342D;
+  color: white;
+  border: none;
+  padding: 4px 6px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  width: 100%;
+  margin-top: 6px;
+}
+
+.add-to-list-btn-small:hover {
+  background-color: #3a4d3a;
+  color: #d4af37;
+  transform: translateY(-1px);
+}
+
+.add-to-list-btn-small:active {
+  transform: translateY(0);
+}
+
 
 /* Top Rated Books Section */
 .top-rated-section {
