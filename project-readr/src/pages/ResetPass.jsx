@@ -3,7 +3,7 @@ import { supabase } from "../supabaseClient";
 import { useNavigate } from "react-router-dom";
 import "./ResetPass.css";
 
-export const ResetPass = () => {
+export const ResetPass = ({ hideCancel = false, onProfile = false }) => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -78,9 +78,14 @@ export const ResetPass = () => {
       } else {
         setSuccess(true);
         setTimeout(() => {
-          navigate("/SignIn");
+          if (onProfile) {
+            navigate('/Profile');
+            window.location.reload();
+          } else {
+            navigate("/SignIn");
+          }
         }, 3000);
-      }
+      } 
     } catch (err) {
       setError("An unexpected error occurred. Please try again.");
     } finally {
@@ -90,6 +95,10 @@ export const ResetPass = () => {
 
   const goToLogin = () => {
     navigate("/SignIn");
+  };
+  const goBack = () => {
+    navigate("/Profile");
+    window.location.reload();
   };
 
   const requestNewReset = () => {
@@ -139,9 +148,18 @@ export const ResetPass = () => {
           </div>
           <h1>Password Reset Successful!</h1>
           <p>Your password has been updated. Redirecting to login...</p>
-          <button onClick={goToLogin} className="reset-primary-btn">
-            Go to Login
-          </button>
+         {!onProfile && (
+            <button onClick={goToLogin} className="reset-primary-btn">
+              Go to Login
+            </button>
+          )}
+
+          {onProfile && (
+            <button onClick={goBack} className="reset-primary-btn">
+              Return to Profile Page
+            </button>
+          )}
+          
         </div>
       </div>
     );
@@ -199,11 +217,14 @@ export const ResetPass = () => {
           </button>
         </form>
 
-        <div className="reset-text-center">
-          <button onClick={goToLogin} className="reset-link-btn">
-            ← Cancel and go to Login
-          </button>
-        </div>
+        {!hideCancel && (
+          <div className="reset-text-center">
+            <button onClick={goToLogin} className="reset-link-btn">
+              ← Cancel and go to Login
+            </button>
+          </div>
+        )}
+
       </div>
     </div>
   );

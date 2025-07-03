@@ -6,6 +6,9 @@
   padding: 2rem;
   border-radius: 0.75rem;
   box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+  
+  margin-top: 25%;
+  margin-left: 21%;
 }
 
 .forgotpass-title {

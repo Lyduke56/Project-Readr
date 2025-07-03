@@ -1,9 +1,13 @@
 
+.reset-container {
+  display: flex;
+  justify-content: center ;
+  padding-top: 70px;
+}
 .reset-card {
   background: white;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   border-radius: 1rem;
-  margin: 50px;
   padding: 2rem;
   width: 100%;
   max-width: 450px;
