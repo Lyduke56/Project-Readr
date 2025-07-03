@@ -5,8 +5,6 @@ import { supabase } from '../supabaseClient';
 import "./ReadingList.css"
 
 export const ReadingList = () => {
-
-  
   const { session, signOut } = UserAuth();
   const user = session?.user;
   const navigate = useNavigate(); // Add this hook
@@ -108,6 +106,24 @@ export const ReadingList = () => {
     navigate('/Book');
   };
 
+  // Helper function to get title class based on length
+  const getTitleClass = (title) => {
+      if (!title) return 'rlbook-title';
+      const length = title.length;
+      if (length > 45) return 'rlbook-title very-long-title';
+      if (length > 30) return 'rlbook-title long-title';
+      return 'rlbook-title';
+    };
+
+    // Helper function to get author class based on length
+    const getAuthorClass = (author) => {
+      if (!author) return 'rlbook-author';
+      const length = author.length;
+      if (length > 40) return 'rlbook-author very-long-author';
+      if (length > 20) return 'rlbook-author long-author';
+      return 'rlbook-author';
+    };
+
   const BookCard = ({ book }) => (
     <div 
       className="reading-list-book-card"
@@ -116,15 +132,14 @@ export const ReadingList = () => {
     >
       <div className="book-cover-section">
         <div className="book-cover-placeholder">
-          <span className="cover-text"><img src={`https://covers.openlibrary.org/b/id/${book.cover_id}-M.jpg`} /></span>
+          <span className="cover-text"><img className="rlbook-image" src={`https://covers.openlibrary.org/b/id/${book.cover_id}-M.jpg`} /></span>
         </div>
       </div>
       
       <div className="book-details">
         <div className="book-main-info">
-          <h3 className="book-title">{book.title}</h3>
-          <p className="book-author">by {book.author}</p>
-          <p className="book-pages">{book.pages} pages</p>
+          <h3 className={getTitleClass(book.title)}>{book.title}</h3>
+          <p className={getAuthorClass(book.author)}>by {book.author}</p>
         </div>
         
         <div className="book-meta">
@@ -137,7 +152,7 @@ export const ReadingList = () => {
           )}
         </div>
         
-        <div className="book-actions">
+        <div className="rlbook-actions">
           <select 
             value={book.status}
             onChange={(e) => {
@@ -234,7 +249,7 @@ export const ReadingList = () => {
           </div>
 
           {/* Books Grid */}
-          <div className="books-grid">
+          <div className="rlbooks-grid">
             {filteredBooks.length > 0 ? (
               filteredBooks.map(book => (
                 <BookCard key={book.id} book={book} />

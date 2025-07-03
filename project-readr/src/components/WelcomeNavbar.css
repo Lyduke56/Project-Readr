@@ -6,7 +6,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background-color: #26342D;
+    background-color: #6b4b3e;
     padding: 0.01rem 2rem;
     box-sizing: border-box;
     font-family: 'Poppins', sans-serif;
@@ -21,7 +21,7 @@
     display: flex;
     align-items: center;
     font-family: 'Merriweather', serif;
-    color:#d4af37;
+    color:#ffd6af;
     gap: 0.5rem;
 }
 
@@ -31,7 +31,7 @@
 
 .nav-right{
     display: flex;
-    gap: 1.25rem;
+    gap: 2rem;
 }
 
 .wnavbar-button{
@@ -44,7 +44,7 @@
 }
 
 .wnavbar-button:hover{
-    color: #d4af37;
+    color: #ffd6af;
 }
 
 body{

@@ -594,31 +594,32 @@ export const Homepage = () => {
 
     return (
       <div className="recommendation-card" onClick={() => handleRecommendationClick(book)}>
-        <div className="recommendation-cover">
-          {coverId ? (
-            <img 
-              src={`https://covers.openlibrary.org/b/id/${coverId}-M.jpg`}
-              alt={`Cover of ${title}`} 
-              className="cover-image"
-              style={{ height: '100%', width: 'auto', maxHeight: '160px', borderRadius: '4px' }}
-              onError={(e) => {
-                e.target.style.display = 'none';
-                e.target.nextElementSibling.style.display = 'flex';
-              }}
-            />
-          ) : null}
-          <div className="cover-placeholder" style={{ display: coverId ? 'none' : 'flex' }}>
-            <span>Book Cover</span>
-          </div>
-        </div>
+            <div className="recommendation-cover">
+              {coverId ? (
+                <img 
+                  src={`https://covers.openlibrary.org/b/id/${coverId}-M.jpg`}
+                  alt={`Cover of ${title}`} 
+                  className="cover-image"
+                  onError={(e) => {
+                    e.target.style.display = 'none';
+                    e.target.nextElementSibling.style.display = 'flex';
+                  }}
+                />
+              ) : null}
+              <div className="cover-placeholder" style={{ display: coverId ? 'none' : 'flex' }}>
+                <span>Book Cover</span>
+              </div>
+            </div>
 
         <div className="recommendation-info">
-          <h4 className="recommendation-title" title={title}>
-            {truncateText(title, 35)}
-          </h4>
-          <p className="recommendation-author" title={author}>
-            by {truncateText(author, 30)}
-          </p>
+          <div className='recommendation-text-group'>
+            <h4 className="recommendation-title" title={title}>
+              {truncateText(title, 35)}
+            </h4>
+            <p className="recommendation-author" title={author}>
+              by {truncateText(author, 30)}
+            </p>
+          </div>
 
           <button 
             className="add-to-list-btn-small"
@@ -661,12 +662,12 @@ export const Homepage = () => {
       <div className="navigation-section">
         <div className="container">
           <div className="navigation-content">
-            <div className="tab-buttons">
+            <div className="rtab-buttons">
               {['Books', 'Authors', 'Discover'].map(tab => (
                 <button
                   key={tab}
                   onClick={() => tab === 'Discover' ? navigate('/Discover') : handleTabChange(tab)}
-                  className={`tab-button ${activeTab === tab ? 'active' : ''}`}
+                  className={`rtab-button ${activeTab === tab ? 'active' : ''}`}
                 >
                   {tab}
                 </button>
@@ -754,9 +755,6 @@ export const Homepage = () => {
             >
               {recommendationsLoading ? 'Updating...' : 'Get New Recommendations'}
             </button>
-            <p className="refresh-note">
-              Recommendations are cached per session. Use this button to get fresh suggestions.
-            </p>
           </div>
         </div>
       </div>
