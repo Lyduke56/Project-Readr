@@ -800,7 +800,7 @@ export const Homepage = () => {
   return (
     <div className="home-page">
       {/* Navigation Tabs */}
-      <div className="navigation-section">
+      <div className="Hp-navigation-section">
         <div className="container">
           <div className="navigation-content">
             <div className="rtab-buttons">

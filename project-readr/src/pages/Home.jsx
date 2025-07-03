@@ -745,8 +745,8 @@ export const Home = () => {
           {/* Trending Books Section */}
           <div className="recommendations-section">
             <div className="rcontainer">
-              <h2 className="section-title">Trending Books</h2>
-              <div className="recommendations-container">
+              <h2 className="h-section-title">Trending Books</h2>
+              <div className="h-recommendations-container">
                 <button 
                   className="scroll-button left" 
                   onClick={() => scrollSection(trendingRef, 'left')}
@@ -781,8 +781,8 @@ export const Home = () => {
           {/* Classic Books Section */}
           <div className="recommendations-section">
             <div className="rcontainer">
-              <h2 className="section-title">Classic Books</h2>
-              <div className="recommendations-container">
+              <h2 className="h-section-title">Classic Books</h2>
+              <div className="h-recommendations-container">
                 <button 
                   className="scroll-button left" 
                   onClick={() => scrollSection(classicsRef, 'left')}
@@ -817,8 +817,8 @@ export const Home = () => {
           {/* Books We Love Section */}
           <div className="recommendations-section">
             <div className="rcontainer">
-              <h2 className="section-title">Books We Love</h2>
-              <div className="recommendations-container">
+              <h2 className="h-section-title">Books We Love</h2>
+              <div className="h-recommendations-container">
                 <button 
                   className="scroll-button left" 
                   onClick={() => scrollSection(booksWeLoveRef, 'left')}
