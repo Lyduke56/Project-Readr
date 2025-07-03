@@ -316,7 +316,6 @@ export function AddInfo() {
               value={formData.facebook_url}
               onChange={handleInputChange}
               placeholder="https://your-facebook-website.com"
-              required
             />
             </div>
             <div className="web-url">
@@ -327,7 +326,6 @@ export function AddInfo() {
               value={formData.instagram_url}
               onChange={handleInputChange}
               placeholder="https://your-instagram-website.com"
-              required
             />
             </div>
             <div className="web-url">
@@ -344,7 +342,6 @@ export function AddInfo() {
               value={formData.x_url}
               onChange={handleInputChange}
               placeholder="https://your-twitter-x-website.com"
-              required
             />
             </div>
         </div>

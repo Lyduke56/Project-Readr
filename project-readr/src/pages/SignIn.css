@@ -20,10 +20,13 @@
     position: absolute;
     width: 385px;
     height: 749px;
-    top: 10px;
+    top: 50px;
     left: 41px;
-    background-color: white;
+    background-color: rgba(255, 255, 255, 0.85); /* Made semi-transparent */
+    backdrop-filter: blur(8px); /* Add subtle blur effect */
     box-shadow: 0px 4px 4px 3px rgba(0, 0, 0, 0.25);
+    z-index: 2; /* Increased z-index to stay above carousel */
+    border-radius: 9px;
 }
 
 .signin-title {
@@ -63,11 +66,13 @@
     border-radius: 16px;
     color: black;
     font-size: 16px;
+    background-color: rgba(255, 255, 255, 0.9); /* Slightly transparent inputs */
 }
 
 .input-group input:focus {
     outline: none;
     box-shadow: 0 0 0 2px #d4b866;
+    background-color: rgba(255, 255, 255, 0.95); /* Less transparent when focused */
 }
 
 .email-input {
@@ -93,7 +98,7 @@
     width: 272px;
     top: 522px;
     height: 40px;
-    background-color: #2C2C2C;
+    background-color: rgba(44, 44, 44, 0.9); /* Slightly transparent button */
     color: white;
     border-radius: 16px;
     font-size: 16px;
@@ -105,9 +110,10 @@
 }
 
 .signin-button:hover {
-    background-color: #3a3a3a;
+    background-color: rgba(58, 58, 58, 0.95);
     transform: scale(1.05);
 }
+
 .below-signin{
     position: absolute;
     left: 57px;
@@ -117,6 +123,7 @@
     justify-content: center;
     flex-direction: column;
 }
+
 .signin-link {
     color: #2d2d2d;
     text-align: center;
@@ -132,23 +139,24 @@
 }
 
 .below-signin button{
-  color: #a19e9e;
-  margin-top: 5px;
-  border: 0;
-  background-color: transparent;
+    color: #a19e9e;
+    margin-top: 5px;
+    border: 0;
+    background-color: transparent;
 }
 
 .below-signin button:hover{
- text-decoration: underline;    
+    text-decoration: underline;    
 }
 
 .signin-image-container {
     position: absolute;
-    width: 1011px;
-    height: 759px;
-    top: 6px;
-    left: 453px;
-}
+    width: 1440px; /* Expanded to full width */
+    height: calc(95vh - 50px); /* Full height minus top offset */
+    top: 0; /* Start from top */
+    left: 0px; /* Position so first section shows to the right of form */
+    z-index: 1; /* Behind the form */
+}   
 
 .signin-image {
     position: absolute;
@@ -160,5 +168,3 @@
     border: 1px solid black;
     box-shadow: 0px 4px 4px 2px rgba(0, 0, 0, 0.25);
 }
-
-

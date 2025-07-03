@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { UserAuth } from "../context/AuthContext";
 import { ForgotPass } from '../Modal/forgotPass';
 import { Modal } from "../Modal/Modal";
+import { ImageCarousel } from "../components/ImageCarousel";
 import "./SignIn.css";
 
 export function SignIn() {
@@ -135,7 +136,7 @@ export function SignIn() {
                 </div>
 
                 <div className="signin-image-container">
-                    <img src="/LibraryPic.png" alt="Library" className="signin-image" />
+                    <ImageCarousel imagePath="/HomepagePic.png" sectionPositions={[-10, 30, 60, 95]} />
                 </div>
 
                 {isOpened && (

@@ -14,7 +14,7 @@
 .container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 16px;
+  padding: 0;
 }
 
 /* Loading States */
@@ -62,15 +62,15 @@
   align-items: center;
 }
 
-.tab-buttons {
+.rtab-buttons {
   display: flex;
-  gap: 32px;
+  gap: 50px;
 }
 
-.tab-button {
+.rtab-button {
   font-size: 20px;
   font-weight: 700;
-  padding: 8px 16px;
+  padding: 8px 0;
   background: none;
   border: none;
   color: #2d2d2d;
@@ -144,6 +144,9 @@
   display: flex;
   align-items: center;
   gap: 16px;
+  max-height: fit-content;
+  margin-top: 20px;
+  margin-bottom: 20px;
 }
 
 .recommendations-scroll-wrapper {
@@ -200,16 +203,20 @@
 }
 
 .recommendation-card {
-  width: 160px;
-  height: 260px;
+  min-width: 160px;
+  max-width: 160px;
+  min-height: 290px;
+  max-height: 290px;
   background-color: white;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   padding: 16px;
   cursor: pointer;
   transition: box-shadow 0.2s ease, transform 0.2s ease;
-  min-width: 160px;
   flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .recommendation-card:hover {
@@ -218,18 +225,47 @@
 }
 
 .recommendation-cover {
-  height: 160px;
+  height: 180px;
+  width: 115px;
   background-color: #e5e5e5;
   border-radius: 4px;
   margin-bottom: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
+  position: relative;
+}
+
+.cover-image {
+  width: 100%;
+  height: 100%;
+  object-fit: fill; 
+  object-position: center; 
+  border-radius: 4px;
+  display: block;
 }
 
 .cover-placeholder {
   color: #888;
   font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+.recommendation-info{
+  padding: 0 5px 7px;
+  background-color: white;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 70px; 
+  max-width: 230px;
+  width: 100%;
 }
 
 .recommendation-title {
@@ -254,7 +290,7 @@
   background-color: #26342D;
   color: white;
   border: none;
-  padding: 4px 6px;
+  padding: 6px 6px 6px;
   border-radius: 4px;
   font-size: 10px;
   font-weight: 500;
@@ -274,6 +310,21 @@
   transform: translateY(0);
 }
 
+.refresh-button{
+  padding: 8px 16px 8px;
+  border-radius: 5px;
+  border: none;
+  background-color: #3a4d3a;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  color: white;
+  margin-left: 78px;
+}
+
+.refresh-button:hover{
+  background-color:#3e5c45;
+  color:#d4af37;
+  transform: translateY(-1px);
+}
 
 /* Top Rated Books Section */
 .top-rated-section {
