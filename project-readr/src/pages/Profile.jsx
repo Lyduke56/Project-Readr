@@ -3,7 +3,7 @@ import { UserAuth } from '../context/AuthContext';
 import { supabase } from '../supabaseClient';
 import { Link, useNavigate } from "react-router-dom"
 import './Profile.css';
-import { FaFacebook, FaInstagram } from 'react-icons/fa';
+import { FaFacebook, FaInstagram, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import { ResetPass } from './ResetPass';
 import { Modal } from '../Modal/Modal';
 import { EditProfile } from './editProfile';
@@ -16,8 +16,10 @@ export function Profile() {
 
   const [profileData, setProfileData] = useState(null);
   const [readingList, setReadingList] = useState([]);
+  const [ratedBooks, setRatedBooks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [readingListLoading, setReadingListLoading] = useState(true);
+  const [ratedBooksLoading, setRatedBooksLoading] = useState(true);
   
   const [isEditProfileOpened, setIsEditProfileOpened] = useState(false);
   const [isResetPasswordOpened, setIsResetPasswordOpened] = useState(false);
@@ -25,6 +27,10 @@ export function Profile() {
 
   // Store ratings for each book - using book key as the key
   const [bookRatings, setBookRatings] = useState({});
+  
+  // Carousel state for rated books
+  const [currentRatedIndex, setCurrentRatedIndex] = useState(0);
+  const [visibleRatedBooks, setVisibleRatedBooks] = useState(4); // Number of books to show at once
 
   // Fetch user profile data
   useEffect(() => {
@@ -93,6 +99,55 @@ export function Profile() {
 
     fetchReadingList();
   }, [user?.id]);
+
+  // Fetch user's rated books
+  useEffect(() => {
+    const fetchRatedBooks = async () => {
+      if (!user?.id) {
+        setRatedBooksLoading(false);
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from('book_ratings')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false });
+
+        if (error) {
+          console.error('Error fetching rated books:', error);
+        } else {
+          setRatedBooks(data || []);
+        }
+      } catch (err) {
+        console.error('Error fetching rated books:', err);
+      } finally {
+        setRatedBooksLoading(false);
+      }
+    };
+
+    fetchRatedBooks();
+  }, [user?.id]);
+
+  // Handle window resize for responsive carousel
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth <= 768) {
+        setVisibleRatedBooks(1);
+      } else if (window.innerWidth <= 1024) {
+        setVisibleRatedBooks(2);
+      } else if (window.innerWidth <= 1200) {
+        setVisibleRatedBooks(3);
+      } else {
+        setVisibleRatedBooks(4);
+      }
+    };
+
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const fetchBookRatings = async (bookId) => {
     try {
@@ -176,15 +231,28 @@ export function Profile() {
   const handleBookClick = (book) => {
     // Convert reading list format back to search result format
     const bookData = {
-      key: book.book_key,
-      title: book.title,
-      author_name: book.author ? [book.author] : ['Unknown Author'],
+      key: book.book_key || book.book_id,
+      title: book.title || book.book_title,
+      author_name: book.author ? [book.author] : (book.book_author ? [book.book_author] : ['Unknown Author']),
       cover_i: book.cover_id,
       first_publish_year: book.publish_year
     };
     
     localStorage.setItem('selectedBook', JSON.stringify(bookData));
     navigate('/Book');
+  };
+
+  // Carousel navigation functions
+  const handlePrevRated = () => {
+    setCurrentRatedIndex(prev => 
+      prev === 0 ? Math.max(0, ratedBooks.length - visibleRatedBooks) : prev - 1
+    );
+  };
+
+  const handleNextRated = () => {
+    setCurrentRatedIndex(prev => 
+      prev >= ratedBooks.length - visibleRatedBooks ? 0 : prev + 1
+    );
   };
 
   const formatDate = (dateString) => {
@@ -228,7 +296,129 @@ export function Profile() {
     return text.substring(0, maxLength).trim() + '...';
   };
 
-  // Reading List Component
+  // Rated Books Carousel Component
+  const RatedBooksCarousel = () => {
+    if (ratedBooksLoading) {
+      return (
+        <div className="profile-section">
+          <h3>My Rated Books</h3>
+          <div className="carousel-loading">
+            <div className="loading-spinner"></div>
+            <p>Loading your rated books...</p>
+          </div>
+        </div>
+      );
+    }
+
+    if (ratedBooks.length === 0) {
+      return (
+        <div className="profile-section">
+          <h3>My Rated Books</h3>
+          <div className="empty-rated-books">
+            <p>⭐ You haven't rated any books yet</p>
+            <p>Start rating books to see them here!</p>
+          </div>
+        </div>
+      );
+    }
+
+    const canShowPrev = currentRatedIndex > 0;
+    const canShowNext = currentRatedIndex < ratedBooks.length - visibleRatedBooks;
+
+    return (
+      <div className="profile-section">
+        <div className="section-header">
+          <h3>My Rated Books ({ratedBooks.length})</h3>
+          <div className="carousel-controls">
+            <button 
+              className={`carousel-btn prev ${!canShowPrev ? 'disabled' : ''}`}
+              onClick={handlePrevRated}
+              disabled={!canShowPrev}
+            >
+              <FaChevronLeft />
+            </button>
+            <button 
+              className={`carousel-btn next ${!canShowNext ? 'disabled' : ''}`}
+              onClick={handleNextRated}
+              disabled={!canShowNext}
+            >
+              <FaChevronRight />
+            </button>
+          </div>
+        </div>
+        
+        <div className="rated-books-carousel">
+          <div 
+            className="carousel-container"
+            style={{
+              transform: `translateX(-${currentRatedIndex * (100 / visibleRatedBooks)}%)`,
+              transition: 'transform 0.3s ease'
+            }}
+          >
+            {ratedBooks.map((ratedBook) => (
+              <div key={ratedBook.id} className="rated-book-card">
+                <div className="book-cover" onClick={() => handleBookClick(ratedBook)}>
+                  {ratedBook.cover_id ? (
+                    <>
+                      <img 
+                        src={`https://covers.openlibrary.org/b/id/${ratedBook.cover_id}-M.jpg`}
+                        alt={`Cover of ${ratedBook.book_title}`} 
+                        className="book-cover-image"
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                          e.target.nextElementSibling.style.display = 'flex';
+                        }}
+                      />
+                      <div className="book-cover-placeholder" style={{display: 'none'}}>
+                        <span>📖</span>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="book-cover-placeholder">
+                      <span>📖</span>
+                    </div>
+                  )}
+                </div>
+                
+                <div className="book-info">
+                  <h4 className="book-title" title={ratedBook.book_title}>
+                    {truncateText(ratedBook.book_title, 30)}
+                  </h4>
+                  <p className="book-author" title={ratedBook.book_author}>
+                    by {truncateText(ratedBook.book_author, 25)}
+                  </p>
+                  
+                  <div className="user-rating">
+                    <h5>My Rating</h5>
+                    <div className="rating-display">
+                      <StarRating 
+                        rating={ratedBook.rating} 
+                        readonly={true}
+                        size={18}
+                      />
+                      <span className="rating-text">{ratedBook.rating}/5</span>
+                    </div>
+                  </div>
+                  
+                  <p className="rating-date">
+                    Rated {formatDate(ratedBook.created_at)}
+                  </p>
+                  
+                  {ratedBook.review && (
+                    <p className="book-review" title={ratedBook.review}>
+                      "{truncateText(ratedBook.review, 60)}"
+                    </p>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  // Reading List Component with improved UI
   const ReadingListSection = () => {
     if (readingListLoading) {
       return (
@@ -247,7 +437,8 @@ export function Profile() {
         <div className="profile-section">
           <h3>My Reading List</h3>
           <div className="empty-reading-list">
-            <p>📚 Your reading list is empty</p>
+            <div className="empty-icon">📚</div>
+            <h4>Your reading list is empty</h4>
             <p>Start exploring books and add them to your list!</p>
             <Link to="/" className="browse-books-btn">
               Browse Books
@@ -300,24 +491,24 @@ export function Profile() {
                   {book.publish_year && (
                     <p className="book-year">({book.publish_year})</p>
                   )}
-                  <p className="book-added-date">
-                    Added {formatDate(book.added_at)}
-                  </p>
                   
                   <div className="overall-rating">
-                    <h5>Overall Rating</h5>
                     <div className="rating-display">
                       <StarRating 
                         rating={ratingData.overallRating} 
                         readonly={true}
-                        size={20}
+                        size={16}
                       />
                       <span className="rating-text">
-                        {ratingData.overallRating > 0 ? `${ratingData.overallRating}/5` : 'No ratings yet'} 
-                        {ratingData.totalRatings > 0 && ` (${ratingData.totalRatings} rating${ratingData.totalRatings !== 1 ? 's' : ''})`}
+                        {ratingData.overallRating > 0 ? `${ratingData.overallRating}/5` : 'No ratings'} 
+                        {ratingData.totalRatings > 0 && ` (${ratingData.totalRatings})`}
                       </span>
                     </div>
                   </div>
+                  
+                  <p className="book-added-date">
+                    Added {formatDate(book.added_at)}
+                  </p>
                   
                   <div className="book-actions">
                     <button 
@@ -427,7 +618,7 @@ export function Profile() {
         </div>
       </div>
 
-      {/* Modal part uwu */}
+      {/* Modal part */}
       {isEditProfileOpened && (
         <Modal isOpened={isEditProfileOpened} onClose={() => setIsEditProfileOpened(false)}>
           <EditProfile />
@@ -447,6 +638,8 @@ export function Profile() {
             <p className="bio-text">{profileData.bio}</p>
           </div>
         )}
+
+        
 
         <div className="profile-details">
           <div className="profile-section">
@@ -518,15 +711,24 @@ export function Profile() {
           </div>
         </div>
 
+        {/* Rated Books Carousel */}
+        <RatedBooksCarousel />
+
         {/* Reading List Section */}
         <ReadingListSection />
 
         <div className="profile-stats">
           <div className="stat-card">
             <h4>Reading Stats</h4>
-            <div className="stat-number">
-              <span className="stat-value">{readingList.length}</span>
-              <span className="stat-label">Books in Reading List</span>
+            <div className="stat-grid">
+              <div className="stat-item">
+                <span className="stat-value">{readingList.length}</span>
+                <span className="stat-label">Books in Reading List</span>
+              </div>
+              <div className="stat-item">
+                <span className="stat-value">{ratedBooks.length}</span>
+                <span className="stat-label">Books Rated</span>
+              </div>
             </div>
           </div>
           
