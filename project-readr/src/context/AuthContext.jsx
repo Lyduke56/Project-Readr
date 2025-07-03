@@ -104,6 +104,43 @@ export const AuthContextProvider = ({ children }) => {
     }
   };
 
+  //insert reading_list
+  const insertReadingList = async (bookData, book, userId) =>  {
+    try{
+      const { data: existingBook, error: checkError } = await supabase
+      .from('reading_list')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('book_key', book.key)
+      .single();
+
+    if (checkError && checkError.code !== 'PGRST116') {
+      throw checkError;
+    }
+
+    if (existingBook) {
+      return { success: false, message: 'Book already in reading list!' };
+    }
+
+    // Insert the book into the reading list
+    const { data, error } = await supabase
+      .from('reading_list')
+      .insert([bookData])
+      .select();
+
+    if (error) {
+      throw error;
+    }
+
+    return { success: true, message: 'Added to reading list!', data };
+
+  } catch (error) {
+    console.error('Error adding book to Supabase:', error);
+    return { success: false, message: 'Failed to add book. Please try again.' };
+  }
+  }
+
+  //checks if email exist
   const doesEmailExist = async (email) => {
     const { data, error } = await supabase
         .from('users')
@@ -122,9 +159,8 @@ export const AuthContextProvider = ({ children }) => {
     return !!data  
 }
 
-
     return (
-        <AuthContext.Provider value={{ session, signUpNewUser, signInUser, signOut, insertUser, forgotPass, doesEmailExist }}>
+        <AuthContext.Provider value={{ session, signUpNewUser, signInUser, signOut, insertUser, forgotPass, doesEmailExist, insertReadingList }}>
             {children}
         </AuthContext.Provider>
     );

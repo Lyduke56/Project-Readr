@@ -1,124 +1,54 @@
 import { useState, useEffect } from "react"
-import { Link, useNavigate } from "react-router-dom"
+import { useNavigate } from "react-router-dom" // Add this import
+import { UserAuth } from '../context/AuthContext';
+import { supabase } from '../supabaseClient';
 import "./ReadingList.css"
 
 export const ReadingList = () => {
+
+  
+  const { session, signOut } = UserAuth();
+  const user = session?.user;
+  const navigate = useNavigate(); // Add this hook
+
   const [books, setBooks] = useState([]);
   const [filteredBooks, setFilteredBooks] = useState([]);
   const [activeFilter, setActiveFilter] = useState('TO_BE_READ');
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
+  
 
   // Mock data for books in different states
-  const mockBooks = [
-    {
-      id: 1,
-      title: "1984",
-      author: "George Orwell",
-      status: "COMPLETED",
-      score: 9.5,
-      dateAdded: "2024-01-15",
-      pages: 328
-    },
-    {
-      id: 2,
-      title: "The Great Gatsby",
-      author: "F. Scott Fitzgerald",
-      status: "TO_BE_READ",
-      score: null,
-      dateAdded: "2024-02-10",
-      pages: 180
-    },
-    {
-      id: 3,
-      title: "To Kill a Mockingbird",
-      author: "Harper Lee",
-      status: "FAVORITES",
-      score: 9.8,
-      dateAdded: "2024-01-20",
-      pages: 376
-    },
-    {
-      id: 4,
-      title: "The Metamorphosis",
-      author: "Franz Kafka",
-      status: "COMPLETED",
-      score: 8.7,
-      dateAdded: "2024-03-05",
-      pages: 96
-    },
-    {
-      id: 5,
-      title: "Les Miserables",
-      author: "Victor Hugo",
-      status: "TO_BE_READ",
-      score: null,
-      dateAdded: "2024-02-25",
-      pages: 1463
-    },
-    {
-      id: 6,
-      title: "Don Quixote",
-      author: "Miguel de Cervantes",
-      status: "FAVORITES",
-      score: 9.2,
-      dateAdded: "2024-01-10",
-      pages: 1072
-    },
-    {
-      id: 7,
-      title: "The Prince",
-      author: "Niccolò Machiavelli",
-      status: "COMPLETED",
-      score: 8.1,
-      dateAdded: "2024-03-15",
-      pages: 140
-    },
-    {
-      id: 8,
-      title: "Pride and Prejudice",
-      author: "Jane Austen",
-      status: "TO_BE_READ",
-      score: null,
-      dateAdded: "2024-03-20",
-      pages: 432
-    },
-    {
-      id: 9,
-      title: "The Catcher in the Rye",
-      author: "J.D. Salinger",
-      status: "FAVORITES",
-      score: 9.0,
-      dateAdded: "2024-02-15",
-      pages: 277
-    },
-    {
-      id: 10,
-      title: "Lord of the Flies",
-      author: "William Golding",
-      status: "COMPLETED",
-      score: 8.5,
-      dateAdded: "2024-03-10",
-      pages: 224
-    }
-  ];
-
-  // Simulate API call
   useEffect(() => {
-    const fetchBooks = async () => {
-      setLoading(true);
-      try {
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        setBooks(mockBooks);
-      } catch (error) {
-        console.error('Error fetching books:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+      const fetchReadingList = async () => {
+        if (!user?.id) {
+          setLoading(false);
+          return;
+        }
+  
+        try {
+          const { data, error } = await supabase
+            .from('reading_list')
+            .select('*')
+            .eq('user_id', user.id)
+            .order('added_at', { ascending: false });
+  
+          if (error) {
+            console.error('Error fetching reading list:', error);
+          } else {
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            setBooks(data || []);
+          }
+        } catch (err) {
+          console.error('Error fetching reading list:', err);
+        } finally {
+          setLoading(false);
+        }
+      };
+  
+      fetchReadingList();
+    }, [user?.id]);
 
-    fetchBooks();
-  }, []);
 
   // Filter books based on active filter and search query
   useEffect(() => {
@@ -158,11 +88,35 @@ export const ReadingList = () => {
     setSearchQuery(query);
   };
 
+  // Add this function to handle book card clicks
+  const handleBookCardClick = (book) => {
+    // Convert your reading list book data to the format expected by the Book page
+    const bookData = {
+      key: book.book_key,
+      title: book.title,
+      author_name: [book.author], // Convert to array format like OpenLibrary API
+      cover_i: book.cover_id,
+      first_publish_year: book.publish_year,
+      isbn: book.isbn ? [book.isbn] : undefined,
+      subject: book.subject ? book.subject.split(", ") : undefined
+    };
+
+    // Store book data for the Book page (same as in Home component)
+    localStorage.setItem('selectedBook', JSON.stringify(bookData));
+    
+    // Navigate to Book page
+    navigate('/Book');
+  };
+
   const BookCard = ({ book }) => (
-    <div className="reading-list-book-card">
+    <div 
+      className="reading-list-book-card"
+      onClick={() => handleBookCardClick(book)} // Add click handler
+      style={{ cursor: 'pointer' }} // Add pointer cursor to indicate clickability
+    >
       <div className="book-cover-section">
         <div className="book-cover-placeholder">
-          <span className="cover-text">Book Cover</span>
+          <span className="cover-text"><img src={`https://covers.openlibrary.org/b/id/${book.cover_id}-M.jpg`} /></span>
         </div>
       </div>
       
@@ -174,7 +128,7 @@ export const ReadingList = () => {
         </div>
         
         <div className="book-meta">
-          <p className="date-added">Added: {new Date(book.dateAdded).toLocaleDateString()}</p>
+          <p className="date-added">Added: {new Date(book.added_at).toLocaleDateString()}</p>
           {book.score && (
             <div className="book-rating">
               <span className="rating-label">Your Rating: </span>
@@ -186,15 +140,24 @@ export const ReadingList = () => {
         <div className="book-actions">
           <select 
             value={book.status}
-            onChange={(e) => handleStatusChange(book.id, e.target.value)}
+            onChange={(e) => {
+              e.stopPropagation(); // Prevent card click when changing status
+              handleStatusChange(book.id, e.target.value);
+            }}
             className="status-select"
+            onClick={(e) => e.stopPropagation()} // Prevent card click when clicking select
           >
             <option value="TO_BE_READ">To Be Read</option>
             <option value="COMPLETED">Completed</option>
             <option value="FAVORITES">Favorites</option>
           </select>
           
-          <button className="remove-button">Remove</button>
+          <button 
+            className="remove-button"
+            onClick={(e) => e.stopPropagation()} // Prevent card click when clicking remove
+          >
+            Remove
+          </button>
         </div>
       </div>
     </div>
@@ -251,7 +214,7 @@ export const ReadingList = () => {
                 onClick={() => setActiveFilter('TO_BE_READ')}
                 className={`filter-button ${activeFilter === 'TO_BE_READ' ? 'active' : ''}`}
               >
-                TO BE READ <span className="count">({toBeReadCount})</span>
+                TO BE read <span className="count">({toBeReadCount})</span>
               </button>
               
               <button
@@ -297,5 +260,3 @@ export const ReadingList = () => {
 };
 
 export default ReadingList;
-
-

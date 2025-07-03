@@ -1,0 +1,148 @@
+
+.reset-card {
+  background: white;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  border-radius: 1rem;
+  margin: 50px;
+  padding: 2rem;
+  width: 100%;
+  max-width: 450px;
+  text-align: center;
+}
+
+.reset-icon-circle {
+  width: 4rem;
+  height: 4rem;
+  border-radius: 50%;
+  margin: 0 auto 2rem;
+  display: flex;
+  align-items: center;
+  text-align: center;
+  justify-content: center;
+}
+
+.reset-blue-circle {
+  background-color: #dbeafe;
+}
+
+.reset-red-circle {
+  background-color: #fecaca;
+}
+
+.reset-green-circle {
+  background-color: #bbf7d0;
+}
+
+.reset-purple-circle {
+  background-color: #e9d5ff;
+}
+
+.reset-icon {
+  font-size: 2rem;
+}
+
+.reset-spinner {
+  width: 2rem;
+  height: 2rem;
+  border: 3px solid #3b82f6;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: reset-spin 1s linear infinite;
+}
+
+.reset-spinner.reset-small {
+  width: 1rem;
+  height: 1rem;
+  border-width: 2px;
+}
+
+@keyframes reset-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.reset-card h1 {
+  font-size: 1.25rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.reset-card p {
+  color: #4b5563;
+  margin-bottom: 1rem;
+}
+
+.reset-primary-btn {
+  width: 100%;
+  background-color: #7c3aed;
+  color: white;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  cursor: pointer;
+  margin-bottom: 1rem;
+  transition: background 0.3s;
+}
+
+.reset-primary-btn:hover {
+  background-color: #6b21a8;
+}
+
+.reset-link-btn {
+  background: none;
+  color: #7c3aed;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  transition: color 0.3s;
+}
+
+.reset-link-btn:hover {
+  color: #6b21a8;
+}
+
+.reset-error-box {
+  background: #fee2e2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.reset-form {
+  margin-top: 1rem;
+}
+
+.reset-form-group {
+  margin-bottom: 1rem;
+  text-align: left;
+}
+
+.reset-card label {
+  display: block;
+  margin-bottom: 0.25rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.reset-card input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+}
+
+.reset-card input:focus {
+  outline: none;
+  border-color: #7c3aed;
+  box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.3);
+}
+
+.reset-text-center {
+  text-align: center;
+}

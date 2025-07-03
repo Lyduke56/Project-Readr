@@ -2,119 +2,87 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import './ForgotPass.css';
 
-export const ForgotPass = ({ email }) => {
-  const [step, setStep] = useState('sending'); 
+export const ForgotPass = ({ email: initialEmail = '' }) => {
+  const [email, setEmail] = useState(initialEmail);
   const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState('');
   const [error, setError] = useState('');
 
   useEffect(() => {
-    if (email && step === 'sending') {
-      handleSendResetEmail();
-    }
-  }, [email]);
+    setEmail(initialEmail);
+  }, [initialEmail]);
 
-  const handleSendResetEmail = async () => {
-    if (!email) {
-      setError('No email provided');
-      setStep('error');
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setMessage('');
+    setError('');
+
+    const emailRegex = /\S+@\S+\.\S+/;
+    if (!emailRegex.test(email)) {
+      setError('Please enter a valid email address.');
+      setLoading(false);
       return;
     }
-    
-    setLoading(true);
-    setError('');
-    
+
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `http://localhost:5173/#/ResetPass`,
+        redirectTo: `${window.location.origin}/reset-password`,
       });
 
       if (error) {
         setError(error.message);
-        setStep('error');
       } else {
-        setStep('sent');
+        setMessage('Check your email for the password reset link!');
+        setEmail('');
       }
-    } catch {
-      setError('An unexpected error occurred');
-      setStep('error');
+    } catch (err) {
+      setError('An unexpected error occurred. Please try again.');
+    } finally {
+      setLoading(false);
     }
-    
-    setLoading(false);
   };
 
-  const goToLogin = () => {
-    window.location.href = '/login';
-  };
+  return (
+    <div className="forgotpass-container">
+      <div className="forgotpass-form-wrapper">
+        <h2 className="forgotpass-title">Forgot your password?</h2>
+        <p className="forgotpass-description">
+          Enter your email address and we'll send you a link to reset your password.
+        </p>
 
-  if (step === 'sending') {
-    return (
-      <div className="forgot-pass-container">
-        <div className="forgot-pass-card">
-          <div className="icon-container blue">
-            <span>📧</span>
+        <form className="forgotpass-form" onSubmit={handleSubmit}>
+          <div>
+            <label htmlFor="email" className="forgotpass-label">
+              Email address
+            </label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              required
+              className="forgotpass-input"
+              placeholder="Email address"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              disabled={loading}
+            />
           </div>
-          <h1 className="forgot-pass-title">Sending Reset Email</h1>
-          <p className="forgot-pass-subtitle mb-6">
-            Sending password reset link to <span className="email-highlight">{email}</span>
-          </p>
-          <div className="btn-primary blue" style={{ justifyContent: 'center' }}>
-            <div className="spinner"></div>
-            Sending...
-          </div>
-        </div>
-      </div>
-    );
-  }
 
-  if (step === 'error') {
-    return (
-      <div className="forgot-pass-container">
-        <div className="forgot-pass-card text-center">
-          <div className="icon-container blue">
-            <span>❌</span>
-          </div>
-          <h1 className="forgot-pass-title">Error</h1>
-          {error && (
-            <div className="error-message">
-              <p className="error-text">{error}</p>
-            </div>
-          )}
-          <button onClick={handleSendResetEmail} className="btn-primary blue">
-            Try Again
-          </button>
-          <div className="nav-section">
-            <button onClick={goToLogin} className="link-btn">
-              ← Back to Login
+          {error && <div className="forgotpass-error">{error}</div>}
+          {message && <div className="forgotpass-success">{message}</div>}
+
+          <div>
+            <button
+              type="submit"
+              disabled={loading || !email}
+              className="forgotpass-button"
+            >
+              {loading ? 'Sending...' : 'Send Reset Link'}
             </button>
           </div>
-        </div>
+        </form>
       </div>
-    );
-  }
-
-  if (step === 'sent') {
-    return (
-      <div className="forgot-pass-container sent-step">
-        <div className="forgot-pass-card text-center">
-          <div className="icon-container green">
-            <span>📧</span>
-          </div>
-          <h1 className="forgot-pass-title">Check Your Email</h1>
-          <p className="forgot-pass-subtitle mb-6">
-            We've sent a password reset link to <span className="email-highlight">{email}</span>
-          </p>
-          <div className="info-box">
-            <p className="info-text">
-              <strong>Important:</strong> Check your spam folder if you don't see the email within a few minutes.
-            </p>
-          </div>
-          <button onClick={goToLogin} className="link-btn">
-            ← Back to Login
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  return null;
+    </div>
+  );
 };

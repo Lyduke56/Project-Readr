@@ -104,7 +104,7 @@
 .addinfo-form textarea,
 .addinfo-form select {
   width: 100%;
-  padding: 0.75rem 1rem;
+  padding: 0.7rem 1rem;
   border: 2px solid #e5e7eb;
   border-radius: 12px;
   font-size: 1rem;
@@ -279,4 +279,10 @@
 
 .addinfo-form {
   position: relative;
+}
+
+.web-url {
+  display: flex;
+  gap: 1rem;
+  padding-top: 15px;
 }
