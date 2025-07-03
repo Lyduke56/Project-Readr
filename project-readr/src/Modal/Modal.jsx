@@ -1,4 +1,5 @@
 import './Modal.css';
+import { FaArrowLeft } from 'react-icons/fa';
 
 export const Modal = ({ isOpened, onClose, children }) => {
     
@@ -10,28 +11,12 @@ export const Modal = ({ isOpened, onClose, children }) => {
 
     return (
         <div className="overlay" onClick={onOverlayClick}>
-            <div className="container">
-                <button className="icon-mask" onClick={onClose} />
+            <div className="modal-container">
+                <button className="icon-mask" onClick={onClose}>
+                    <FaArrowLeft className="icon-mask"/>
+                </button>
                 {children}
             </div>
         </div>
     );
 };
-
-function ParentComponent() {
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-
-  const handleCloseModal = () => {
-    setIsEditModalOpen(false);
-  };
-
-  return (
-    <div>
-      {isEditModalOpen && (
-        <Modal>
-          <EditProfile onClose={handleCloseModal} />
-        </Modal>
-      )}
-    </div>
-  );
-}

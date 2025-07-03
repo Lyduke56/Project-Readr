@@ -7,6 +7,7 @@ import { FaFacebook, FaInstagram } from 'react-icons/fa';
 import { ResetPass } from './ResetPass';
 import { Modal } from '../Modal/Modal';
 import { EditProfile } from './editProfile';
+import { StarRating } from '../components/StarRating';
 
 export function Profile() {
   const { session, signOut } = UserAuth();
@@ -21,6 +22,9 @@ export function Profile() {
   const [isEditProfileOpened, setIsEditProfileOpened] = useState(false);
   const [isResetPasswordOpened, setIsResetPasswordOpened] = useState(false);
   const [error, setError] = useState('');
+
+  // Store ratings for each book - using book key as the key
+  const [bookRatings, setBookRatings] = useState({});
 
   // Fetch user profile data
   useEffect(() => {
@@ -73,6 +77,12 @@ export function Profile() {
           console.error('Error fetching reading list:', error);
         } else {
           setReadingList(data || []);
+          // Fetch ratings for each book in the reading list
+          if (data && data.length > 0) {
+            data.forEach(book => {
+              fetchBookRatings(book.book_key);
+            });
+          }
         }
       } catch (err) {
         console.error('Error fetching reading list:', err);
@@ -83,6 +93,46 @@ export function Profile() {
 
     fetchReadingList();
   }, [user?.id]);
+
+  const fetchBookRatings = async (bookId) => {
+    try {
+      // Fetch overall rating statistics
+      const { data: ratingStats, error: statsError } = await supabase
+        .from('book_ratings')
+        .select('rating')
+        .eq('book_id', bookId);
+
+      if (statsError) {
+        console.error('Error fetching rating stats:', statsError);
+        return;
+      }
+
+      if (ratingStats && ratingStats.length > 0) {
+        const totalRatings = ratingStats.length;
+        const averageRating = ratingStats.reduce((sum, rating) => sum + rating.rating, 0) / totalRatings;
+        
+        // Store the rating data for this specific book
+        setBookRatings(prev => ({
+          ...prev,
+          [bookId]: {
+            overallRating: parseFloat(averageRating.toFixed(1)),
+            totalRatings: totalRatings
+          }
+        }));
+      } else {
+        // No ratings yet
+        setBookRatings(prev => ({
+          ...prev,
+          [bookId]: {
+            overallRating: 0,
+            totalRatings: 0
+          }
+        }));
+      }
+    } catch (error) {
+      console.error('Error in fetchBookRatings:', error);
+    }
+  };
 
   // Remove book from reading list
   const removeFromReadingList = async (bookKey) => {
@@ -101,6 +151,13 @@ export function Profile() {
       } else {
         // Update local state
         setReadingList(prev => prev.filter(book => book.book_key !== bookKey));
+        
+        // Remove rating data for this book
+        setBookRatings(prev => {
+          const newRatings = { ...prev };
+          delete newRatings[bookKey];
+          return newRatings;
+        });
         
         // Also remove from localStorage
         const localReadingList = JSON.parse(localStorage.getItem('readingList') || '[]');
@@ -153,7 +210,7 @@ export function Profile() {
     }
   };
 
-//Edit profile function   
+  //Edit profile function   
   const handleEditProfile = (e) => {
     e.preventDefault();
     setIsEditProfileOpened(true);
@@ -170,7 +227,6 @@ export function Profile() {
     if (!text || text.length <= maxLength) return text;
     return text.substring(0, maxLength).trim() + '...';
   };
-
 
   // Reading List Component
   const ReadingListSection = () => {
@@ -205,67 +261,87 @@ export function Profile() {
       <div className="profile-section">
         <h3>My Reading List ({readingList.length})</h3>
         <div className="reading-list-grid">
-          {readingList.map((book) => (
-            <div key={book.id} className="reading-list-book-card">
-              <div className="book-cover" onClick={() => handleBookClick(book)}>
-                {book.cover_id ? (
-                  <>
-                    <img 
-                      src={`https://covers.openlibrary.org/b/id/${book.cover_id}-M.jpg`}
-                      alt={`Cover of ${book.title}`} 
-                      className="book-cover-image"
-                      onError={(e) => {
-                        e.target.style.display = 'none';
-                        e.target.nextElementSibling.style.display = 'flex';
-                      }}
-                    />
-                    <div className="book-cover-placeholder" style={{display: 'none'}}>
+          {readingList.map((book) => {
+            // Get the rating data for this specific book
+            const ratingData = bookRatings[book.book_key] || { overallRating: 0, totalRatings: 0 };
+            
+            return (
+              <div key={book.id} className="reading-list-book-card">
+                <div className="book-cover" onClick={() => handleBookClick(book)}>
+                  {book.cover_id ? (
+                    <>
+                      <img 
+                        src={`https://covers.openlibrary.org/b/id/${book.cover_id}-M.jpg`}
+                        alt={`Cover of ${book.title}`} 
+                        className="book-cover-image"
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                          e.target.nextElementSibling.style.display = 'flex';
+                        }}
+                      />
+                      <div className="book-cover-placeholder" style={{display: 'none'}}>
+                        <span>📖</span>
+                      </div>
+                    </>
+                  ) : (
+                    <div className="book-cover-placeholder">
                       <span>📖</span>
                     </div>
-                  </>
-                ) : (
-                  <div className="book-cover-placeholder">
-                    <span>📖</span>
-                  </div>
-                )}
-              </div>
-              
-              <div className="book-info">
-                <h4 className="book-title" title={book.title}>
-                  {truncateText(book.title, 50)}
-                </h4>
-                <p className="book-author" title={book.author}>
-                  by {truncateText(book.author, 35)}
-                </p>
-                {book.publish_year && (
-                  <p className="book-year">({book.publish_year})</p>
-                )}
-                <p className="book-added-date">
-                  Added {formatDate(book.added_at)}
-                </p>
+                  )}
+                </div>
                 
-                <div className="book-actions">
-                  <button 
-                    className="view-book-btn"
-                    onClick={() => handleBookClick(book)}
-                  >
-                    View Details
-                  </button>
-                  <button 
-                    className="remove-book-btn"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      if (window.confirm('Are you sure you want to remove this book from your reading list?')) {
-                        removeFromReadingList(book.book_key);
-                      }
-                    }}
-                  >
-                    Remove
-                  </button>
+                <div className="book-info">
+                  <h4 className="book-title" title={book.title}>
+                    {truncateText(book.title, 50)}
+                  </h4>
+                  <p className="book-author" title={book.author}>
+                    by {truncateText(book.author, 35)}
+                  </p>
+                  {book.publish_year && (
+                    <p className="book-year">({book.publish_year})</p>
+                  )}
+                  <p className="book-added-date">
+                    Added {formatDate(book.added_at)}
+                  </p>
+                  
+                  <div className="overall-rating">
+                    <h5>Overall Rating</h5>
+                    <div className="rating-display">
+                      <StarRating 
+                        rating={ratingData.overallRating} 
+                        readonly={true}
+                        size={20}
+                      />
+                      <span className="rating-text">
+                        {ratingData.overallRating > 0 ? `${ratingData.overallRating}/5` : 'No ratings yet'} 
+                        {ratingData.totalRatings > 0 && ` (${ratingData.totalRatings} rating${ratingData.totalRatings !== 1 ? 's' : ''})`}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  <div className="book-actions">
+                    <button 
+                      className="view-book-btn"
+                      onClick={() => handleBookClick(book)}
+                    >
+                      View Details
+                    </button>
+                    <button 
+                      className="remove-book-btn"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (window.confirm('Are you sure you want to remove this book from your reading list?')) {
+                          removeFromReadingList(book.book_key);
+                        }
+                      }}
+                    >
+                      Remove
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     );
@@ -336,7 +412,7 @@ export function Profile() {
           </div>
         </div>
 
-       <div className="profile-actions">
+        <div className="profile-actions">
           <button className="edit-profile-btn" onClick={handleEditProfile}>
             Edit Profile
           </button>
@@ -360,7 +436,7 @@ export function Profile() {
 
       {isResetPasswordOpened && (
         <Modal isOpened={isResetPasswordOpened} onClose={() => setIsResetPasswordOpened(false)}>
-          <ResetPass />
+          <ResetPass hideCancel={true} onProfile={true} />
         </Modal>
       )}
                 
@@ -442,8 +518,8 @@ export function Profile() {
           </div>
         </div>
 
-          {/* Reading List Section */}
-         <ReadingListSection />
+        {/* Reading List Section */}
+        <ReadingListSection />
 
         <div className="profile-stats">
           <div className="stat-card">
@@ -458,7 +534,6 @@ export function Profile() {
             <h4>Favorite Genres</h4>
             <p>Coming soon...</p>
           </div>
-          
         </div>
       </div>
     </div>

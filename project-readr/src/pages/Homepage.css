@@ -361,7 +361,9 @@
 
 .book-card {
   display: flex;
-  align-items: center;
+  flex-direction: row;
+
+  min-width: 100%;
   padding: 16px 24px;
   border-bottom: 1px solid #e5e5e5;
   transition: background-color 0.2s ease;
@@ -376,7 +378,7 @@
 }
 
 .book-rank {
-  width: 80px;
+  width: 10%;
   text-align: center;
 }
 
@@ -414,7 +416,6 @@
 
 .book-score,
 .user-score {
-  width: 80px;
   text-align: center;
 }
 
@@ -425,7 +426,6 @@
 }
 
 .book-status {
-  width: 100px;
   text-align: center;
 }
 

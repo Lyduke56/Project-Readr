@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import './Homepage.css';
 import { useNavigate } from 'react-router-dom';
 import { UserAuth } from '../context/AuthContext';
+import { supabase } from '../supabaseClient'; // Add this import
 
 export const Homepage = () => {
   // State for different sections
@@ -11,6 +12,7 @@ export const Homepage = () => {
   const [activeTab, setActiveTab] = useState('All');
   const [loading, setLoading] = useState(true);
   const [recommendationsLoading, setRecommendationsLoading] = useState(true);
+  const [topRatedLoading, setTopRatedLoading] = useState(true); // Add loading state for top rated
   const [userReadingList, setUserReadingList] = useState([]);
   const [recommendationBasis, setRecommendationBasis] = useState('');
   
@@ -21,59 +23,173 @@ export const Homepage = () => {
   const { session } = UserAuth();
   const user = session?.user;
 
-  // Mock data structure for top rated books (keeping your original data)
-  const mockTopRatedBooks = [
-    {
-      id: 1,
-      rank: 1,
-      title: "1984",
-      author: "Orwell, George",
-      users: "251,320 Users",
-      score: 9.50,
-      userScore: 10,
-      status: "COMPLETED"
-    },
-    {
-      id: 2,
-      rank: 2,
-      title: "The Great Gatsby",
-      author: "Fitzgerald, F. Scott",
-      users: "201,587 Users",
-      score: 9.48,
-      userScore: 9,
-      status: "COMPLETED"
-    },
-    {
-      id: 3,
-      rank: 3,
-      title: "The Metamorphosis",
-      author: "Kafka, Franz",
-      users: "285,301 Users",
-      score: 9.24,
-      userScore: 10,
-      status: "COMPLETED"
-    },
-    {
-      id: 4,
-      rank: 4,
-      title: "Les Miserables",
-      author: "Hugo, Victor",
-      users: "220,464 Users",
-      score: 9.21,
-      userScore: 9,
-      status: "COMPLETED"
-    },
-    {
-      id: 5,
-      rank: 5,
-      title: "To Kill a Mockingbird",
-      author: "Lee, Harper",
-      users: "123,456 Members",
-      score: 9.20,
-      userScore: 9,
-      status: "COMPLETED"
+  // Fetch top rated books from Supabase
+  const fetchTopRatedBooks = async () => {
+    setTopRatedLoading(true);
+    
+    try {
+      // Get all book ratings with book details
+      const { data: ratingsData, error } = await supabase
+        .from('book_ratings')
+        .select('book_id, rating, book_title, book_author');
+
+      if (error) {
+        console.error('Error fetching ratings:', error);
+        return;
+      }
+
+      if (!ratingsData || ratingsData.length === 0) {
+        console.log('No ratings found in database');
+        setTopRatedBooks([]);
+        return;
+      }
+
+      // Group ratings by book_id and calculate averages
+      const bookRatings = {};
+      
+      ratingsData.forEach(rating => {
+        if (!bookRatings[rating.book_id]) {
+          bookRatings[rating.book_id] = {
+            book_id: rating.book_id,
+            book_title: rating.book_title,
+            book_author: rating.book_author,
+            ratings: [],
+            total_ratings: 0,
+            average_rating: 0
+          };
+        }
+        bookRatings[rating.book_id].ratings.push(rating.rating);
+      });
+
+      // Calculate averages and filter books with minimum ratings
+      const processedBooks = Object.values(bookRatings)
+        .map(book => {
+          const totalRatings = book.ratings.length;
+          const averageRating = book.ratings.reduce((sum, rating) => sum + rating, 0) / totalRatings;
+          
+          return {
+            ...book,
+            total_ratings: totalRatings,
+            average_rating: parseFloat(averageRating.toFixed(2))
+          };
+        })
+        .filter(book => book.total_ratings >= 1) // Only include books with at least 1 rating
+        .sort((a, b) => {
+          // Sort by average rating (descending), then by total ratings (descending) as tiebreaker
+          if (b.average_rating !== a.average_rating) {
+            return b.average_rating - a.average_rating;
+          }
+          return b.total_ratings - a.total_ratings;
+        })
+        .slice(0, 10); // Get top 10 books
+
+      // Format the data for display
+      const formattedBooks = processedBooks.map((book, index) => ({
+        id: book.book_id,
+        rank: index + 1,
+        title: book.book_title || 'Unknown Title',
+        author: book.book_author || 'Unknown Author',
+        users: `${book.total_ratings} Rating${book.total_ratings !== 1 ? 's' : ''}`,
+        score: book.average_rating,
+        userScore: 0, // This would need to be fetched separately for the current user
+        status: 'PLAN_TO_READ', // Default status
+        total_ratings: book.total_ratings
+      }));
+
+      setTopRatedBooks(formattedBooks);
+      
+    } catch (error) {
+      console.error('Error in fetchTopRatedBooks:', error);
+    } finally {
+      setTopRatedLoading(false);
     }
-  ];
+  };
+
+  // Fetch user's rating and status for a specific book
+  const fetchUserBookStatus = async (bookId) => {
+    if (!user) return { userScore: 0, status: 'PLAN_TO_READ' };
+    
+    try {
+      const { data: userRating, error } = await supabase
+        .from('book_ratings')
+        .select('rating')
+        .eq('book_id', bookId)
+        .eq('user_id', user.id)
+        .single();
+
+      if (error && error.code !== 'PGRST116') {
+        console.error('Error fetching user rating:', error);
+        return { userScore: 0, status: 'PLAN_TO_READ' };
+      }
+
+      return {
+        userScore: userRating?.rating || 0,
+        status: userRating ? 'COMPLETED' : 'PLAN_TO_READ'
+      };
+    } catch (error) {
+      console.error('Error in fetchUserBookStatus:', error);
+      return { userScore: 0, status: 'PLAN_TO_READ' };
+    }
+  };
+
+  // Update user's rating for a book
+  const updateUserRating = async (bookId, bookTitle, bookAuthor, rating) => {
+    if (!user) return;
+
+    try {
+      const { data: existingRating, error: fetchError } = await supabase
+        .from('book_ratings')
+        .select('id')
+        .eq('book_id', bookId)
+        .eq('user_id', user.id)
+        .single();
+
+      if (fetchError && fetchError.code !== 'PGRST116') {
+        console.error('Error fetching existing rating:', fetchError);
+        return;
+      }
+
+      if (existingRating) {
+        // Update existing rating
+        const { error: updateError } = await supabase
+          .from('book_ratings')
+          .update({
+            rating: rating,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', existingRating.id);
+
+        if (updateError) {
+          console.error('Error updating rating:', updateError);
+          return;
+        }
+      } else {
+        // Insert new rating
+        const { error: insertError } = await supabase
+          .from('book_ratings')
+          .insert({
+            book_id: bookId,
+            user_id: user.id,
+            rating: rating,
+            book_title: bookTitle,
+            book_author: bookAuthor,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          });
+
+        if (insertError) {
+          console.error('Error inserting rating:', insertError);
+          return;
+        }
+      }
+
+      // Refresh top rated books after rating update
+      await fetchTopRatedBooks();
+      
+    } catch (error) {
+      console.error('Error in updateUserRating:', error);
+    }
+  };
 
   // Load user's reading list from localStorage and potentially from API
   const loadUserReadingList = async () => {
@@ -373,12 +489,11 @@ export const Homepage = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        // Load recommendations
-        await loadRecommendations();
-        
-        // Load top rated books (your existing logic)
-        await new Promise(resolve => setTimeout(resolve, 500));
-        setTopRatedBooks(mockTopRatedBooks);
+        // Load both recommendations and top rated books
+        await Promise.all([
+          loadRecommendations(),
+          fetchTopRatedBooks()
+        ]);
         
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -490,15 +605,11 @@ export const Homepage = () => {
       <div className="book-info">
         <h3 className="book-title">{book.title}</h3>
         <p className="book-author">{book.author}</p>
-        <p className="book-users">{book.users}</p>
+        <p className="book-users">{book.users}</p> {/*Tally number of users rated the book*/}
       </div>
       
       <div className="book-score">
         <span className="score-number">{book.score}</span>
-      </div>
-      
-      <div className="user-score">
-        <span className="score-number">{book.userScore}</span>
       </div>
       
       <div className="book-status">
@@ -513,50 +624,50 @@ export const Homepage = () => {
   );
 
   const RecommendationCard = ({ book }) => {
-  const title = book.title?.trim() || "No title available";
-  const author = Array.isArray(book.author_name) && book.author_name.length > 0
-    ? book.author_name.filter(name => name?.trim()).slice(0, 2).join(", ")
-    : "Unknown author";
-  const coverId = book.cover_i?.toString().trim() ? book.cover_i : null;
+    const title = book.title?.trim() || "No title available";
+    const author = Array.isArray(book.author_name) && book.author_name.length > 0
+      ? book.author_name.filter(name => name?.trim()).slice(0, 2).join(", ")
+      : "Unknown author";
+    const coverId = book.cover_i?.toString().trim() ? book.cover_i : null;
 
-  return (
-    <div className="recommendation-card" onClick={() => handleRecommendationClick(book)}>
-      <div className="recommendation-cover">
-        {coverId ? (
-          <img 
-            src={`https://covers.openlibrary.org/b/id/${coverId}-M.jpg`}
-            alt={`Cover of ${title}`} 
-            className="cover-image"
-            style={{ height: '100%', width: 'auto', maxHeight: '160px', borderRadius: '4px' }}
-            onError={(e) => {
-              e.target.style.display = 'none';
-              e.target.nextElementSibling.style.display = 'flex';
-            }}
-          />
-        ) : null}
-        <div className="cover-placeholder" style={{ display: coverId ? 'none' : 'flex' }}>
-          <span>Book Cover</span>
+    return (
+      <div className="recommendation-card" onClick={() => handleRecommendationClick(book)}>
+        <div className="recommendation-cover">
+          {coverId ? (
+            <img 
+              src={`https://covers.openlibrary.org/b/id/${coverId}-M.jpg`}
+              alt={`Cover of ${title}`} 
+              className="cover-image"
+              style={{ height: '100%', width: 'auto', maxHeight: '160px', borderRadius: '4px' }}
+              onError={(e) => {
+                e.target.style.display = 'none';
+                e.target.nextElementSibling.style.display = 'flex';
+              }}
+            />
+          ) : null}
+          <div className="cover-placeholder" style={{ display: coverId ? 'none' : 'flex' }}>
+            <span>Book Cover</span>
+          </div>
+        </div>
+
+        <div className="recommendation-info">
+          <h4 className="recommendation-title" title={title}>
+            {truncateText(title, 35)}
+          </h4>
+          <p className="recommendation-author" title={author}>
+            by {truncateText(author, 30)}
+          </p>
+
+          <button 
+            className="add-to-list-btn-small"
+            onClick={(e) => handleAddToReadingList(e, book)}
+          >
+            Add to List
+          </button>
         </div>
       </div>
-
-      <div className="recommendation-info">
-        <h4 className="recommendation-title" title={title}>
-          {truncateText(title, 35)}
-        </h4>
-        <p className="recommendation-author" title={author}>
-          by {truncateText(author, 30)}
-        </p>
-
-        <button 
-          className="add-to-list-btn-small"
-          onClick={(e) => handleAddToReadingList(e, book)}
-        >
-          Add to List
-        </button>
-      </div>
-    </div>
-  );
-};
+    );
+  };
 
   // Loading component for recommendations - now shows 20 skeletons
   const RecommendationSkeleton = () => (
@@ -567,6 +678,29 @@ export const Homepage = () => {
       <div className="recommendation-info">
         <div className="loading-text"></div>
         <div className="loading-text short"></div>
+      </div>
+    </div>
+  );
+
+  // Loading component for top rated books
+  const TopRatedSkeleton = () => (
+    <div className="book-card loading">
+      <div className="book-rank loading-placeholder">
+        <span>-</span>
+      </div>
+      <div className="book-info">
+        <div className="loading-text"></div>
+        <div className="loading-text short"></div>
+        <div className="loading-text short"></div>
+      </div>
+      <div className="book-score loading-placeholder">
+        <span>-</span>
+      </div>
+      <div className="user-score loading-placeholder">
+        <span>-</span>
+      </div>
+      <div className="book-status loading-placeholder">
+        <span>Loading...</span>
       </div>
     </div>
   );
@@ -690,9 +824,18 @@ export const Homepage = () => {
         <div className="container">
           <div className="top-rated-container">
             <div className="top-rated-header">
-              <h2 className="header-title">Top Rated Books</h2>
-              <button className="next-button">
-                Next 50 →
+              <h2 className="header-title">
+                Top Rated Books
+                {topRatedBooks.length > 0 && (
+                  <span className="books-count"> ({topRatedBooks.length} books)</span>
+                )}
+              </h2>
+              <button 
+                className="refresh-button"
+                onClick={fetchTopRatedBooks}
+                disabled={topRatedLoading}
+              >
+                {topRatedLoading ? 'Loading...' : 'Refresh Rankings'}
               </button>
             </div>
             
@@ -700,22 +843,53 @@ export const Homepage = () => {
             <div className="table-header">
               <div className="header-rank">RANKING</div>
               <div className="header-title-col">TITLE</div>
-              <div className="header-score">SCORE</div>
-              <div className="header-user-score">YOUR SCORE</div>
+              <div className="header-score">AUTHOR</div>
+              <div className="header-user-score">SCORE</div>
               <div className="header-status">STATUS</div>
             </div>
             
-            {/* Book List */}
-            <div className="book-list">
-              {topRatedBooks.map(book => (
-                <BookCard key={book.id} book={book} />
-              ))}
+            {/* Top Rated Books List */}
+            <div className="top-rated-list">
+              {topRatedLoading ? (
+                // Show loading skeletons
+                [...Array(10)].map((_, index) => (
+                  <TopRatedSkeleton key={index} />
+                ))
+              ) : topRatedBooks.length > 0 ? (
+                // Show actual top rated books
+                topRatedBooks.map(book => (
+                  <BookCard key={book.id} book={book} />
+                ))
+              ) : (
+                // No books found
+                <div className="no-books-message">
+                  <p>No rated books found. Be the first to rate some books!</p>
+                </div>
+              )}
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Footer with additional actions */}
+      <div className="footer-actions">
+        <div className="container">
+          <div className="action-buttons">
+            <button 
+              className="action-button primary"
+              onClick={() => navigate('/Discover')}
+            >
+              Discover More Books
+            </button>
+            <button 
+              className="action-button secondary"
+              onClick={() => navigate('/reading-list')}
+            >
+              View Reading List
+            </button>
           </div>
         </div>
       </div>
     </div>
   );
 };
-
-export default Homepage;
