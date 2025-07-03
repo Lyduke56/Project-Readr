@@ -1,5 +1,6 @@
 import { WelcomeNavbar } from "./WelcomeNavbar"
 import { HomepageNavbar } from "./HomepageNavbar"
+import  Footer  from "./Footer"
 import { Outlet, useLocation } from "react-router-dom"
 
 export function Layout(){
@@ -14,6 +15,7 @@ export function Layout(){
             <main>
                 <Outlet/>
             </main>
+            <Footer />
         </>
     )
 }

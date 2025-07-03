@@ -1,6 +1,7 @@
 import { useState } from "react"
-import { Link, useNavigate } from "react-router-dom" // Added useNavigate import
+import { Link, useNavigate } from "react-router-dom"
 import { UserAuth } from "../context/AuthContext"
+import { ImageCarousel } from "../components/ImageCarousel"
 import "./SignUp.css"
 
 
@@ -107,8 +108,7 @@ export function SignUp(){
                     </p>
                 </div>
                 <div className="signup-image-container">
-                    <img src="/LibraryPic.png" alt="Library" className="signup-image" />
-                    <p></p>
+                    <ImageCarousel imagePath="/HomepagePic.png" />
                 </div>
             </div>
         </div>
