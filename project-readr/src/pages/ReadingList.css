@@ -7,7 +7,7 @@
 
 .reading-list-page {
   min-height: 100vh;
-  background-color: #f4ead2;
+  background-color: #FFF1E3;
   font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
@@ -20,7 +20,7 @@
 /* Loading States */
 .loading-container {
   min-height: 100vh;
-  background-color: #f4f7f2;
+  background-color: #FFF1E3;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -52,7 +52,7 @@
 
 /* Navigation Section - Same as Homepage */
 .navigation-section {
-  background-color: #f4ead2;
+  background-color: #FFF1E3;
   padding: 16px 0;
 }
 
@@ -60,6 +60,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  margin-top: 25px;
 }
 
 .tab-buttons {
@@ -91,7 +92,7 @@
 
 .filter-select {
   padding: 8px 10px;
-  background-color: #f4f7f2;
+  background-color: white;
   color: #2d2d2d;
   font-size: 14px;
   font-weight: 700;
@@ -102,7 +103,7 @@
 
 .search-input {
   padding: 8px 16px;
-  background-color: #f4f7f2;
+  background-color: white;
   color: #2d2d2d;
   font-size: 14px;
   border: 1px solid #ddd;
@@ -113,7 +114,7 @@
 
 .search-input:focus {
   outline: none;
-  border-color: #3e5c45;
+  border-color: #6b4b3e;
 }
 
 .search-input::placeholder {
@@ -161,14 +162,14 @@
 }
 
 .filter-button:hover {
-  border-color: #3e5c45;
+  border-color: #6b4b3e;
   background-color: #f9f9f9;
 }
 
 .filter-button.active {
-  background-color: #3e5c45;
+  background-color: #6b4b3e;
   color: white;
-  border-color: #3e5c45;
+  border-color: #6b4b3e;
 }
 
 .filter-button .count {
@@ -223,7 +224,7 @@
 
 .book-cover-placeholder {
   width: 140px;
-  height: 220px;
+  height: 215px;
   background-color: #d3d3d3;
   border-radius: 8px;
   display: flex;
@@ -236,14 +237,22 @@
   overflow: hidden;
 }
 
-.rlbook-image{
+.rlbook-image {
   width: 100%;
   height: 100%;
-  object-fit: fill; 
+  object-fit: fill; /* This maintains aspect ratio and fills the space */
   object-position: center; 
   border-radius: 4px;
   display: block;
-  overflow: hidden;
+}
+
+.rlbook-image-stretch {
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  object-position: center; 
+  border-radius: 4px;
+  display: block;
 }
 
 .cover-text {
@@ -330,11 +339,11 @@
 .status-select {
   flex: 1;
   padding: 8px 12px;
-  background-color: #f4f7f2;
+  background-color: #FFF1E3;
   color: #2d2d2d;
   font-size: 11px;
   font-weight: 600;
-  border: 1px solid #ddd;
+  border: 1px solid #FFD6AF;
   border-radius: 6px;
   cursor: pointer;
   transition: border-color 0.2s ease;
@@ -344,7 +353,7 @@
 
 .status-select:focus {
   outline: none;
-  border-color: #3e5c45;
+  border-color: #6b4b3e;
 }
 
 .remove-button {

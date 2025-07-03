@@ -7,7 +7,7 @@
 
 .home-page {
   min-height: 100vh;
-  background-color: #f4f7f2;
+  background-color: #FFF1E3;
   font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
@@ -20,7 +20,7 @@
 /* Loading States */
 .loading-container {
   min-height: 100vh;
-  background-color: #f4f7f2;
+  background-color: #FFF1E3;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -51,8 +51,8 @@
 }
 
 /* Navigation Section */
-.navigation-section {
-  background-color: #f4ead2;
+.Hp-navigation-section {
+  background-color: #FFF1E3;
   padding: 16px 0;
 }
 
@@ -60,6 +60,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  background-color: #FFF1E3 ;
 }
 
 .rtab-buttons {
@@ -127,7 +128,7 @@
 
 /* Recommendations Section */
 .recommendations-section {
-  background-color: #f4ead2;
+  background-color: #FFF1E3;
   padding: 32px 0;
 }
 
@@ -170,7 +171,7 @@
 
 .scroll-button {
   background-color: transparent;
-  color: #d4af37;
+  color: #6b4b3e;
   border: none;
   border-radius: 50%;
   width: 48px;
@@ -186,7 +187,8 @@
 }
 
 .scroll-button:hover {
-  background-color: #2d4332;
+  background-color: #6b4b3e;
+  color:#ffd6af;
   transform: scale(1.05);
 }
 
@@ -287,7 +289,7 @@
 }
 
 .add-to-list-btn-small {
-  background-color: #26342D;
+  background-color: #6b4b3e;
   color: white;
   border: none;
   padding: 6px 6px 6px;
@@ -301,8 +303,8 @@
 }
 
 .add-to-list-btn-small:hover {
-  background-color: #3a4d3a;
-  color: #d4af37;
+  background-color: #c49e85;
+  color: black;
   transform: translateY(-1px);
 }
 
@@ -314,21 +316,21 @@
   padding: 8px 16px 8px;
   border-radius: 5px;
   border: none;
-  background-color: #3a4d3a;
+  background-color: #6b4b3e;
   transition: background-color 0.3s ease, transform 0.2s ease;
   color: white;
   margin-left: 78px;
 }
 
 .refresh-button:hover{
-  background-color:#3e5c45;
-  color:#d4af37;
+  background-color:#c49e85;
+  color: black;
   transform: translateY(-1px);
 }
 
 /* Top Rated Books Section */
 .top-rated-section {
-  background-color: #f4ead2;
+  background-color: #FFF1E3;
   padding: 32px 0;
 }
 
@@ -340,7 +342,7 @@
 }
 
 .top-rated-header {
-  background-color: #26342d;
+  background-color: #6b4b3e;
   color: white;
   padding: 16px 24px;
   display: flex;
@@ -352,12 +354,12 @@
   font-size: 23px;
   font-weight: 700;
   letter-spacing: 0.58px;
-  color: #d4af37;
+  color: #ffd6af;
 }
 
 .next-button {
-  background-color: #3e5c45;
-  color: white;
+  background-color: #ffd6af;
+  color: black;
   padding: 8px 16px;
   font-size: 12px;
   font-weight: 700;
@@ -369,13 +371,13 @@
 }
 
 .next-button:hover {
-  background-color: #2d4332;
+  background-color: #c49e85;
 }
 
 /* Table Header */
 .table-header {
-  background-color: #26342d;
-  color: white;
+  background-color: #c49e85;
+  color: black;
   padding: 12px 24px;
   display: flex;
   align-items: center;

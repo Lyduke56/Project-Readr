@@ -229,7 +229,7 @@ export const ReadingList = () => {
                 onClick={() => setActiveFilter('TO_BE_READ')}
                 className={`filter-button ${activeFilter === 'TO_BE_READ' ? 'active' : ''}`}
               >
-                TO BE read <span className="count">({toBeReadCount})</span>
+                TO BE READ <span className="count">({toBeReadCount})</span>
               </button>
               
               <button
