@@ -13,7 +13,7 @@ export const Homepage = () => {
   const [recommendationsLoading, setRecommendationsLoading] = useState(true);
   const [userReadingList, setUserReadingList] = useState([]);
   const [recommendationBasis, setRecommendationBasis] = useState('');
-  
+
   const navigate = useNavigate();
   const recommendationsRef = useRef(null);
   
@@ -527,10 +527,16 @@ export const Homepage = () => {
     loadRecommendations(true); // Force refresh
   };
 
-  // API integration functions (keeping your existing structure)
+
   const handleSearch = async (query) => {
-    setSearchQuery(query);
-    // Your existing search logic
+    if (!query.trim()) return;
+
+    navigate('/search', {
+      state: {
+        query: query.trim(),
+        filter: activeTab,
+      },
+    });
   };
 
   const handleTabChange = (tab) => {
@@ -690,7 +696,7 @@ export const Homepage = () => {
                 placeholder="Search Books, Authors, and more..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleSearch(searchQuery)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSearch(searchQuery)}
                 className="search-input"
               />
             </div>
