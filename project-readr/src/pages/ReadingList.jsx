@@ -74,13 +74,33 @@ export const ReadingList = () => {
   const { toBeReadCount, completedCount, favoritesCount } = getCounts();
 
   const handleStatusChange = async (bookId, newStatus) => {
-    // Update local state
-    setBooks(prev => 
-      prev.map(book => 
-        book.id === bookId ? { ...book, status: newStatus } : book
-      )
-    );
-  };
+  try {
+    // Update status in Supabase
+    const { data, error } = await supabase
+      .from('reading_list')
+      .update({ status: newStatus })
+      .eq('id', bookId)
+      .eq('user_id', user.id) // Ensuring the user owns this book
+      .select();
+
+    if (error) {
+      console.error('Error updating book status:', error);
+      return;
+    }
+
+    if (data && data.length > 0) {
+      // Update local state only if Supabase confirms the change
+      setBooks(prev =>
+        prev.map(book =>
+          book.id === bookId ? { ...book, status: newStatus } : book
+        )
+      );
+    }
+  } catch (err) {
+    console.error('Unexpected error updating book status:', err);
+  }
+};
+
 
   const handleSearch = (query) => {
     setSearchQuery(query);
