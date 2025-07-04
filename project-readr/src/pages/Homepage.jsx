@@ -555,7 +555,7 @@ export const Homepage = () => {
         await Promise.all([
           loadRecommendations(),
           fetchTopRatedBooks(),
-          setTopRatedBooks(mockTopRatedBooks),
+          setTopRatedBooks(mockTopRatedBooks)
         ]);
         
       } catch (error) {
