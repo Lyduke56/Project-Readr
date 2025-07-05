@@ -205,6 +205,16 @@ export const Book = () => {
     console.log(`Score changed to: ${newScore}`);
   };
 
+  const handleAddToReadingList = () => {
+    // TODO: Implement add to reading list logic
+    console.log("Add to reading list clicked");
+  };
+
+  const handleClearReview = () => {
+    // TODO: Implement clear review logic
+    console.log("Clear review clicked");
+  };
+
   const formatSubjects = (subjects) => {
     if (!subjects || !Array.isArray(subjects)) return "No subjects available";
     return subjects.slice(0, 10).join(", ");
@@ -235,31 +245,41 @@ export const Book = () => {
   };
 
   const UserRating = () => {
-    if (!currentUser) return null;
-    return (
-      <div className="user-rating">
-        <h4>Your Rating</h4>
-        <div className="rating-input">
-          <StarRating
-            rating={userRating}
-            hover={userRatingHover}
-            onRating={handleUserRatingSubmit}
-            onHover={setUserRatingHover}
-            readonly={submittingRating}
-            size={35}
-          />
-          {submittingRating && (
-            <span className="submitting-text">Submitting...</span>
-          )}
-          {userRating > 0 && (
-            <span className="rating-text">
-              You rated this book {userRating}/5
-            </span>
-          )}
-        </div>
+  if (!currentUser) return null;
+  return (
+    <div className={`b-user-rating ${userRating === 0 ? 'b-no-user-rating' : ''}`}>
+      <h4>Your Rating</h4>
+      <div className="rating-input">
+        <StarRating
+          rating={userRating}
+          hover={userRatingHover}
+          onRating={handleUserRatingSubmit}
+          onHover={setUserRatingHover}
+          readonly={submittingRating}
+          size={35}
+          className={userRating === 0 ? 'empty-rating' : ''}
+        />
+        {submittingRating && (
+          <span className="submitting-text">Submitting...</span>
+        )}
+        {userRating > 0 && (
+          <span className="rating-text">
+            You rated this book {userRating}/5
+          </span>
+        )}
+        {userRating > 0 && (
+          <button 
+            className="clear-review-btn"
+            onClick={handleClearReview}
+            type="button"
+          >
+            Clear Review
+          </button>
+        )}
       </div>
-    );
-  };
+    </div>
+  );
+};
 
   if (loading) {
     return (
@@ -316,7 +336,16 @@ export const Book = () => {
           </div>
 
           <div className="book-detail-info">
-            <h1>{title}</h1>
+            <div className="book-header-top">
+              <h1>{title}</h1>
+              <button 
+                className="add-to-reading-list-btn"
+                onClick={handleAddToReadingList}
+                type="button"
+              >
+                Add to Reading List
+              </button>
+            </div>
             <div className="authors">by {authors}</div>
 
             <div className="meta">
@@ -352,12 +381,13 @@ export const Book = () => {
 
             <div className="rating-section">
               <div className="overall-rating">
-                <h4>Overall Rating</h4>
-                <div className="rating-display">
+               <h4>Overall Rating</h4>
+                <div className={`rating-display ${overallRating === 0 ? 'no-ratings' : ''}`}>
                   <StarRating
                     rating={overallRating}
                     readonly={true}
                     size={30}
+                    className={overallRating === 0 ? 'empty-rating' : ''}
                   />
                   <span className="rating-text">
                     {overallRating > 0
@@ -394,7 +424,7 @@ export const Book = () => {
           </div>
         )}
 
-        <div className="book-reviews">
+        <div className="b-book-reviews">
           <h3>User Reviews</h3>
           <div className="no-reviews">
             <p>
