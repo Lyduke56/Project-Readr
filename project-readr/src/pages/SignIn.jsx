@@ -51,7 +51,7 @@ export function SignIn() {
             const result = await signInUser(email, password);
 
             if (result.success) {
-                navigate("/Homepage");
+                navigate("/Home");
             } else {
                 setError("Invalid login, please try again!");
             }

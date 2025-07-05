@@ -214,11 +214,11 @@ export const ReadingList = () => {
       {/* Navigation Section with Search */}
       <div className="navigation-section">
         <div className="container">
-          <div className="navigation-content">
+          <div className="rl-navigation-content">
 
-            <h1 className="page-title">My Reading List</h1>
+            <h1 className="rl-page-title">My Reading List</h1>
            
-            <div className="search-controls">
+            <div className="rl-search-controls">
               <select className="filter-select">
                 <option value="All">All</option>
                 <option value="Books">Books</option>

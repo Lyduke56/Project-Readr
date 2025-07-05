@@ -15,7 +15,7 @@ export function HomepageNavbar() {
     };
     
     const handleBackClick = () => {
-        navigate('/Homepage');
+        navigate('/Home');
     };
 
     const toggleDropdown = () => {
@@ -29,16 +29,13 @@ export function HomepageNavbar() {
         // Navigate to different routes based on option
         switch(option) {
             case 'Top Rated Books':
-                navigate('/Home');
+                navigate('/Homepage');
                 break;
             case 'My Reading List':
                 navigate('/ReadingList');
                 break;
-            case 'Open Online Forum':
-                navigate('/forum');
-                break;
-            case 'Book Recommendations':
-                navigate('/recommendations');
+            case 'Discover New Books':
+                navigate('/Discover');
                 break;
             default:
                 break;
@@ -117,8 +114,7 @@ export function HomepageNavbar() {
     const dropdownOptions = [
         'Top Rated Books',
         'My Reading List', 
-        'Open Online Forum',
-        'Book Recommendations'
+        'Discover New Books'
     ];
 
     return (

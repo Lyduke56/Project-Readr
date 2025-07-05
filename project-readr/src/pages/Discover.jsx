@@ -455,7 +455,7 @@ useEffect(() => {
       {/* Progress indicator */}
       <div className="progress-container">
         <p className="progress-text">
-          {savedBooks.length} saved • {swipedBooks.length} reviewed
+          {savedBooks.length} saved • {swipedBooks.length} skipped
         </p>
       </div>
       
