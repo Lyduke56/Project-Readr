@@ -386,7 +386,7 @@ body {
 
 .reading-list-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   gap: 20px;
   margin-top: 20px;
 }
@@ -397,7 +397,11 @@ body {
   padding: 20px;
   border: 1px solid #e9ecef;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
-  min-width: 0; /* Allow content to shrink */
+  max-width: 262.5px !important;
+  height: 450px !important; /* Increased height to accommodate better text display */
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .reading-list-book-card:hover {
@@ -413,6 +417,7 @@ body {
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
 }
 
 .book-cover-image {
@@ -435,7 +440,19 @@ body {
 
 .reading-list-book-card .book-info {
   text-align: center;
-  min-width: 0; /* Allow text to wrap */
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  min-height: 0; /* Important for flex children */
+}
+
+/* Add this new class to handle the content area */
+.book-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  min-height: 0; /* Allows content to shrink */
 }
 
 .book-title {
@@ -443,26 +460,44 @@ body {
   font-weight: 600;
   color: #333;
   margin: 0 0 8px 0;
-  line-height: 1.3;
+  line-height: 1.4;
   word-wrap: break-word;
+  height: 2.8em; /* Slightly increased height for better readability */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .book-author {
-  font-size: 14px;
+  font-size: 0.8rem !important;
   color: #666;
   margin: 0 0 8px 0;
   font-style: italic;
   word-wrap: break-word;
+  height: 2.8em; /* Allow for 2 lines for author names */
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .book-year {
   font-size: 12px;
   color: #888;
   margin: 0 0 12px 0;
+  height: 1.2em; /* Fixed height */
 }
 
 .overall-rating {
-  margin: 12px 0;
+  margin: 8px 0; /* Reduced margin */
+  height: 36px; /* Slightly reduced height */
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .rating-display {
@@ -470,7 +505,6 @@ body {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  margin-bottom: 8px;
   flex-wrap: wrap;
 }
 
@@ -483,6 +517,7 @@ body {
   font-size: 12px;
   color: #888;
   margin: 0 0 16px 0;
+  height: 1.2em; /* Fixed height */
 }
 
 .book-actions {
@@ -490,6 +525,9 @@ body {
   gap: 8px;
   justify-content: center;
   flex-wrap: wrap;
+  margin-top: auto; /* Push actions to bottom */
+  padding-top: 16px;
+  flex-shrink: 0; /* Prevent actions from shrinking */
 }
 
 .view-book-btn,
@@ -504,21 +542,21 @@ body {
 }
 
 .view-book-btn {
-  background: #007bff;
+  background: #6b4b3e;
   color: white;
 }
 
 .view-book-btn:hover {
-  background: #0056b3;
+  background: #c49e85;
 }
 
 .remove-book-btn {
-  background: #dc3545;
+  background: #8b1538;
   color: white;
 }
 
 .remove-book-btn:hover {
-  background: #c82333;
+  background: #dc3545;
 }
 
 /* Rated Books Carousel */
