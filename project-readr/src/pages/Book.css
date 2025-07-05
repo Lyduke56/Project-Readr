@@ -208,7 +208,12 @@ body{
   border-radius: 8px;
   border: 1px solid #e0e0e0;
 }
-
+.user-rating-section {
+  display: flex;
+  flex-direction: row;
+ justify-content: space-between;
+ align-items: left;
+}
 .overall-rating {
   margin-bottom: 25px;
   flex-direction: column;
@@ -740,6 +745,9 @@ body{
   cursor: pointer;
   transition: all 0.3s ease;
   font-weight: 500;
+  height: 90%;
+  align-self: center;
+
 }
 
 .clear-review-btn:hover {

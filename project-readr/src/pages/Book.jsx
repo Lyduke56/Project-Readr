@@ -742,21 +742,23 @@ export const Book = () => {
               {currentUser && (
                 <>
                   <h4>Your Rating</h4>
-                  <div className="rating-display">
-                    <StarRating
-                      rating={userRating}
-                      hover={userRatingHover}
-                      onRating={handleUserRatingSubmit}
-                      onHover={setUserRatingHover}
-                      readonly={submittingRating}
-                      size={34}
-                      className={userRating === 0 ? 'empty-rating' : ''}
-                    />
-                    <span className="rating-text">
-                      {submittingRating && "Submitting..."}
-                      {!submittingRating && userRating > 0 && `You rated this book ${userRating}/5`}
-                      {!submittingRating && userRating === 0 && "Rate this book"}
-                    </span>
+                    <div className="user-rating-section">
+                      <div className="rating-display">
+                        <StarRating
+                          rating={userRating}
+                          hover={userRatingHover}
+                          onRating={handleUserRatingSubmit}
+                          onHover={setUserRatingHover}
+                          readonly={submittingRating}
+                          size={34}
+                          className={userRating === 0 ? 'empty-rating' : ''}
+                        />
+                        <span className="rating-text">
+                          {submittingRating && "Submitting..."}
+                          {!submittingRating && userRating > 0 && `You rated this book ${userRating}/5`}
+                          {!submittingRating && userRating === 0 && "Rate this book"}
+                        </span>
+                      </div>
                     {userRating > 0 && (
                       <button 
                         className="clear-review-btn"
