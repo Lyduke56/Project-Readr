@@ -30,10 +30,26 @@ body{
 }
 
 .book-detail-cover {
-  object-fit: fill;
+  object-fit: cover; /* Changed from 'fill' to 'cover' for better image handling */
   border-radius: 4px;
   height: 380px;
+  display: block; /* Ensure it's a block element */
+  margin: 0 auto; /* Center horizontally */
 }
+
+.book-detail-cover.placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f0f0f0;
+  border: 2px dashed #ccc;
+  color: #666;
+  font-size: 1rem;
+  font-weight: 500;
+  text-align: center;
+}
+
+
 
 .book-detail-info {
   flex: 1;
@@ -42,8 +58,9 @@ body{
 .book-header-top {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   margin-bottom: 0.5rem;
+  gap: 20px;
 }
 
 .book-detail-info h1 {
@@ -52,6 +69,22 @@ body{
   margin: 0;
   color: #2d2d2d;
   flex: 1;
+}
+
+.b-title.long-title{
+  font-size: 1.5rem;
+}
+
+.b-title.very-long-title{
+  font-size: 1.4rem;
+}
+
+.authors.long-author{
+  font-size:1.3rem;
+}
+
+.authors.very-long-author{
+  font-size:1.1rem;
 }
 
 .add-to-reading-list-btn {
@@ -83,6 +116,9 @@ body{
   height: 380px;
   overflow: hidden;
   border-radius: 8px;
+  display: flex; /* Add flexbox */
+  align-items: center; /* Center vertically */
+  justify-content: center; /* Center horizontally */
 }
 
 .authors {
@@ -391,6 +427,7 @@ body{
 .loading-text {
   color: #666;
   font-size: 1.1rem;
+  background-color: #FFF1E3;
 }
 
 /* Responsive design */

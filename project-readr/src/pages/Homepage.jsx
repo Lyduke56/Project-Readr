@@ -665,50 +665,51 @@ const clearSessionRecommendations = () => {
   };
 
   const BookCard = ({ book }) => {
-    const coverId = book.coverID?.toString().trim() ? book.coverID : null;
-    return (
-      <div className="book-card">
-        <div className="book-rank">
-          <span className="rank-number">{book.rank}</span>
-        </div>
-        
-        <div className="book-info">
-          <div className="book-cover-small">
-            {book.coverID ? (
-              <img 
-                onClick={() => handleTopRatedBookClick(book)}
-                src={`https://covers.openlibrary.org/b/id/${coverId}-M.jpg`}
-                alt={`Cover of ${book.title}`} 
-                className="top-rated-cover-image"
-                onError={(e) => {
-                  e.target.style.display = 'none';
-                  e.target.nextElementSibling.style.display = 'flex';
-                }}
-              />
-            ) : null}
-            <div className="cover-placeholder-small" style={{ display: book.coverID ? 'none' : 'flex' }}>
-              <span>📚</span>
-            </div>
-          </div>
-          
-          <div className="book-text-info">
-            <h3 className="book-title">{book.title}</h3>
-            <p className="book-author">{book.author}</p>
-            <p className="book-users">{book.users}</p>
+  const coverId = book.coverID?.toString().trim() ? book.coverID : null;
+  
+  // Click handler for the entire card
+  const handleCardClick = () => {
+    handleTopRatedBookClick(book);
+  };
+
+  return (
+    <div className="hp-book-card" onClick={handleCardClick} style={{ cursor: 'pointer' }}>
+      <div className="book-rank">
+        <span className="rank-number">{book.rank}</span>
+      </div>
+      
+      <div className="hp-book-info">
+        <div className="book-cover-small">
+          {book.coverID ? (
+            <img 
+              src={`https://covers.openlibrary.org/b/id/${coverId}-M.jpg`}
+              alt={`Cover of ${book.title}`} 
+              className="top-rated-cover-image"
+              onError={(e) => {
+                e.target.style.display = 'none';
+                e.target.nextElementSibling.style.display = 'flex';
+              }}
+            />
+          ) : null}
+          <div className="cover-placeholder-small" style={{ display: book.coverID ? 'none' : 'flex' }}>
+            <span>📚</span>
           </div>
         </div>
         
-        <div className="book-status">
-          <button 
-            onClick={(e) => handleAddToReadingList(e, book)}
-            className="status-button"
-          >
-            Add To List
-          </button>
+        <div className="book-text-info">
+          <h3 className="hp-book-title">{book.title}</h3>
+          <p className="hp-book-author">{book.author}</p>
+          <p className="hp-book-users">{book.users}</p>
         </div>
       </div>
-    );
-  };
+      
+      <div className="hp-book-score">
+        <div className="hp-score-number">{book.score}</div>
+        <div className="hp-book-users">Rating</div>
+      </div>
+    </div>
+  );
+};
 
   const RecommendationCard = ({ book }) => {
     const title = book.title?.trim() || "No title available";
@@ -770,6 +771,14 @@ const clearSessionRecommendations = () => {
     </div>
   );
 
+  const tableHeader = (
+  <div className="table-header">
+    <div className="header-rank">RANKING</div>
+    <div className="header-title-col">TITLE</div>
+    <div className="header-score">SCORE</div>
+  </div>
+);
+
   if (loading) {
     return (
       <div className="loading-container">
@@ -789,8 +798,8 @@ const clearSessionRecommendations = () => {
       {/* Recommendations Section */}
       <div className="recommendations-section">
         <div className="container">
-          <div className="section-header">
-            <h2 className="section-title">
+          <div className="hp-section-header">
+            <h2 className="hp-section-title">
               {userReadingList.length > 0 ? 'Recommended for You' : 'Discover New Books'}
             </h2>
             {recommendationBasis && (
@@ -852,7 +861,7 @@ const clearSessionRecommendations = () => {
         <div className="container">
           <div className="top-rated-container">
            <div className="top-rated-header">
-              <h2 className="header-title">
+              <h2 className="hp-header-title">
                 Top Rated Books
                 {topRatedBooks.length > 0 && (
                   <span className="books-count"> ({topRatedBooks.length} books)</span>
@@ -864,7 +873,6 @@ const clearSessionRecommendations = () => {
             <div className="table-header">
               <div className="header-rank">RANKING</div>
               <div className="header-title-col">TITLE</div>
-              <div className="header-score">AUTHOR</div>
               <div className="header-user-score">SCORE</div>  
             </div>
             
@@ -896,7 +904,7 @@ const clearSessionRecommendations = () => {
             </button>
             <button 
               className="action-button secondary"
-              onClick={() => navigate('/reading-list')}
+              onClick={() => navigate('/ReadingList')}
             >
               View Reading List
             </button>
