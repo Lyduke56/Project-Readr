@@ -137,7 +137,12 @@ export const Book = () => {
     const author = Array.isArray(bookData.author_name) && bookData.author_name.length > 0
       ? bookData.author_name.filter(name => name?.trim()).slice(0, 2).join(", ")
       : "Unknown author";
-    const coverId = bookData.cover_i || null; // Add cover ID handling
+    const coverId = bookData.cover_i || bookData.coverID || null;
+    const subjects = formatSubjects(workDetails?.subjects || bookData.subject || []);
+    const publishYear = bookData.first_publish_year || 
+                       bookData.publish_year || 
+                       (Array.isArray(bookData.publish_year) ? bookData.publish_year[0] : null) || 
+                       "Unknown";
 
     // Check if the user already has a rating for this book
     const { data: existingRating, error: fetchError } = await supabase
@@ -174,6 +179,8 @@ export const Book = () => {
           book_title: title,
           book_author: author,
           cover_id: coverId, // Added cover ID
+          subjects: formatSubjects(subjects),
+          publish_year: publishYear,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         });
@@ -206,7 +213,7 @@ export const Book = () => {
   };
 
   const formatSubjects = (subjects) => {
-    if (!subjects || !Array.isArray(subjects)) return "No subjects available";
+    if (!subjects || !Array.isArray(subjects)) return NULL;
     return subjects.slice(0, 10).join(", ");
   };
 
@@ -283,11 +290,11 @@ export const Book = () => {
 
   const title = bookData.title || "Unknown Title";
   const authors = formatAuthors(bookData.author_name);
-  const publishYear =
-    bookData.first_publish_year ||
-    bookData.publish_year?.[0] ||
-    "Unknown";
-  const coverId = bookData.cover_i;
+  const publishYear = bookData.first_publish_year || 
+                       bookData.publish_year || 
+                       (Array.isArray(bookData.publish_year) ? bookData.publish_year[0] : null) || 
+                       "Unknown";
+  const coverId = bookData.cover_i || bookData.coverID || null;
   const subjects = workDetails?.subjects || bookData.subject || [];
   const editionCount = bookData.edition_count || "Unknown";
 
