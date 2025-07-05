@@ -12,225 +12,167 @@ export const Homepage = () => {
   const [activeTab, setActiveTab] = useState('All');
   const [loading, setLoading] = useState(true);
   const [recommendationsLoading, setRecommendationsLoading] = useState(true);
-  const [topRatedLoading, setTopRatedLoading] = useState(true); // Add loading state for top rated
   const [userReadingList, setUserReadingList] = useState([]);
   const [recommendationBasis, setRecommendationBasis] = useState('');
 
-  const navigate = useNavigate();
-  const recommendationsRef = useRef(null);
-  
-  // Get user session for personalized recommendations
-  const { session } = UserAuth();
+  // Supabase - Userauth
+  const { session, insertReadingList } = UserAuth();
   const user = session?.user;
 
+  const navigate = useNavigate();
+  const recommendationsRef = useRef(null);
+
   // Fetch top rated books from Supabase
-  const fetchTopRatedBooks = async () => {
-    setTopRatedLoading(true);
+  const fetchTopRatedBooks = async (isAutoRefresh = false) => {
+  try {
+    if (isAutoRefresh) {
+      console.log("Auto-refreshing top rated books...");
+    }
     
-    try {
-      // Get all book ratings with book details
-      const { data: ratingsData, error } = await supabase
-        .from('book_ratings')
-        .select('book_id, rating, book_title, book_author');
+    // Get all book ratings with book details
+    const { data: ratingsData, error } = await supabase
+      .from('book_ratings')
+      .select('book_id, rating, book_title, book_author, cover_id, publish_year, subjects');
 
-      if (error) {
-        console.error('Error fetching ratings:', error);
-        return;
-      }
-
-      if (!ratingsData || ratingsData.length === 0) {
-        console.log('No ratings found in database');
-        setTopRatedBooks([]);
-        return;
-      }
-
-      // Group ratings by book_id and calculate averages
-      const bookRatings = {};
-      
-      ratingsData.forEach(rating => {
-        if (!bookRatings[rating.book_id]) {
-          bookRatings[rating.book_id] = {
-            book_id: rating.book_id,
-            book_title: rating.book_title,
-            book_author: rating.book_author,
-            ratings: [],
-            total_ratings: 0,
-            average_rating: 0
-          };
-        }
-        bookRatings[rating.book_id].ratings.push(rating.rating);
-      });
-
-      // Calculate averages and filter books with minimum ratings
-      const processedBooks = Object.values(bookRatings)
-        .map(book => {
-          const totalRatings = book.ratings.length;
-          const averageRating = book.ratings.reduce((sum, rating) => sum + rating, 0) / totalRatings;
-          
-          return {
-            ...book,
-            total_ratings: totalRatings,
-            average_rating: parseFloat(averageRating.toFixed(2))
-          };
-        })
-        .filter(book => book.total_ratings >= 1) // Only include books with at least 1 rating
-        .sort((a, b) => {
-          // Sort by average rating (descending), then by total ratings (descending) as tiebreaker
-          if (b.average_rating !== a.average_rating) {
-            return b.average_rating - a.average_rating;
-          }
-          return b.total_ratings - a.total_ratings;
-        })
-        .slice(0, 10); // Get top 10 books
-
-      // Format the data for display
-      const formattedBooks = processedBooks.map((book, index) => ({
-        id: book.book_id,
-        rank: index + 1,
-        title: book.book_title || 'Unknown Title',
-        author: book.book_author || 'Unknown Author',
-        users: `${book.total_ratings} Rating${book.total_ratings !== 1 ? 's' : ''}`,
-        score: book.average_rating,
-        userScore: 0, // This would need to be fetched separately for the current user
-        status: 'PLAN_TO_READ', // Default status
-        total_ratings: book.total_ratings
-      }));
-
-      setTopRatedBooks(formattedBooks);
-      
-    } catch (error) {
-      console.error('Error in fetchTopRatedBooks:', error);
-    } finally {
-      setTopRatedLoading(false);
+    if (error) {
+      console.error('Error fetching ratings:', error);
+      return;
     }
-  };
 
-  // Fetch user's rating and status for a specific book
-  const fetchUserBookStatus = async (bookId) => {
-    if (!user) return { userScore: 0, status: 'PLAN_TO_READ' };
+    if (!ratingsData || ratingsData.length === 0) {
+      console.log('No ratings found in database');
+      setTopRatedBooks([]);
+      return;
+    }
+
+    // Group ratings by book_id and calculate averages
+    const bookRatings = {};
     
-    try {
-      const { data: userRating, error } = await supabase
-        .from('book_ratings')
-        .select('rating')
-        .eq('book_id', bookId)
-        .eq('user_id', user.id)
-        .single();
-
-      if (error && error.code !== 'PGRST116') {
-        console.error('Error fetching user rating:', error);
-        return { userScore: 0, status: 'PLAN_TO_READ' };
+    ratingsData.forEach(rating => {
+      if (!bookRatings[rating.book_id]) {
+        bookRatings[rating.book_id] = {
+          book_id: rating.book_id,
+          book_title: rating.book_title,
+          book_author: rating.book_author,
+          cover_id: rating.cover_id,
+          publish_year: rating.publish_year, 
+          subjects: rating.subjects,
+          ratings: [],
+          total_ratings: 0,
+          average_rating: 0
+        };
       }
+      bookRatings[rating.book_id].ratings.push(rating.rating);
+    });
 
-      return {
-        userScore: userRating?.rating || 0,
-        status: userRating ? 'COMPLETED' : 'PLAN_TO_READ'
-      };
-    } catch (error) {
-      console.error('Error in fetchUserBookStatus:', error);
-      return { userScore: 0, status: 'PLAN_TO_READ' };
-    }
-  };
-
-  // Update user's rating for a book
-  const updateUserRating = async (bookId, bookTitle, bookAuthor, rating) => {
-    if (!user) return;
-
-    try {
-      const { data: existingRating, error: fetchError } = await supabase
-        .from('book_ratings')
-        .select('id')
-        .eq('book_id', bookId)
-        .eq('user_id', user.id)
-        .single();
-
-      if (fetchError && fetchError.code !== 'PGRST116') {
-        console.error('Error fetching existing rating:', fetchError);
-        return;
-      }
-
-      if (existingRating) {
-        // Update existing rating
-        const { error: updateError } = await supabase
-          .from('book_ratings')
-          .update({
-            rating: rating,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', existingRating.id);
-
-        if (updateError) {
-          console.error('Error updating rating:', updateError);
-          return;
+    // Calculate averages and filter books with minimum ratings
+    const processedBooks = Object.values(bookRatings)
+      .map(book => {
+        const totalRatings = book.ratings.length;
+        const averageRating = book.ratings.reduce((sum, rating) => sum + rating, 0) / totalRatings;
+        
+        return {
+          ...book,
+          total_ratings: totalRatings,
+          average_rating: parseFloat(averageRating.toFixed(2))
+        };
+      })
+      .filter(book => book.total_ratings >= 1) // from supabase - function will include books with at least 1 rating
+      .sort((a, b) => {
+        // Sorter by average rating (descending), then by total ratings (descending) as tiebreaker
+        if (b.average_rating !== a.average_rating) {
+          return b.average_rating - a.average_rating;
         }
-      } else {
-        // Insert new rating
-        const { error: insertError } = await supabase
-          .from('book_ratings')
-          .insert({
-            book_id: bookId,
-            user_id: user.id,
-            rating: rating,
-            book_title: bookTitle,
-            book_author: bookAuthor,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          });
+        return b.total_ratings - a.total_ratings;
+      })
+      .slice(0, 10); // Get top 10 books
 
-        if (insertError) {
-          console.error('Error inserting rating:', insertError);
-          return;
-        }
+    // Format the data for display
+    const formattedBooks = processedBooks.map((book, index) => ({
+      id: book.book_id,
+      rank: index + 1,
+      title: book.book_title || 'Unknown Title',
+      author: book.book_author || 'Unknown Author',
+      users: `${book.total_ratings} Rating${book.total_ratings !== 1 ? 's' : ''}`,
+      score: book.average_rating,
+      coverID: book.cover_id,
+      publish_year: book.publish_year, 
+      subjects: book.subjects, 
+      userScore: 0,
+      status: 'PLAN_TO_READ', 
+      total_ratings: book.total_ratings
+    }));
+
+    setTopRatedBooks(formattedBooks);
+    
+    if (isAutoRefresh) {
+      console.log("Auto-refresh completed successfully");
+    }
+    
+  } catch (error) {
+    console.error('Error in fetchTopRatedBooks:', error);
+  }
+};
+
+useEffect(() => {
+  const interval = setInterval(() => {
+    fetchTopRatedBooks(true); 
+    console.log("Auto-refreshed top rated books");
+  }, 15000); // Refreshed top rated every 15 secons to prevent aggressive refresh uwu
+
+  return () => {
+    clearInterval(interval);
+    console.log("Interval cleared");
+  };
+}, []); 
+
+useEffect(() => {
+  const interval = setInterval(() => {
+    fetchTopRatedBooks(true);
+  }, 15000);
+
+  return () => clearInterval(interval);
+}, [user?.id]); 
+
+let cachedRecommendations = null;
+let cachedRecommendationBasis = null;
+
+// Replace getSessionRecommendations function
+const getSessionRecommendations = () => {
+  try {
+    if (cachedRecommendations && cachedRecommendationBasis) {
+      if (cachedRecommendations.length > 0) {
+        return {
+          recommendations: cachedRecommendations,
+          basis: cachedRecommendationBasis
+        };
       }
-
-      // Refresh top rated books after rating update
-      await fetchTopRatedBooks();
-      
-    } catch (error) {
-      console.error('Error in updateUserRating:', error);
     }
-  };
+  } catch (error) {
+    console.error('Error reading cached recommendations:', error);
+  }
+  return null;
+};
 
-  // Check if recommendations are already cached for this session
-  const getSessionRecommendations = () => {
-    try {
-      const cached = sessionStorage.getItem('sessionRecommendations');
-      const cachedBasis = sessionStorage.getItem('sessionRecommendationBasis');
-      
-      if (cached && cachedBasis) {
-        const recommendations = JSON.parse(cached);
-        if (recommendations.length > 0) {
-          return {
-            recommendations,
-            basis: cachedBasis
-          };
-        }
-      }
-    } catch (error) {
-      console.error('Error reading session recommendations:', error);
-    }
-    return null;
-  };
+// Replace setSessionRecommendations function
+const setSessionRecommendations = (recommendations, basis) => {
+  try {
+    cachedRecommendations = recommendations;
+    cachedRecommendationBasis = basis;
+  } catch (error) {
+    console.error('Error caching recommendations:', error);
+  }
+};
 
-  // Cache recommendations for this session
-  const setSessionRecommendations = (recommendations, basis) => {
-    try {
-      sessionStorage.setItem('sessionRecommendations', JSON.stringify(recommendations));
-      sessionStorage.setItem('sessionRecommendationBasis', basis);
-    } catch (error) {
-      console.error('Error caching session recommendations:', error);
-    }
-  };
-
-  // Clear session recommendations (useful for manual refresh)
-  const clearSessionRecommendations = () => {
-    try {
-      sessionStorage.removeItem('sessionRecommendations');
-      sessionStorage.removeItem('sessionRecommendationBasis');
-    } catch (error) {
-      console.error('Error clearing session recommendations:', error);
-    }
-  };
+// Replace clearSessionRecommendations function
+const clearSessionRecommendations = () => {
+  try {
+    cachedRecommendations = null;
+    cachedRecommendationBasis = null;
+  } catch (error) {
+    console.error('Error clearing cached recommendations:', error);
+  }
+};
 
   // Load user's reading list from localStorage and potentially from API
   const loadUserReadingList = async () => {
@@ -454,6 +396,7 @@ export const Homepage = () => {
         await new Promise(resolve => setTimeout(resolve, 200));
       }
       
+      
       // Remove duplicates and ensure exactly 20 books
       const uniqueRecommendations = recommendations
         .filter((book, index, self) => 
@@ -548,25 +491,21 @@ export const Homepage = () => {
 
   // Load data on component mount
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        // Load both recommendations and top rated books
-        await Promise.all([
-          loadRecommendations(),
-          fetchTopRatedBooks(),
-          setTopRatedBooks(mockTopRatedBooks)
-        ]);
-        
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      await loadRecommendations();
+      await fetchTopRatedBooks();
+      
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    fetchData();
-  }, []); // Removed user dependency to prevent reloading on user change
+  fetchData();
+}, []);
 
   // Scroll functions for recommendations
   const scrollLeft = () => {
@@ -593,51 +532,108 @@ export const Homepage = () => {
     navigate('/Book');
   };
 
-  // Handle add to reading list - modified to offer refresh option
+  const handleTopRatedBookClick = (book) => {
+  const bookData = {
+    key: book.id,
+    title: book.title,
+    author_name: [book.author], 
+    cover_i: book.coverID, 
+    publish_year:  book.publish_year,
+    subject: book.subjects,
+    rating: book.score,
+    total_ratings: book.total_ratings,
+    rank: book.rank
+  };
+  
+  localStorage.setItem('selectedBook', JSON.stringify(bookData));
+  navigate('/Book');
+};
+
+
   const handleAddToReadingList = async (e, book) => {
-    e.stopPropagation();
-    
-    const title = book.title?.trim() || "No title available";
-    const author = Array.isArray(book.author_name) && book.author_name.length > 0
+  e.stopPropagation();
+  
+  const isTopRatedBook = book.hasOwnProperty('rank') && book.hasOwnProperty('score');
+  
+  let title, author, bookKey, coverId, publishYear, subjects;
+  
+  if (isTopRatedBook) {
+    title = book.title?.trim() || "No title available";
+    author = book.author || "Unknown author";
+    bookKey = book.id; // top-rated books use 'id' instead of 'key'
+    coverId = book.coverID;
+    publishYear = book.publish_year || null;
+    subjects = book.subjects || null;
+  } else {
+    title = book.title?.trim() || "No title available";
+    author = Array.isArray(book.author_name) && book.author_name.length > 0
       ? book.author_name.filter(name => name?.trim()).slice(0, 2).join(", ")
       : "Unknown author";
+    bookKey = book.key;
+    coverId = book.cover_i;
+    publishYear = book.first_publish_year;
+    subjects = book.subject ? book.subject.slice(0, 5).join(", ") : null;
+  }
 
-    // Get existing reading list
-    let readingList = JSON.parse(localStorage.getItem('readingList') || '[]');
-    const bookToAdd = {
-      title: title,
-      author: author,
-      key: book.key,
-      cover_id: book.cover_i,
-      publish_year: book.first_publish_year,
-      subject: book.subject ? book.subject.slice(0, 5).join(", ") : null
-    };
-    
-    // Check if book is already in reading list
-    const exists = readingList.some(item => item.key === book.key);
-    if (!exists) {
-      readingList.push(bookToAdd);
-      localStorage.setItem('readingList', JSON.stringify(readingList));
-      
-      // Clear session cache since reading list changed
-      clearSessionRecommendations();
-      
-      // Offer to refresh recommendations
-      const shouldRefresh = window.confirm(
-        'Added to reading list! Would you like to refresh recommendations based on your updated reading list? (This will happen automatically next session)'
-      );
-      
-      if (shouldRefresh) {
-        loadRecommendations(true); // Force refresh
-      }
-    } else {
-      alert('Book already in reading list!');
-    }
-
-    // If you have API integration, add the Supabase logic here similar to your second script
+  let readingList = JSON.parse(localStorage.getItem('readingList') || '[]');
+  
+  const bookToAdd = {
+    title: title,
+    author: author,
+    key: bookKey,
+    cover_id: coverId,
+    publish_year: publishYear,
+    subject: subjects
   };
+  
+  const exists = readingList.some(item => item.key === bookKey);
+  if (!exists) {
+    readingList.push(bookToAdd);
+    localStorage.setItem('readingList', JSON.stringify(readingList));
+    
+    clearSessionRecommendations();
+    
+    //Closure ni bai
+    const shouldRefresh = window.confirm(
+      'Added to reading list! Would you like to refresh recommendations based on your updated reading list? (This will happen automatically next session)'
+    );
+    
+    if (shouldRefresh) {
+      loadRecommendations(true); // Force refresh
+    }
+  } else {
+    alert('Book already in reading list!');
+  }
 
-  // Modified refresh function to force new recommendations
+  if (user) {
+    try {
+      console.log("Book title: ", title);
+      console.log("Author: ", author);
+      const toBeRead = "TO_BE_READ";
+
+      const bookData = {
+        user_id: user.id,
+        book_key: bookKey,
+        title: title,
+        author: author,
+        cover_id: coverId,
+        publish_year: publishYear,
+        isbn: isTopRatedBook ? null : (book.isbn ? book.isbn[0] : null),
+        subject: subjects,
+        added_at: new Date().toISOString(),
+        status: toBeRead
+      };
+      
+      const result = await insertReadingList(bookData, book, user.id);
+      console.log("Successfully added to Supabase reading list");
+
+    } catch (error) {
+      console.error('Error handling add to reading list:', error);
+      alert('An error occurred. Please try again.');
+    }
+  }
+};
+
   const handleRefreshRecommendations = () => {
     clearSessionRecommendations();
     loadRecommendations(true); // Force refresh
@@ -662,46 +658,57 @@ export const Homepage = () => {
     }
   };
 
-  const handleStatusChange = async (bookId, newStatus) => {
-    setTopRatedBooks(prev => 
-      prev.map(book => 
-        book.id === bookId ? { ...book, status: newStatus } : book
-      )
-    );
-  };
-
   // Helper function to truncate text
   const truncateText = (text, maxLength = 40) => {
     if (!text || text.length <= maxLength) return text;
     return text.substring(0, maxLength).trim() + '...';
   };
 
-  const BookCard = ({ book }) => (
-    <div className="book-card">
-      <div className="book-rank">
-        <span className="rank-number">{book.rank}</span>
+  const BookCard = ({ book }) => {
+    const coverId = book.coverID?.toString().trim() ? book.coverID : null;
+    return (
+      <div className="book-card">
+        <div className="book-rank">
+          <span className="rank-number">{book.rank}</span>
+        </div>
+        
+        <div className="book-info">
+          <div className="book-cover-small">
+            {book.coverID ? (
+              <img 
+                onClick={() => handleTopRatedBookClick(book)}
+                src={`https://covers.openlibrary.org/b/id/${coverId}-M.jpg`}
+                alt={`Cover of ${book.title}`} 
+                className="top-rated-cover-image"
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                  e.target.nextElementSibling.style.display = 'flex';
+                }}
+              />
+            ) : null}
+            <div className="cover-placeholder-small" style={{ display: book.coverID ? 'none' : 'flex' }}>
+              <span>📚</span>
+            </div>
+          </div>
+          
+          <div className="book-text-info">
+            <h3 className="book-title">{book.title}</h3>
+            <p className="book-author">{book.author}</p>
+            <p className="book-users">{book.users}</p>
+          </div>
+        </div>
+        
+        <div className="book-status">
+          <button 
+            onClick={(e) => handleAddToReadingList(e, book)}
+            className="status-button"
+          >
+            Add To List
+          </button>
+        </div>
       </div>
-      
-      <div className="book-info">
-        <h3 className="book-title">{book.title}</h3>
-        <p className="book-author">{book.author}</p>
-        <p className="book-users">{book.users}</p> {/*Tally number of users rated the book*/}
-      </div>
-      
-      <div className="book-score">
-        <span className="score-number">{book.score}</span>
-      </div>
-      
-      <div className="book-status">
-        <button 
-          onClick={() => handleStatusChange(book.id, book.status === 'COMPLETED' ? 'READING' : 'COMPLETED')}
-          className="status-button"
-        >
-          {book.status}
-        </button>
-      </div>
-    </div>
-  );
+    );
+  };
 
   const RecommendationCard = ({ book }) => {
     const title = book.title?.trim() || "No title available";
@@ -759,29 +766,6 @@ export const Homepage = () => {
       <div className="recommendation-info">
         <div className="loading-text"></div>
         <div className="loading-text short"></div>
-      </div>
-    </div>
-  );
-
-  // Loading component for top rated books
-  const TopRatedSkeleton = () => (
-    <div className="book-card loading">
-      <div className="book-rank loading-placeholder">
-        <span>-</span>
-      </div>
-      <div className="book-info">
-        <div className="loading-text"></div>
-        <div className="loading-text short"></div>
-        <div className="loading-text short"></div>
-      </div>
-      <div className="book-score loading-placeholder">
-        <span>-</span>
-      </div>
-      <div className="user-score loading-placeholder">
-        <span>-</span>
-      </div>
-      <div className="book-status loading-placeholder">
-        <span>Loading...</span>
       </div>
     </div>
   );
@@ -867,20 +851,13 @@ export const Homepage = () => {
       <div className="top-rated-section">
         <div className="container">
           <div className="top-rated-container">
-            <div className="top-rated-header">
+           <div className="top-rated-header">
               <h2 className="header-title">
                 Top Rated Books
                 {topRatedBooks.length > 0 && (
                   <span className="books-count"> ({topRatedBooks.length} books)</span>
                 )}
               </h2>
-              <button 
-                className="refresh-button"
-                onClick={fetchTopRatedBooks}
-                disabled={topRatedLoading}
-              >
-                {topRatedLoading ? 'Loading...' : 'Refresh Rankings'}
-              </button>
             </div>
             
             {/* Table Header */}
@@ -888,24 +865,16 @@ export const Homepage = () => {
               <div className="header-rank">RANKING</div>
               <div className="header-title-col">TITLE</div>
               <div className="header-score">AUTHOR</div>
-              <div className="header-user-score">SCORE</div>
-              <div className="header-status">STATUS</div>
+              <div className="header-user-score">SCORE</div>  
             </div>
             
             {/* Top Rated Books List */}
             <div className="top-rated-list">
-              {topRatedLoading ? (
-                // Show loading skeletons
-                [...Array(10)].map((_, index) => (
-                  <TopRatedSkeleton key={index} />
-                ))
-              ) : topRatedBooks.length > 0 ? (
-                // Show actual top rated books
+              {topRatedBooks.length > 0 ? (
                 topRatedBooks.map(book => (
                   <BookCard key={book.id} book={book} />
                 ))
               ) : (
-                // No books found
                 <div className="no-books-message">
                   <p>No rated books found. Be the first to rate some books!</p>
                 </div>

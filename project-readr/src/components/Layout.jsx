@@ -8,7 +8,6 @@ export function Layout(){
 
     const isHomepage = location.pathname === "/Homepage" || location.pathname === "/Profile" || location.pathname ==="/ReadingList" || location.pathname ==="/Home" || location.pathname ==="/Discover" || location.pathname ==="/Book" || location.pathname ==="/Author";
 
-
     return(
         <>
             {isHomepage ? <HomepageNavbar /> : <WelcomeNavbar />}

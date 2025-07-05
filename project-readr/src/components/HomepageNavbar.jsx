@@ -127,7 +127,7 @@ export function HomepageNavbar() {
                 <div className="nav-right">
                     <div className="overlap-2">
 
-                        {location.pathname !== '/Homepage' && (
+                        {location.pathname !== '/Home' && (
                             <button className="icon-button" onClick={handleBackClick}>
                                 <img className="icon" alt="Arrow icon" src="arrow.png" />
                             </button>
