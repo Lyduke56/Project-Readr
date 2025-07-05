@@ -109,15 +109,15 @@ const ReviewItem = ({ review, currentUser }) => {
     <div className="review-item">
       <div className="review-header">
         <div className="review-user-info">
-          <div className="user-avatar">
+          <div className="user-avatar-review">
             {review.user_avatar ? (
               <img 
                 src={review.user_avatar} 
                 alt={`${review.username}'s avatar`}
-                className="avatar-image"
+                className="avatar-image-review"
               />
             ) : (
-              <div className="avatar-placeholder">
+              <div className="avatar-placeholder-review">
                 {review.username ? review.username.charAt(0).toUpperCase() : 'U'}
               </div>
             )}
