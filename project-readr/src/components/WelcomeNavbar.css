@@ -17,12 +17,13 @@
     z-index: 10;
 }
 
-.nav-left{
+.nav-left {
     display: flex;
     align-items: center;
     font-family: 'Merriweather', serif;
     color:#ffd6af;
     gap: 0.5rem;
+     font-weight: 100;
 }
 
 .nav-left h1{

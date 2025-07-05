@@ -18,6 +18,14 @@ export function HomepageNavbar() {
         navigate('/Home');
     };
 
+    const handleReadrClick = () => {
+        if (session) {
+            navigate('/Home');
+        } else {
+            navigate('/WelcomePage');
+        }
+    };
+
     const toggleDropdown = () => {
         setIsDropdownOpen(!isDropdownOpen);
     };
@@ -121,7 +129,7 @@ export function HomepageNavbar() {
         <>
             <div className="welcome-navbar">
                 <div className="nav-left">
-                    <h1>Readr</h1>
+                    <h1 onClick={handleReadrClick} style={{ cursor: 'pointer' }}>Readr</h1>
                 </div>
 
                 <div className="nav-right">
