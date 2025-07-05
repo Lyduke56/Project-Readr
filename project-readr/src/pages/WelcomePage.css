@@ -31,7 +31,7 @@ body{
 }
 
 .rotating-text-bg {
-    background-color: #E1CBB3; /* cyan-300 equivalent */
+    background-color: #E1CBB3; 
     color: #6b4b3e;
     padding: 6px 8px;
     border-radius: 8px;

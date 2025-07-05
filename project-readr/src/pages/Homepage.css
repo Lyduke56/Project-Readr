@@ -145,9 +145,14 @@
   display: flex;
   align-items: center;
   gap: 16px;
-  max-height: fit-content;
-  margin-top: 20px;
+  height: fit-content;
   margin-bottom: 20px;
+  background-color: #E1CBB3;
+  padding: 30px;
+  border: 2px solid #C4A484;
+  border-radius: 0 12px 12px 12px;
+  margin-top: -5px; /* Overlap with the folder tab */
+  z-index: 5;
 }
 
 .recommendations-scroll-wrapper {

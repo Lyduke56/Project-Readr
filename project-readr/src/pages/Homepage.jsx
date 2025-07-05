@@ -800,44 +800,7 @@ export const Homepage = () => {
   return (
     <div className="home-page">
       {/* Navigation Tabs */}
-      <div className="Hp-navigation-section">
-        <div className="container">
-          <div className="navigation-content">
-            <div className="rtab-buttons">
-              {['Books', 'Authors', 'Discover'].map(tab => (
-                <button
-                  key={tab}
-                  onClick={() => tab === 'Discover' ? navigate('/Discover') : handleTabChange(tab)}
-                  className={`rtab-button ${activeTab === tab ? 'active' : ''}`}
-                >
-                  {tab}
-                </button>
-              ))}
-            </div>
-            
-            <div className="search-controls">
-              <select 
-                value={activeTab}
-                onChange={(e) => handleTabChange(e.target.value)}
-                className="filter-select"
-              >
-                <option value="All">All</option>
-                <option value="Books">Books</option>
-                <option value="Authors">Authors</option>
-              </select>
-              
-              <input
-                type="text"
-                placeholder="Search Books, Authors, and more..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleSearch(searchQuery)}
-                className="search-input"
-              />
-            </div>
-          </div>
-        </div>
-      </div>
+      
 
       {/* Recommendations Section */}
       <div className="recommendations-section">

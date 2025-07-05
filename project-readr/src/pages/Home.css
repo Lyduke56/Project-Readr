@@ -1,4 +1,6 @@
 /* Home.css */
+@import url('https://fonts.googleapis.com/css2?family=Merriweather&display=swap');
+
 .home-container {
   min-height: 100vh;
   background-color: #FFF1E3;
@@ -7,27 +9,31 @@
 }
 
 .header {
-  max-width: 1200px;
+  max-width: 1600px;
   margin: 0 auto 40px;
 }
 
 .pages-title {
-  font-size: 2.5rem;
+  font-size: 2rem;
+  font-family: 'Merriweather', sans-serif;
   font-weight: 500;
   color: #2c3e50;
   text-align: left;
+  justify-content: left;
+  margin-left: 120px;
 }
 
 .controls {
   display: flex;
-  gap: 20px;
+  gap: 10px;
   align-items: center;
-  justify-content: space-between;
   background-color: #FFF1E3;
+  justify-content: space-between;
+  margin-bottom: 60px;
 }
 
 .filter-dropdown {
-  padding: 12px 16px;
+  padding: 9px 12px;
   border: 2px solid #e0e0e0;
   border-radius: 8px;
   background-color: white;
@@ -40,6 +46,10 @@
 
 .filter-dropdown:focus {
   border-color: #3498db;
+}
+
+.search-controls{
+  margin-right: 120px;
 }
 
 .search-bar {
@@ -107,11 +117,36 @@
   margin-right: 120px;
 }
 
-.h-section-title{
-  font-size: 25px;
-  font-weight: 500;
-  margin-bottom: 20px;
-  margin-left: 20px;
+.h-section-title {
+  font-family: 'Merriweather', sans-serif;
+  font-size: 18px;
+  font-weight: 200;
+  background: linear-gradient(135deg, #E1CBB3 0%, #D4B896 100%);
+  border: 2px solid #C4A484;
+  border-bottom: none;
+  
+  /* Add these properties */
+  display: inline-block;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  padding-left: 16px;
+  padding-right: 70px; /* Add padding for better appearance */
+  margin: 0; /* Remove any default margin */
+  
+  /* More dramatic folder effect */
+  clip-path: polygon(0 0, calc(100% - 20px) 0, 100% 80%, calc(100% - 5px) 100%, 0 100%);
+  transform: translateY(-5px);
+  
+  /* Enhanced shadow */
+  box-shadow: 
+    0 4px 8px rgba(0, 0, 0, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+}
+
+.h-recommendations-section{
+  height: fit-content;
+  margin-bottom: 50px;
 }
 
 .h-recommendations-container{

@@ -738,9 +738,9 @@ export const Home = () => {
       {!hasSearched && (
         <div className="home-sections">
           {/* Trending Books Section */}
-          <div className="recommendations-section">
+          <div className="h-recommendations-section">
             <div className="rcontainer">
-              <h2 className="section-title">Trending Books</h2>
+              <h2 className="h-section-title">Trending Books</h2>
               <div className="recommendations-container">
                 <button 
                   className="scroll-button left" 
@@ -774,9 +774,9 @@ export const Home = () => {
           </div>
 
           {/* Classic Books Section */}
-          <div className="recommendations-section">
+          <div className="h-recommendations-section">
             <div className="rcontainer">
-              <h2 className="section-title">Classic Books</h2>
+              <h2 className="h-section-title">Classic Books</h2>
               <div className="recommendations-container">
                 <button 
                   className="scroll-button left" 
@@ -810,9 +810,9 @@ export const Home = () => {
           </div>
 
           {/* Books We Love Section */}
-          <div className="recommendations-section">
+          <div className="h-recommendations-section">
             <div className="rcontainer">
-              <h2 className="section-title">Books We Love</h2>
+              <h2 className="h-section-title">Books We Love</h2>
               <div className="recommendations-container">
                 <button 
                   className="scroll-button left" 

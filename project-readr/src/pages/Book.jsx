@@ -350,19 +350,6 @@ export const Book = () => {
               )}
             </div>
 
-            <div className="book-actions">
-              <button
-                onClick={() =>
-                  handleStatusChange(
-                    status === "PLAN_TO_READ" ? "READING" : "PLAN_TO_READ"
-                  )
-                }
-                className="book-action-btn"
-              >
-                {status === "PLAN_TO_READ" ? "Plan to Read" : "Reading"}
-              </button>
-            </div>
-
             <div className="rating-section">
               <div className="overall-rating">
                 <h4>Overall Rating</h4>
