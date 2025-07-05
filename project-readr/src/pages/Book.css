@@ -215,7 +215,6 @@ body{
 }
 
 /* Star rating styles */
-
 .rating-section {
   margin-top: 20px;
   padding: 20px;
@@ -225,11 +224,14 @@ body{
 }
 
 .overall-rating {
-  margin-bottom: 20px; /* Increased spacing between sections */
+  margin-bottom: 25px;
+  flex-direction: column;
+  align-items: flex-start;
 }
 
 .overall-rating h4, .b-user-rating h4 {
-  margin: 0 0 10px 0;
+  padding-top: 20px;
+  padding-bottom: 5px;
   font-size: 1rem;
   font-weight: 600;
   color: #333;
@@ -246,7 +248,6 @@ body{
   cursor: pointer;
   transition: all 0.3s ease;
   font-family: 'Libre Baskerville', serif;
-  margin-left: auto;
 }
 
 .clear-review-btn:hover {
@@ -259,78 +260,89 @@ body{
   transform: translateY(0);
 }
 
-/* Make both rating displays use the same horizontal layout */
+/* Fixed alignment for rating displays */
 .rating-display, .rating-input {
   display: flex;
   align-items: center;
-  justify-content: flex-start; /* Ensure left alignment */
   gap: 15px;
-  flex-wrap: wrap;
-  margin-bottom: 7px;
+  margin-bottom: 10px;
   padding-left: 20px;
 }
 
-/* Additional StarRating component alignment fixes */
+.rating-input {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 10px;
+  padding-left: 20px;
+  justify-content: space-between;
+}
+
+.rating-input-left {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.rating-text-container {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-left: 10px;
+}
+
+/* Star rating component */
 .star-rating {
   display: flex;
   gap: 2px;
-  justify-content: flex-start; /* Ensure stars start from the left */
-}
-
-/* Force consistent alignment for all star rating instances */
-.overall-rating .star-rating,
-.b-user-rating .star-rating {
-  justify-content: flex-start;
   align-items: center;
 }
 
-/* Styling for when there are no ratings */
-/* Styling for when there are no ratings - remove !important */
-.no-ratings .rating-text {
-  color: #999;
-  font-style: italic;
-}
-
-.no-ratings .star-rating {
-  opacity: 1;
-}
-
-/* Only apply the muted color to readonly stars with no ratings */
-.no-ratings .star-rating.readonly .star {
-  color: #E1CBB3;
-}
-
-/* For empty user ratings - be more specific about when to apply muted colors */
-.b-user-rating .star-rating .star {
-  /* Allow the StarRating component to handle its own colors */
-  color: inherit;
-}
-
-/* Only apply muted color to empty user ratings when not hovering/interacting */
-.b-user-rating .star-rating:not(:hover) .star:not(.filled) {
-  color: #E1CBB3;
-}
-
-/* Ensure interactive stars can change color on hover */
-.star.interactive {
+.star {
+  display: inline-block;
   transition: color 0.2s ease, transform 0.2s ease;
+  user-select: none;
+}
+
+.star.interactive {
+  cursor: pointer;
 }
 
 .star.interactive:hover {
   transform: scale(1.1);
-  color: #ffc107 !important; /* Yellow on hover */
-}
-
-/* Selected/filled stars should be yellow */
-.star.filled {
-  color: #ffc107 !important;
 }
 
 .star.readonly {
   cursor: default;
 }
 
+.star.filled {
+  color: #ffc107 !important;
+}
+
+/* Default star colors */
+.star:not(.filled) {
+  color: #E1CBB3;
+}
+
+/* Hover effects for interactive stars */
+.star-rating:not(.readonly) .star:hover,
+.star-rating:not(.readonly) .star:hover ~ .star {
+  color: #ffc107;
+}
+
+.star-rating:not(.readonly) .star:hover ~ .star {
+  color: #E1CBB3;
+}
+
+/* Styling for when there are no ratings */
+.no-ratings .rating-text {
+  color: #999;
+  font-style: italic;
+}
+
 .rating-text {
+  padding-top: 5px;
   font-size: 14px;
   color: #666;
   font-weight: 500;
@@ -356,8 +368,38 @@ body{
   font-size: 14px;
 }
 
+/* Loading spinner */
+.loading-spinner {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #8B4513;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 20px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-content {
+  text-align: center;
+}
+
+.loading-text {
+  color: #666;
+  font-size: 1.1rem;
+}
+
 /* Responsive design */
 @media (max-width: 768px) {
+  .book-detail-header {
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  
   .book-header-top {
     flex-direction: column;
     gap: 1rem;
@@ -383,12 +425,21 @@ body{
   }
   
   .clear-review-btn {
-    margin-left: 0;
     margin-top: 0.5rem;
+  }
+  
+  .book-cover-container {
+    height: auto;
+    display: flex;
+    justify-content: center;
+  }
+  
+  .book-detail-cover {
+    height: 300px;
   }
 }
 
 /* Override the old star-rate class if it exists */
 .star-rate {
-  display: none; /* Hide the old rating system */
+  display: none;
 }
