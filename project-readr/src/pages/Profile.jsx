@@ -381,34 +381,36 @@ export function Profile() {
                 </div>
                 
                 <div className="book-info">
-                  <h4 className="book-title" title={ratedBook.book_title}>
-                    {truncateText(ratedBook.book_title, 30)}
-                  </h4>
-                  <p className="book-author" title={ratedBook.book_author}>
-                    by {truncateText(ratedBook.book_author, 25)}
-                  </p>
-                  
-                  <div className="user-rating">
-                    <h5>My Rating</h5>
-                    <div className="rating-display">
-                      <StarRating 
-                        rating={ratedBook.rating} 
-                        readonly={true}
-                        size={18}
-                      />
-                      <span className="rating-text">{ratedBook.rating}/5</span>
-                    </div>
-                  </div>
-                  
-                  <p className="rating-date">
-                    Rated {formatDate(ratedBook.created_at)}
-                  </p>
-                  
-                  {ratedBook.review && (
-                    <p className="book-review" title={ratedBook.review}>
-                      "{truncateText(ratedBook.review, 60)}"
+                  <div className="book-content">
+                    <h4 className="book-title" title={ratedBook.book_title}>
+                      {truncateText(ratedBook.book_title, 30)}
+                    </h4>
+                    <p className="book-author" title={ratedBook.book_author}>
+                      by {truncateText(ratedBook.book_author, 25)}
                     </p>
-                  )}
+                    
+                    <div className="user-rating">
+                      <h5>My Rating</h5>
+                      <div className="rating-display">
+                        <StarRating 
+                          rating={ratedBook.rating} 
+                          readonly={true}
+                          size={18}
+                        />
+                        <span className="rating-text">{ratedBook.rating}/5</span>
+                      </div>
+                    </div>
+                    
+                    <p className="rating-date">
+                      Rated {formatDate(ratedBook.created_at)}
+                    </p>
+                    
+                    {ratedBook.review && (
+                      <p className="book-review" title={ratedBook.review}>
+                        "{truncateText(ratedBook.review, 60)}"
+                      </p>
+                    )}
+                    </div>
                 </div>
               </div>
             ))}
@@ -489,7 +491,7 @@ export function Profile() {
                     </h4>
                     
                     <p className="book-author" title={book.author}>
-                      by {truncateText(book.author, 35)}
+                      by {truncateText(book.author, 22)}
                     </p>
                     
                     {book.publish_year && (

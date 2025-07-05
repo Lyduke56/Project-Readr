@@ -398,7 +398,7 @@ body {
   border: 1px solid #e9ecef;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   max-width: 262.5px !important;
-  height: 450px !important; /* Increased height to accommodate better text display */
+  height: 460px !important; /* Increased height to accommodate better text display */
   min-width: 0;
   display: flex;
   flex-direction: column;
@@ -644,7 +644,10 @@ body {
 
 .rated-book-card .book-info {
   text-align: center;
-  min-width: 0; /* Allow text to wrap */
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  min-height: 0; /* Important for flex children */
 }
 
 .user-rating {
