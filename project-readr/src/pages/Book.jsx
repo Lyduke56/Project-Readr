@@ -257,6 +257,23 @@ export const Book = () => {
     }
   };
 
+  const getTitleClass = (title) => {
+      if (!title) return 'b-title';
+      const length = title.length;
+      if (length > 45) return 'b-title very-long-title';
+      if (length > 30) return 'b-title long-title';
+      return 'b-title';
+    };
+
+    // Helper function to get author class based on length
+    const getAuthorClass = (author) => {
+      if (!author) return 'authors';
+      const length = author.length;
+      if (length > 40) return 'authors very-long-author';
+      if (length > 20) return 'authors long-author';
+      return 'authors';
+    };
+
   const handleStatusChange = (newStatus) => {
     setStatus(newStatus);
     console.log(`Status changed to: ${newStatus}`);
@@ -424,7 +441,7 @@ export const Book = () => {
 
           <div className="book-detail-info">
             <div className="book-header-top">
-              <h1>{title}</h1>
+              <h1 className={getTitleClass(title)}>{title}</h1>
               <button 
                 className="add-to-reading-list-btn"
                 onClick={handleAddToReadingList}
@@ -433,7 +450,7 @@ export const Book = () => {
                 Add to Reading List
               </button>
             </div>
-            <div className="authors">by {authors}</div>
+            <div className={getAuthorClass(authors)}>by {authors}</div>
 
             <div className="meta">
               <div className="meta-item emphasized">
