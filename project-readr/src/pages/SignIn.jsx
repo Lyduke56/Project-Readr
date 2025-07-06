@@ -136,7 +136,7 @@ export function SignIn() {
                 </div>
 
                 <div className="signin-image-container">
-                    <ImageCarousel imagePath="/HomepagePic.png" sectionPositions={[-10, 30, 60, 95]} />
+                    <ImageCarousel imagePath="/WhyReadr.png" sectionPositions={[-5, 30, 60, 90]} />
                 </div>
 
                 {isOpened && (
