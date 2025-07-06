@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import './Author.css';
 
 const Author = () => {
@@ -9,6 +9,11 @@ const Author = () => {
     const [error, setError] = useState(null);
     const [showAllWorks, setShowAllWorks] = useState(false);
     const location = useLocation();
+
+    const navigate = useNavigate();
+    const handleBack = () => {
+        navigate(-1); // Go back one step in the browser history
+    };
 
     useEffect(() => {
         const fetchAuthorData = async () => {
@@ -263,6 +268,9 @@ const Author = () => {
 
     return (
         <div className="author-container">
+            <button onClick={handleBack} className="back-btn">
+            ← Go Back
+            </button>
             <div className="author-header">
                 <div className="author-photo-container">
                     {authorData.key ? (
