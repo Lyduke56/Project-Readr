@@ -601,6 +601,97 @@ export const Home = () => {
     </div>
   );
 
+  // Add this function to your Home component
+
+const handleFeelingLucky = () => {
+  const luckyKeywords = [
+  // Fiction genres
+  'adventure', 'mystery', 'romance', 'thriller', 'fantasy', 'science fiction',
+  'horror', 'historical fiction', 'contemporary fiction', 'literary fiction',
+  'dystopian', 'magical realism', 'urban fantasy', 'paranormal romance',
+  'cozy mystery', 'psychological thriller', 'space opera', 'steampunk',
+  'cyberpunk', 'post-apocalyptic', 'time travel', 'alternate history',
+  'fairy tale retelling', 'noir', 'gothic fantasy', 'speculative fiction',
+  'cli-fi', 'metafiction',
+
+  // Non-fiction genres
+  'biography', 'memoir', 'self-help', 'history', 'philosophy', 'psychology',
+  'science', 'technology', 'business', 'cooking', 'travel', 'health',
+  'fitness', 'spirituality', 'politics', 'economics', 'art', 'music',
+  'photography', 'nature', 'environment', 'education', 'parenting',
+  'productivity', 'leadership', 'true crime', 'journalism', 'essay collection',
+
+  // Classic literature
+  'classic literature', 'victorian literature', 'american literature',
+  'british literature', 'world literature', 'poetry', 'drama', 'essays',
+  'russian literature', 'french literature', 'gothic literature',
+  'greek classics', 'modernist literature', 'existentialist literature',
+
+  // Popular themes
+  'coming of age', 'family saga', 'friendship', 'love story', 'war',
+  'survival', 'redemption', 'betrayal', 'courage', 'hope', 'dreams',
+  'identity', 'belonging', 'justice', 'freedom', 'sacrifice', 'forgiveness',
+  'loss', 'revenge', 'healing', 'isolation', 'found family', 'second chances',
+
+  // Specific subjects
+  'dragons', 'vampires', 'pirates', 'knights', 'detectives', 'spies',
+  'robots', 'aliens', 'magic', 'witches', 'ghosts', 'zombies', 'werewolves',
+  'superheroes', 'assassins', 'thieves', 'royalty', 'warriors', 'rebels',
+  'clones', 'artificial intelligence', 'mythical creatures', 'doppelgangers',
+
+  // Time periods
+  'medieval', 'renaissance', 'victorian', 'world war', 'civil war',
+  'ancient egypt', 'ancient rome', 'ancient greece', 'wild west',
+  'roaring twenties', 'great depression', 'cold war', 'future',
+  'prehistoric', 'industrial revolution', 'space age', '1980s', '2000s',
+
+  // Settings
+  'small town', 'big city', 'island', 'mountain', 'desert', 'forest',
+  'castle', 'spaceship', 'underwater', 'underground', 'haunted house',
+  'boarding school', 'hospital', 'prison', 'farm', 'cafe', 'library',
+  'circus', 'orphanage', 'dystopian city', 'virtual reality',
+
+  // Awards and recognition
+  'pulitzer prize', 'nobel prize', 'booker prize', 'hugo award',
+  'newbery medal', 'caldecott medal', 'national book award', 'bestseller',
+  'award winner', 'prize winner', 'critically acclaimed', 'book club pick',
+  'goodreads choice', 'nytimes bestseller', 'staff pick', 'oprah book club',
+
+  // Mood/tone
+  'heartwarming', 'inspiring', 'uplifting', 'emotional', 'funny',
+  'humorous', 'witty', 'dark', 'mysterious', 'suspenseful', 'romantic',
+  'adventurous', 'thrilling', 'peaceful', 'nostalgic', 'thought-provoking',
+  'gritty', 'melancholic', 'wholesome', 'bittersweet', 'absurd', 'quirky',
+
+  // Age groups
+  'young adult', 'middle grade', 'children', 'adult fiction', 'new adult',
+  'early reader', 'picture books', 'chapter books',
+
+  // Popular series/franchises (generic terms)
+  'series', 'trilogy', 'saga', 'chronicles', 'tales', 'adventures',
+  'epic', 'installment', 'spin-off', 'anthology',
+
+  // Reading preferences
+  'page turner', 'quick read', 'beach read', 'comfort read', 'escapist',
+  'educational', 'informative', 'entertaining', 'challenging', 'easy read',
+  'slow burn', 'fast-paced', 'character driven', 'plot driven',
+  'short stories', 'long reads', 'standalone', 'must read', 'hidden gem'
+];
+
+
+  // Randomly select a keyword
+  const randomKeyword = luckyKeywords[Math.floor(Math.random() * luckyKeywords.length)];
+  
+  // Set the search term and perform the search
+  setSearchTerm(randomKeyword);
+  setFilterBy('All');
+  setCurrentPage(1);
+  setHasSearched(true);
+  
+  // Perform the search with the random keyword
+  fetchDataSearch(1, randomKeyword);
+};
+
   // Render book cards
   const renderBookCards = () => {
     if (!hasSearched) {
@@ -799,6 +890,14 @@ export const Home = () => {
               disabled={isLoading}
             >
               {isLoading ? 'Searching...' : 'Search'}
+            </button>
+
+            <button
+            className="feeling-lucky-button"
+            onClick={handleFeelingLucky}
+            disabled={isLoading}
+            >
+              {isLoading ? 'Lucky..!' : 'Feeling Lucky..?'}
             </button>
           </div>
         </div>

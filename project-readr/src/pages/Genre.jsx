@@ -8,30 +8,41 @@ const GenrePage = () => {
   const navigate = useNavigate();
 
   // Mock data for genres - this will be replaced with API integration later
-  const mockGenres = [
-    'Action', 'Adventure', 'Anthology', 'Art', 'Autobiography', 
-    'Biography', 'Business',
-    'Children', 'Comedy', 'Comics', 'Coming of Age', 'Cooking', 'Crime', 'Cyberpunk',
-    'Drama', 'Dystopian',
-    'Education', 'Epic Fantasy', 'Espionage',
-    'Fairy Tales', 'Family Saga', 'Fantasy', 'Fiction', 'Folklore',
-    'Gothic', 'Graphic Novel',
-    'Health', 'High Fantasy', 'Historical Fiction', 'Historical Romance', 'History', 'Horror', 'Humor',
-    'Inspirational',
-    'Journalism',
-    'Law', 'Legal Thriller', 'LGBTQ+', 'Light Novel', 'Literature', 'LitRPG',
-    'Magical Realism', 'Manga', 'Mathematics', 'Memoir', 'Military Fiction', 'Multicultural', 'Mystery', 'Mythology',
-    'Nature', 'New Adult', 'Noir', 'Non-fiction', 'Novel',
-    'Paranormal', 'Parenting', 'Philosophy', 'Picture Book', 'Poetry', 'Politics', 'Post-Apocalyptic', 'Psychology', 'Psychological Thriller',
-    'Realistic Fiction', 'Religion', 'Romance',
-    'Satire', 'Science', 'Science Fiction', 'Self-help', 'Short Stories', 'Slice of Life', 'Space Opera', 'Speculative Fiction', 'Sports', 'Spy Fiction', 'Steampunk', 'Supernatural', 'Survival', 'Suspense',
-    'Technology', 'Thriller', 'Time Travel', 'Transgressive', 'Travel', 'True Crime',
-    'Urban Fantasy',
-    'Vampire',
-    'War', 'Western', 'Women',
-    'Young Adult',
-    'Zombie'
-  ];
+const mockGenres = [
+  'Action', 'Adult Fiction', 'Adventure', 'Adventurous', 'Aliens', 'American Literature', 
+  'Ancient Egypt', 'Ancient Greece', 'Ancient Rome', 'Anthology', 'Art', 'Artificial Intelligence', 
+  'Assassins', 'Autobiography', 'Award Winner', 'Belonging', 'Bestseller', 'Betrayal', 
+  'Biography', 'Bittersweet', 'Boarding School', 'Book Club Pick', 'British Literature', 
+  'Business', 'Cafe', 'Caldecott Medal', 'Castle', 'Challenging', 'Children', 'Chronicles', 
+  'Classic Literature', 'Clones', 'Cold War', 'Comfort Read', 'Coming Of Age', 'Cooking', 
+  'Courage', 'Crime', 'Critically Acclaimed', 'Cyberpunk', 'Dark', 'Desert', 'Detectives', 
+  'Dragons', 'Drama', 'Dreams', 'Dystopian', 'Early Reader', 'Easy Read', 'Education', 
+  'Educational', 'Emotional', 'Entertaining', 'Epic Fantasy', 'Escapist', 'Escape', 
+  'Espionage', 'Essays', 'Fairy Tales', 'Family Saga', 'Fantasy', 'Fiction', 'Folklore', 
+  'Forgiveness', 'Freedom', 'French Literature', 'Funny', 'Future', 'Ghosts', 'Goodreads Choice', 
+  'Gothic', 'Great Depression', 'Greek Classics', 'Gritty', 'Haunted House', 'Healing', 
+  'Health', 'Heartwarming', 'High Fantasy', 'Historical Fiction', 'Historical Romance', 
+  'History', 'Hope', 'Horror', 'Hospital', 'Hugo Award', 'Humor', 'Humorous', 'Identity', 
+  'Informative', 'Inspirational', 'Island', 'Journalism', 'Justice', 'Knights', 'Law', 
+  'Legal Thriller', 'LGBTQ+', 'Library', 'Literature', 'LitRPG', 'Long Reads', 'Loss', 
+  'Love Story', 'Magic', 'Magical Realism', 'Mathematics', 'Medieval', 'Melancholic', 
+  'Memoir', 'Middle Grade', 'Military Fiction', 'Modernist Literature', 'Mountain', 
+  'Multicultural', 'Must Read', 'Mystery', 'Mysterious', 'Mythology', 'National Book Award', 
+  'Nature', 'New Adult', 'Newbery Medal', 'Nobel Prize', 'Noir', 'Non-Fiction', 'Nostalgic', 
+  'Novel', 'Oprah Book Club', 'Page Turner', 'Paranormal', 'Parenting', 'Peaceful', 
+  'Philosophy', 'Picture Book', 'Pirates', 'Poetry', 'Politics', 'Prison', 'Prize Winner', 
+  'Psychological Thriller', 'Psychology', 'Pulitzer Prize', 'Quick Read', 'Quirky', 
+  'Realistic Fiction', 'Rebels', 'Redemption', 'Religion', 'Renaissance', 'Revenge', 
+  'Roaring Twenties', 'Robots', 'Romance', 'Romantic', 'Royals', 'Russian Literature', 
+  'Sacrifice', 'Saga', 'Science', 'Science Fiction', 'Second Chances', 'Self-Help', 
+  'Series', 'Short Stories', 'Slice Of Life', 'Slow Burn', 'Small Town', 'Spaceship', 
+  'Speculative Fiction', 'Spies', 'Spy Fiction', 'Staff Pick', 'Standalone', 'Steampunk', 
+  'Superheroes', 'Supernatural', 'Survival', 'Suspense', 'Tales', 'Technology', 'Thieves', 
+  'Thought-Provoking', 'Thriller', 'Time Travel', 'Transgressive', 'Travel', 'Trilogy', 
+  'True Crime', 'Underwater', 'Underground', 'Uplifting', 'Urban Fantasy', 'Vampire', 
+  'Victorian', 'Victorian Literature', 'Werewolves', 'Western', 'Wholesome', 'Wild West', 
+  'Witches', 'Witty', 'World Literature', 'World War', 'Young Adult', 'Zombie'
+];
 
   // Generate alphabet letters for filtering
   const alphabet = ['All', ...Array.from({ length: 26 }, (_, i) => String.fromCharCode(65 + i))];
