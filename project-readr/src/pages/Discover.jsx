@@ -1,19 +1,22 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Stack from '../components/Stack';
 import { UserAuth } from '../context/AuthContext';
 import './Discover.css';
 
 const DiscoverPage = () => {
-  const [books, setBooks] = useState([]);
-  const [bookQueue, setBookQueue] = useState([]);
   const [displayedBooks, setDisplayedBooks] = useState([]);
-  const [currentBookIndex, setCurrentBookIndex] = useState(0);
+  const [bookCache, setBookCache] = useState([]); // Cache of fetched books
   const [savedBooks, setSavedBooks] = useState([]);
   const [swipedBooks, setSwipedBooks] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [userReadingList, setUserReadingList] = useState([]);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [isFetching, setIsFetching] = useState(false);
+  
+  // Use ref to track seen book IDs across all fetches
+  const seenBookIds = useRef(new Set());
+  const fetchOffset = useRef(0);
 
   const { session, insertReadingList } = UserAuth();
   const user = session?.user;
@@ -22,22 +25,31 @@ const DiscoverPage = () => {
   const SESSION_KEYS = {
     SWIPED_BOOKS: 'discover_swiped_books',
     SAVED_BOOKS: 'discover_saved_books',
-    CURRENT_BOOKS: 'discover_current_books',
+    DISPLAYED_BOOKS: 'discover_displayed_books',
+    BOOK_CACHE: 'discover_book_cache',
+    SEEN_BOOK_IDS: 'discover_seen_book_ids',
+    FETCH_OFFSET: 'discover_fetch_offset',
     LAST_FETCH_TIME: 'discover_last_fetch_time'
   };
 
-  // Check if session data exists for discover page
+  // Utility functions for session storage
   const getSessionData = () => {
     try {
       const swipedBooks = JSON.parse(sessionStorage.getItem(SESSION_KEYS.SWIPED_BOOKS) || '[]');
       const savedBooks = JSON.parse(sessionStorage.getItem(SESSION_KEYS.SAVED_BOOKS) || '[]');
-      const currentBooks = JSON.parse(sessionStorage.getItem(SESSION_KEYS.CURRENT_BOOKS) || '[]');
+      const displayedBooks = JSON.parse(sessionStorage.getItem(SESSION_KEYS.DISPLAYED_BOOKS) || '[]');
+      const bookCache = JSON.parse(sessionStorage.getItem(SESSION_KEYS.BOOK_CACHE) || '[]');
+      const seenIds = JSON.parse(sessionStorage.getItem(SESSION_KEYS.SEEN_BOOK_IDS) || '[]');
+      const fetchOffsetValue = parseInt(sessionStorage.getItem(SESSION_KEYS.FETCH_OFFSET) || '0');
       const lastFetchTime = sessionStorage.getItem(SESSION_KEYS.LAST_FETCH_TIME);
       
       return {
         swipedBooks,
         savedBooks,
-        currentBooks,
+        displayedBooks,
+        bookCache,
+        seenIds,
+        fetchOffsetValue,
         lastFetchTime
       };
     } catch (error) {
@@ -45,13 +57,15 @@ const DiscoverPage = () => {
       return {
         swipedBooks: [],
         savedBooks: [],
-        currentBooks: [],
+        displayedBooks: [],
+        bookCache: [],
+        seenIds: [],
+        fetchOffsetValue: 0,
         lastFetchTime: null
       };
     }
   };
 
-  // Cache session data
   const setSessionData = (key, data) => {
     try {
       sessionStorage.setItem(key, JSON.stringify(data));
@@ -60,24 +74,34 @@ const DiscoverPage = () => {
     }
   };
 
-  // Clear session data
   const clearSessionData = () => {
     try {
       Object.values(SESSION_KEYS).forEach(key => {
         sessionStorage.removeItem(key);
       });
+      seenBookIds.current.clear();
+      fetchOffset.current = 0;
       console.log('Discover session data cleared');
     } catch (error) {
       console.error('Error clearing session data:', error);
     }
   };
 
-  // Extract genres from user's reading list for recommendations
+  // Shuffle array function
+  const shuffleArray = (array) => {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  };
+
+  // Extract genres from user's reading list
   const getUserGenres = (readingList) => {
     const genres = new Set();
     readingList.forEach(book => {
       if (book.subject) {
-        // Split subjects and add to genres set
         book.subject.split(',').forEach(genre => {
           genres.add(genre.trim().toLowerCase());
         });
@@ -86,315 +110,239 @@ const DiscoverPage = () => {
     return Array.from(genres);
   };
 
-  const maintainBookQueue = (newBooks = []) => {
-    setBookQueue(prevQueue => {
-      // Create a Set of existing book IDs for faster lookup
-      const existingIds = new Set(prevQueue.map(book => book.id));
-      
-      // Filter out duplicates and already seen books
-      const uniqueNewBooks = newBooks.filter(book => 
-        !existingIds.has(book.id) &&
-        !swipedBooks.includes(book.id) && 
-        !savedBooks.some(saved => saved.id === book.id)
-      );
-      
-      const combined = [...prevQueue, ...uniqueNewBooks];
-      const filtered = combined.filter(book => 
-        !swipedBooks.includes(book.id) && 
-        !savedBooks.some(saved => saved.id === book.id)
-      );
-      
-      // Update displayed books to always show 10
-      const newDisplayed = filtered.slice(0, 10);
-      setDisplayedBooks(newDisplayed);
-      
-      return filtered;
-    });
+  // Get reading list keys for duplicate checking
+  const getReadingListKeys = () => {
+    return new Set(userReadingList.map(book => book.key));
   };
 
-  // Load user's reading list from localStorage - FIXED: Only run once
+  // Check if book is duplicate
+  const isDuplicateBook = (book) => {
+    const readingListKeys = getReadingListKeys();
+    return seenBookIds.current.has(book.key) || 
+           readingListKeys.has(book.key) ||
+           swipedBooks.includes(book.key) ||
+           savedBooks.some(saved => saved.id === book.key);
+  };
+
+  // Process and filter books
+  const processBooks = (rawBooks) => {
+    const processed = rawBooks
+      .filter(book => {
+        const hasRequiredFields = book.key && book.title && book.author_name;
+        const hasValidAuthor = Array.isArray(book.author_name) && book.author_name.length > 0;
+        const isNotDuplicate = !isDuplicateBook(book);
+        
+        return hasRequiredFields && hasValidAuthor && isNotDuplicate;
+      })
+      .map(book => ({
+        id: book.key,
+        title: book.title?.trim() || "No title available",
+        author: Array.isArray(book.author_name) && book.author_name.length > 0
+          ? book.author_name.filter(name => name?.trim()).slice(0, 2).join(", ")
+          : "Unknown author",
+        genres: book.subject && Array.isArray(book.subject)
+          ? book.subject.slice(0, 3).join(", ") 
+          : "General",
+        coverUrl: book.cover_i 
+          ? `https://covers.openlibrary.org/b/id/${book.cover_i}-M.jpg`
+          : null,
+        originalBook: book
+      }));
+
+    // Mark books as seen
+    processed.forEach(book => {
+      seenBookIds.current.add(book.id);
+    });
+
+    return shuffleArray(processed);
+  };
+
+  // Fetch books from API
+  const fetchBooksFromAPI = async (limit = 50) => {
+    setIsFetching(true);
+    const userGenres = getUserGenres(userReadingList);
+    const queries = [];
+
+    if (userGenres.length > 0) {
+      // Use user's genres for personalized recommendations
+      const selectedGenres = shuffleArray(userGenres).slice(0, 3);
+      queries.push(...selectedGenres.map(genre => 
+        `subject:"${genre}" AND has_fulltext:true`
+      ));
+    } else {
+      // Fallback to popular categories
+      const popularCategories = [
+        'fiction', 'romance', 'mystery', 'fantasy', 'science fiction',
+        'biography', 'history', 'self-help', 'thriller', 'adventure'
+      ];
+      const selectedCategories = shuffleArray(popularCategories).slice(0, 3);
+      queries.push(...selectedCategories.map(category => 
+        `subject:"${category}" AND ratings_count:>10`
+      ));
+    }
+
+    // Add some random discovery queries
+    const randomQueries = [
+      'publish_year:>2000 AND ratings_count:>20',
+      'publish_year:>2010 AND has_fulltext:true',
+      'ratings_average:>4.0 AND ratings_count:>50'
+    ];
+    queries.push(...shuffleArray(randomQueries).slice(0, 2));
+
+    let allBooks = [];
+    const booksPerQuery = Math.ceil(limit / queries.length);
+
+    for (const query of queries) {
+      try {
+        const currentOffset = fetchOffset.current;
+        const response = await fetch(
+          `https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&limit=${booksPerQuery}&offset=${currentOffset}&sort=random&fields=key,title,author_name,cover_i,subject,first_publish_year,ratings_average,ratings_count`,
+          {
+            headers: { 'User-Agent': 'BookDiscoveryApp/1.0' }
+          }
+        );
+
+        if (response.ok) {
+          const data = await response.json();
+          if (data.docs && Array.isArray(data.docs)) {
+            allBooks.push(...data.docs);
+          }
+        }
+
+        // Add delay to avoid rate limiting
+        await new Promise(resolve => setTimeout(resolve, 300));
+      } catch (error) {
+        console.warn('Fetch error for query:', query, error);
+      }
+    }
+
+    // Increment offset for next fetch
+    fetchOffset.current += booksPerQuery;
+    sessionStorage.setItem(SESSION_KEYS.FETCH_OFFSET, fetchOffset.current.toString());
+
+    setIsFetching(false);
+    return shuffleArray(allBooks);
+  };
+
+  // Maintain exactly 10 displayed books
+  const maintainDisplayedBooks = async () => {
+    const currentDisplayed = displayedBooks.length;
+    const needed = 10 - currentDisplayed;
+
+    if (needed <= 0) return;
+
+    // First, try to use books from cache
+    const availableFromCache = bookCache.filter(book => 
+      !displayedBooks.some(displayed => displayed.id === book.id) &&
+      !isDuplicateBook(book.originalBook)
+    );
+
+    let booksToAdd = availableFromCache.slice(0, needed);
+    let stillNeeded = needed - booksToAdd.length;
+
+    // If we need more books, fetch from API
+    if (stillNeeded > 0 && !isFetching) {
+      try {
+        const freshBooks = await fetchBooksFromAPI(stillNeeded * 3); // Fetch extra to account for duplicates
+        const processedBooks = processBooks(freshBooks);
+        
+        // Add to cache
+        const newCache = [...bookCache, ...processedBooks];
+        setBookCache(newCache);
+        setSessionData(SESSION_KEYS.BOOK_CACHE, newCache);
+
+        // Get additional books needed
+        const additionalBooks = processedBooks.slice(0, stillNeeded);
+        booksToAdd = [...booksToAdd, ...additionalBooks];
+      } catch (error) {
+        console.error('Error fetching additional books:', error);
+      }
+    }
+
+    // Add books to displayed array
+    if (booksToAdd.length > 0) {
+      const newDisplayed = [...displayedBooks, ...booksToAdd];
+      setDisplayedBooks(newDisplayed);
+      setSessionData(SESSION_KEYS.DISPLAYED_BOOKS, newDisplayed);
+    }
+  };
+
+  // Load user's reading list
   useEffect(() => {
     const storedReadingList = JSON.parse(localStorage.getItem('readingList') || '[]');
     setUserReadingList(storedReadingList);
     setIsInitialized(true);
   }, []);
 
-  // FIXED: Initialize component after reading list is loaded
+  // Initialize component
   useEffect(() => {
     if (!isInitialized) return;
 
-    const sessionData = getSessionData();
-    
-    // Set saved and swiped books first
-    setSavedBooks(sessionData.savedBooks);
-    setSwipedBooks(sessionData.swipedBooks);
-
-    const thirtyMinutesAgo = Date.now() - 30 * 60 * 1000;
-    const hasRecentData = sessionData.lastFetchTime &&
-      parseInt(sessionData.lastFetchTime) > thirtyMinutesAgo;
-
-    if (hasRecentData && sessionData.currentBooks.length > 0) {
-      // Filter out books that were already swiped or saved
-      const availableBooks = sessionData.currentBooks.filter(book => 
-        !sessionData.swipedBooks.includes(book.id) && 
-        !sessionData.savedBooks.some(saved => saved.id === book.id)
-      );
+    const initializeDiscovery = async () => {
+      const sessionData = getSessionData();
       
-      if (availableBooks.length > 0) {
-        setBooks(availableBooks);
-        setBookQueue(availableBooks);
-        setDisplayedBooks(availableBooks.slice(0, 10));
-        setIsLoading(false);
-        console.log('Loaded cached discover books from session');
-        return;
+      // Restore session state
+      setSavedBooks(sessionData.savedBooks);
+      setSwipedBooks(sessionData.swipedBooks);
+      setBookCache(sessionData.bookCache);
+      
+      // Restore seen book IDs
+      sessionData.seenIds.forEach(id => seenBookIds.current.add(id));
+      fetchOffset.current = sessionData.fetchOffsetValue;
+
+      // Check if we have recent valid session data
+      const oneHourAgo = Date.now() - 60 * 60 * 1000;
+      const hasRecentData = sessionData.lastFetchTime && 
+                           parseInt(sessionData.lastFetchTime) > oneHourAgo;
+
+      if (hasRecentData && sessionData.displayedBooks.length > 0) {
+        // Filter out books that should no longer be displayed
+        const validDisplayedBooks = sessionData.displayedBooks.filter(book => 
+          !isDuplicateBook(book.originalBook)
+        );
+        
+        if (validDisplayedBooks.length >= 5) {
+          setDisplayedBooks(validDisplayedBooks);
+          setIsLoading(false);
+          // Still maintain 10 books
+          setTimeout(maintainDisplayedBooks, 100);
+          return;
+        }
       }
-    }
-    
-    // If no valid cached data, fetch new books
-    fetchRecommendedBooks();
+
+      // Initialize with fresh data
+      try {
+        const freshBooks = await fetchBooksFromAPI(30);
+        const processedBooks = processBooks(freshBooks);
+        
+        setBookCache(processedBooks);
+        setSessionData(SESSION_KEYS.BOOK_CACHE, processedBooks);
+        setSessionData(SESSION_KEYS.SEEN_BOOK_IDS, Array.from(seenBookIds.current));
+        setSessionData(SESSION_KEYS.LAST_FETCH_TIME, Date.now().toString());
+        
+        const initialDisplayed = processedBooks.slice(0, 10);
+        setDisplayedBooks(initialDisplayed);
+        setSessionData(SESSION_KEYS.DISPLAYED_BOOKS, initialDisplayed);
+        
+      } catch (error) {
+        console.error('Error initializing discovery:', error);
+        setError('Failed to load books. Please try again.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    initializeDiscovery();
   }, [isInitialized]);
 
-  // FIXED: Fetch recommended books with better error handling and API calls
-  const fetchRecommendedBooks = async (forceRefresh = false) => {
-    setIsLoading(true);
-    setError('');
-    
-    try {
-      // If not forcing refresh, check session cache first
-      if (!forceRefresh) {
-        const sessionData = getSessionData();
-        const thirtyMinutesAgo = Date.now() - (30 * 60 * 1000);
-        const hasRecentData = sessionData.lastFetchTime && 
-                             parseInt(sessionData.lastFetchTime) > thirtyMinutesAgo;
-        
-        if (hasRecentData && sessionData.currentBooks.length > 0) {
-          // Filter out books that were already swiped or saved
-          const availableBooks = sessionData.currentBooks.filter(book => 
-            !swipedBooks.includes(book.id) && 
-            !savedBooks.some(saved => saved.id === book.id)
-          );
-          
-          if (availableBooks.length > 0) {
-            setBooks(availableBooks);
-            setBookQueue(availableBooks);
-            setDisplayedBooks(availableBooks.slice(0, 10));
-            setIsLoading(false);
-            console.log('Using cached discover books from session');
-            return;
-          }
-        }
-      }
-
-      let recommendedBooks = [];
-      const userGenres = getUserGenres(userReadingList);
-      
-      if (userGenres.length > 0) {
-        // FIXED: Better API queries with proper error handling
-        const genreQueries = userGenres.slice(0, 3).map(genre => 
-          `subject:"${genre}" AND has_fulltext:true`
-        );
-        
-        // Process queries sequentially to avoid rate limiting
-        for (const query of genreQueries) {
-          try {
-            const response = await fetch(
-              `https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&limit=10&sort=rating&fields=key,title,author_name,cover_i,subject,first_publish_year,ratings_average`,
-              {
-                headers: {
-                  'User-Agent': 'BookDiscoveryApp/1.0'
-                }
-              }
-            );
-            
-            if (response.ok) {
-              const data = await response.json();
-              if (data.docs && Array.isArray(data.docs)) {
-                recommendedBooks.push(...data.docs);
-              }
-            } else {
-              console.warn(`API request failed with status: ${response.status}`);
-            }
-            
-            // Add delay between requests to avoid rate limiting
-            await new Promise(resolve => setTimeout(resolve, 500));
-          } catch (fetchError) {
-            console.warn('Individual fetch error:', fetchError);
-          }
-        }
-      } else {
-        // FIXED: Fallback queries for users without reading history
-        const popularQueries = [
-          'subject:"fiction" AND ratings_count:>50',
-          'subject:"romance" AND ratings_count:>30',
-          'subject:"fantasy" AND ratings_count:>30'
-        ];
-        
-        for (const query of popularQueries) {
-          try {
-            const response = await fetch(
-              `https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&limit=8&sort=rating&fields=key,title,author_name,cover_i,subject,first_publish_year`,
-              {
-                headers: {
-                  'User-Agent': 'BookDiscoveryApp/1.0'
-                }
-              }
-            );
-            
-            if (response.ok) {
-              const data = await response.json();
-              if (data.docs && Array.isArray(data.docs)) {
-                recommendedBooks.push(...data.docs);
-              }
-            }
-            
-            await new Promise(resolve => setTimeout(resolve, 500));
-          } catch (fetchError) {
-            console.warn('Popular books fetch error:', fetchError);
-          }
-        }
-      }
-      
-      // FIXED: Better filtering and validation with global deduplication
-      const seenBooks = new Set();
-      const filteredBooks = recommendedBooks
-        .filter((book) => {
-          // Basic validation
-          const hasRequiredFields = book.key && book.title && book.author_name;
-          const hasValidAuthor = Array.isArray(book.author_name) && book.author_name.length > 0;
-          const notInReadingList = !userReadingList.some(readingBook => readingBook.key === book.key);
-          
-          // Check for duplicates using book key
-          const isDuplicate = seenBooks.has(book.key);
-          if (!isDuplicate) {
-            seenBooks.add(book.key);
-          }
-          
-          return !isDuplicate && hasRequiredFields && hasValidAuthor && notInReadingList;
-        })
-        .slice(0, 20) // Limit to 20 books
-        .map(book => ({
-          id: book.key, // Use book.key as the unique identifier
-          title: book.title?.trim() || "No title available",
-          author: Array.isArray(book.author_name) && book.author_name.length > 0
-            ? book.author_name.filter(name => name?.trim()).slice(0, 2).join(", ")
-            : "Unknown author",
-          genres: book.subject && Array.isArray(book.subject)
-            ? book.subject.slice(0, 3).join(", ") 
-            : "General",
-          coverUrl: book.cover_i 
-            ? `https://covers.openlibrary.org/b/id/${book.cover_i}-M.jpg`
-            : null,
-          // Store original book data for saving
-          originalBook: book
-        }));
-      
-      if (filteredBooks.length === 0) {
-        throw new Error('No books found matching your preferences');
-      }
-      
-      // Cache the fetched books and timestamp
-      setSessionData(SESSION_KEYS.CURRENT_BOOKS, filteredBooks);
-      setSessionData(SESSION_KEYS.LAST_FETCH_TIME, Date.now().toString());
-      
-      // Merge with existing books, avoiding duplicates
-      setBooks(prevBooks => {
-        const existingIds = new Set(prevBooks.map(book => book.id));
-        const uniqueNewBooks = filteredBooks.filter(book => !existingIds.has(book.id));
-        const combined = [...prevBooks, ...uniqueNewBooks];
-        
-        // Filter out swiped and saved books
-        const available = combined.filter(book => 
-          !swipedBooks.includes(book.id) && 
-          !savedBooks.some(saved => saved.id === book.id)
-        );
-        
-        return available;
-      });
-      
-      // Update queue with new books
-      setBookQueue(prevQueue => {
-        const existingIds = new Set(prevQueue.map(book => book.id));
-        const uniqueNewBooks = filteredBooks.filter(book => 
-          !existingIds.has(book.id) &&
-          !swipedBooks.includes(book.id) && 
-          !savedBooks.some(saved => saved.id === book.id)
-        );
-        const combined = [...prevQueue, ...uniqueNewBooks];
-        
-        // Update displayed books
-        const newDisplayed = combined.slice(0, 10);
-        setDisplayedBooks(newDisplayed);
-        
-        return combined;
-      });
-      
-      console.log(`Fetched and cached ${filteredBooks.length} new discover books`);
-      
-    } catch (error) {
-      console.error('Error fetching recommended books:', error);
-      setError('Failed to load recommended books. Please try again.');
-      
-      // FIXED: Better fallback with more diverse mock data
-      const mockBooks = [
-        {
-          id: 'mock-1',
-          title: "The Midnight Library",
-          author: "Matt Haig",
-          genres: "Fiction, Philosophy, Contemporary",
-          coverUrl: null,
-          originalBook: {
-            key: 'mock-1',
-            title: "The Midnight Library",
-            author_name: ["Matt Haig"],
-            subject: ["Fiction", "Philosophy", "Contemporary"],
-            cover_i: null,
-            first_publish_year: 2020
-          }
-        },
-        {
-          id: 'mock-2',
-          title: "Atomic Habits",
-          author: "James Clear",
-          genres: "Self-help, Psychology, Productivity",
-          coverUrl: null,
-          originalBook: {
-            key: 'mock-2',
-            title: "Atomic Habits",
-            author_name: ["James Clear"],
-            subject: ["Self-help", "Psychology", "Productivity"],
-            cover_i: null,
-            first_publish_year: 2018
-          }
-        },
-        {
-          id: 'mock-3',
-          title: "The Seven Husbands of Evelyn Hugo",
-          author: "Taylor Jenkins Reid",
-          genres: "Fiction, Romance, Historical Fiction",
-          coverUrl: null,
-          originalBook: {
-            key: 'mock-3',
-            title: "The Seven Husbands of Evelyn Hugo",
-            author_name: ["Taylor Jenkins Reid"],
-            subject: ["Fiction", "Romance", "Historical Fiction"],
-            cover_i: null,
-            first_publish_year: 2017
-          }
-        }
-      ];
-      
-      setSessionData(SESSION_KEYS.CURRENT_BOOKS, mockBooks);
-      setSessionData(SESSION_KEYS.LAST_FETCH_TIME, Date.now().toString());
-      
-      setBooks(mockBooks);
-      setBookQueue(mockBooks);
-      setDisplayedBooks(mockBooks.slice(0, 10));
-    } finally {
-      setIsLoading(false);
+  // Maintain 10 books whenever displayed books change
+  useEffect(() => {
+    if (displayedBooks.length < 10 && !isLoading) {
+      maintainDisplayedBooks();
     }
-  };
+  }, [displayedBooks.length, isLoading]);
 
-  // FIXED: Improved swipe handlers with better state management
+  // Handle swipe left (skip)
   const handleSwipeLeft = (book) => {
     console.log(`Skipping: ${book.title}`);
     
@@ -402,21 +350,13 @@ const DiscoverPage = () => {
     setSwipedBooks(newSwipedBooks);
     setSessionData(SESSION_KEYS.SWIPED_BOOKS, newSwipedBooks);
     
-    // Remove from queue and maintain 10 cards
-    setBookQueue(prevQueue => {
-      const remaining = prevQueue.filter(b => b.id !== book.id);
-      const newDisplayed = remaining.slice(0, 10);
-      setDisplayedBooks(newDisplayed);
-      
-      // Fetch more if queue is getting low
-      if (remaining.length < 5 && !isLoading) {
-        fetchRecommendedBooks();
-      }
-      
-      return remaining;
-    });
+    // Remove from displayed books
+    const newDisplayed = displayedBooks.filter(b => b.id !== book.id);
+    setDisplayedBooks(newDisplayed);
+    setSessionData(SESSION_KEYS.DISPLAYED_BOOKS, newDisplayed);
   };
 
+  // Handle swipe right (save)
   const handleSwipeRight = async (book) => {
     console.log(`Saving: ${book.title}`);
     
@@ -431,25 +371,17 @@ const DiscoverPage = () => {
       
       await handleAddToReadingList(book);
       
-      // Same queue management as swipe left
-      setBookQueue(prevQueue => {
-        const remaining = prevQueue.filter(b => b.id !== book.id);
-        const newDisplayed = remaining.slice(0, 10);
-        setDisplayedBooks(newDisplayed);
-        
-        if (remaining.length < 5 && !isLoading) {
-          fetchRecommendedBooks();
-        }
-        
-        return remaining;
-      });
+      // Remove from displayed books
+      const newDisplayed = displayedBooks.filter(b => b.id !== book.id);
+      setDisplayedBooks(newDisplayed);
+      setSessionData(SESSION_KEYS.DISPLAYED_BOOKS, newDisplayed);
       
     } catch (error) {
       console.error('Error saving book:', error);
     }
   };
 
-  // FIXED: Better error handling in add to reading list
+  // Add to reading list
   const handleAddToReadingList = async (book) => {
     try {
       const originalBook = book.originalBook;
@@ -474,18 +406,13 @@ const DiscoverPage = () => {
       if (!exists) {
         readingList.push(bookToAdd);
         localStorage.setItem('readingList', JSON.stringify(readingList));
-        
-        // Update local state
         setUserReadingList(readingList);
-        
         console.log('Added to reading list:', title);
       }
 
       // Insert to Supabase if user is logged in
       if (user) {
         try {
-          const toBeRead = "TO_BE_READ";
-          
           const bookData = {
             user_id: user.id,
             book_key: originalBook.key,
@@ -498,34 +425,39 @@ const DiscoverPage = () => {
               ? originalBook.subject.slice(0, 5).join(", ") 
               : null,
             added_at: new Date().toISOString(),
-            status: toBeRead
+            status: "TO_BE_READ"
           };
           
           await insertReadingList(bookData, originalBook, user.id);
           
         } catch (error) {
           console.error('Error inserting to Supabase:', error);
-          // Don't throw here, as local storage save was successful
         }
       }
     } catch (error) {
       console.error('Error in handleAddToReadingList:', error);
-      throw error; // Re-throw to handle in calling function
+      throw error;
     }
   };
 
-  // Force refresh function
+  // Force refresh
   const handleRefreshBooks = () => {
     clearSessionData();
     setSavedBooks([]);
     setSwipedBooks([]);
-    setBooks([]);
     setDisplayedBooks([]);
-    fetchRecommendedBooks(true);
+    setBookCache([]);
+    setIsLoading(true);
+    
+    // Reset component state
+    setTimeout(() => {
+      setIsInitialized(false);
+      setTimeout(() => setIsInitialized(true), 100);
+    }, 100);
   };
 
-  // Loading component
-  if (isLoading && books.length === 0) {
+  // Loading state
+  if (isLoading && displayedBooks.length === 0) {
     return (
       <div className="discover-container">
         <h1 className="discover-title">Discover Books</h1>
@@ -537,8 +469,8 @@ const DiscoverPage = () => {
     );
   }
 
-  // Error component
-  if (error && books.length === 0) {
+  // Error state
+  if (error && displayedBooks.length === 0) {
     return (
       <div className="discover-container">
         <h1 className="discover-title">Discover Books</h1>
@@ -546,7 +478,7 @@ const DiscoverPage = () => {
           <p className="error-message">{error}</p>
           <button 
             className="retry-button"
-            onClick={() => fetchRecommendedBooks(true)}
+            onClick={handleRefreshBooks}
           >
             Try Again
           </button>
@@ -555,14 +487,14 @@ const DiscoverPage = () => {
     );
   }
 
-  // No more books component
+  // No books state
   if (displayedBooks.length === 0 && !isLoading) {
     return (
       <div className="discover-container">
         <h1 className="discover-title">Discover Books</h1>
         <div className="no-books-container">
           <h2>No more books to discover!</h2>
-          <p>You've seen all our current recommendations.</p>
+          <p>Try refreshing to get new recommendations.</p>
           <button 
             className="refresh-button"
             onClick={handleRefreshBooks}
@@ -581,7 +513,7 @@ const DiscoverPage = () => {
       {/* Progress indicator */}
       <div className="progress-container">
         <p className="progress-text">
-          {savedBooks.length} saved • {swipedBooks.length} skipped
+          {savedBooks.length} saved • {swipedBooks.length} skipped • {displayedBooks.length} remaining
         </p>
       </div>
       
@@ -616,6 +548,12 @@ const DiscoverPage = () => {
           {isLoading ? 'Loading...' : 'Get New Books'}
         </button>
       </div>
+      
+      {isFetching && (
+        <div className="fetching-indicator">
+          <p>Loading more books...</p>
+        </div>
+      )}
     </div>
   );
 };
