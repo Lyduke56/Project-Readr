@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import "./Book.css";
 import { supabase } from "../supabaseClient";
+import { UserAuth } from "../context/AuthContext";
 
 // StarRating component definition
 const StarRating = ({ 
@@ -78,7 +79,7 @@ const ReviewItem = ({ review, currentUser }) => {
     setIsDeleting(true);
     try {
       const { error } = await supabase
-        .from('book_reviews')
+        .from('book_ratings')
         .delete()
         .eq('id', review.id);
 
@@ -184,14 +185,17 @@ const ReviewForm = ({ bookData, currentUser, onReviewSubmitted }) => {
 
     try {
       const bookId = bookData.key || bookData.id;
+      const coverID = bookData.cover_i || bookData.coverID || null;
       const title = bookData.title || "No title available";
       const author = Array.isArray(bookData.author_name) && bookData.author_name.length > 0
         ? bookData.author_name.filter(name => name?.trim()).slice(0, 2).join(", ")
         : "Unknown author";
+      
 
-      // Check if user already has a review
+
+      // Check if user already has a review 
       const { data: existingReview, error: fetchError } = await supabase
-        .from('book_reviews')
+        .from('book_ratings')
         .select('id')
         .eq('book_id', bookId)
         .eq('user_id', currentUser.id)
@@ -204,7 +208,7 @@ const ReviewForm = ({ bookData, currentUser, onReviewSubmitted }) => {
       if (existingReview) {
         // Update existing review
         const { error: updateError } = await supabase
-          .from('book_reviews')
+          .from('book_ratings')
           .update({
             review_text: reviewText.trim(),
             rating: reviewRating,
@@ -214,9 +218,10 @@ const ReviewForm = ({ bookData, currentUser, onReviewSubmitted }) => {
 
         if (updateError) throw updateError;
       } else {
+
         // Create new review
         const { error: insertError } = await supabase
-          .from('book_reviews')
+          .from('book_ratings')
           .insert({
             book_id: bookId,
             user_id: currentUser.id,
@@ -224,8 +229,9 @@ const ReviewForm = ({ bookData, currentUser, onReviewSubmitted }) => {
             rating: reviewRating,
             book_title: title,
             book_author: author,
-            username: currentUser.user_metadata?.username || currentUser.email?.split('@')[0] || 'Anonymous',
-            user_avatar: currentUser.user_metadata?.avatar_url || null,
+            cover_id: coverID,
+            username: currentUser.display_name || currentUser.email?.split('@')[0] || 'Anonymous',
+            user_avatar: currentUser.profile_image || null,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
           });
@@ -282,6 +288,7 @@ const ReviewForm = ({ bookData, currentUser, onReviewSubmitted }) => {
         </div>
 
         {error && <div className="error-message">{error}</div>}
+
         <div className = "submit-review-btn-container">
           <button 
             type="submit" 
@@ -317,13 +324,39 @@ export const Book = () => {
   const [reviewsLoading, setReviewsLoading] = useState(false);
   const [userHasReview, setUserHasReview] = useState(false);
 
+  const { session } = UserAuth();
+  const user = session?.user;
+
   useEffect(() => {
-    const getCurrentUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setCurrentUser(user);
-    };
-    getCurrentUser();
-  }, []);
+        const getCurrentUser = async () => {
+        if (!user?.id) {
+            setLoading(false);
+            return;
+        }
+
+        try {
+            const { data, error } = await supabase
+            .from('users')
+            .select('*')
+            .eq('id', user.id)
+            .single();
+
+            if (error) {
+            console.error('Error fetching profile:', error);
+            setError('Failed to load profile data');
+            } else {
+            setCurrentUser(data);
+            }
+        } catch (err) {
+            console.error('Unexpected error:', err);
+            setError('An unexpected error occurred');
+        } finally {
+            setLoading(false); 
+        }
+        };
+
+        getCurrentUser();
+    }, [user?.id]);
 
   useEffect(() => {
     const fetchRatingsIfReady = async () => {
@@ -440,7 +473,7 @@ export const Book = () => {
     setReviewsLoading(true);
     try {
       const { data: reviewData, error: reviewError } = await supabase
-        .from("book_reviews")
+        .from("book_ratings")
         .select("*")
         .eq("book_id", bookId)
         .order("created_at", { ascending: false });

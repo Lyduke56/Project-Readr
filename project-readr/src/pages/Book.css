@@ -513,9 +513,9 @@ body{
 
 .review-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
   margin-bottom: 1rem;
+  gap: 10px;
 }
 
 .review-user-info {
@@ -570,6 +570,7 @@ body{
 .review-rating {
   display: flex;
   align-items: center;
+  margin-bottom: 23.5px;
 }
 
 .review-content {

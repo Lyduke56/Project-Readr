@@ -174,6 +174,25 @@ const clearSessionRecommendations = () => {
   }
 };
 
+  // Add variety to recommendation basis message
+  const generateRecommendationBasis = (preferences) => {
+    const { topSubjects, topAuthors } = preferences;
+    
+    const basisOptions = [
+      `Based on your interest in: ${topSubjects.slice(0, 3).join(', ')}`,
+      `Curated for your taste in: ${topSubjects.slice(0, 2).join(' and ')}`,
+      `Handpicked based on your love for: ${topSubjects.slice(0, 3).join(', ')}`,
+      `Discovered through your reading preferences: ${topSubjects.slice(0, 2).join(' & ')}`
+    ];
+    
+    if (topAuthors.length > 0) {
+      basisOptions.push(`Based on your reading history and favorite authors`);
+      basisOptions.push(`Tailored to your literary preferences`);
+    }
+    
+    return basisOptions[Math.floor(Math.random() * basisOptions.length)];
+  };
+
   // Load user's reading list from localStorage and potentially from API
   const loadUserReadingList = async () => {
     try {
@@ -229,132 +248,146 @@ const clearSessionRecommendations = () => {
 
   // Generate recommendations based on user preferences
   const generatePersonalizedRecommendations = async (preferences) => {
-    const { topSubjects, topAuthors } = preferences;
-    const recommendations = [];
+  const { topSubjects, topAuthors } = preferences;
+  const recommendations = [];
+  
+  // Shuffle subjects and authors for variety each session
+  const shuffledSubjects = [...topSubjects].sort(() => 0.5 - Math.random());
+  const shuffledAuthors = [...topAuthors].sort(() => 0.5 - Math.random());
+  
+  try {
+    // Vary the number of subjects used (3-5 instead of fixed 5)
+    const subjectsToUse = Math.min(shuffledSubjects.length, 3 + Math.floor(Math.random() * 3));
     
-    try {
-      // Search based on top subjects - increased to get more books
-      for (const subject of topSubjects.slice(0, 5)) {
-        const response = await fetch(
-          `https://openlibrary.org/search.json?subject=${encodeURIComponent(subject)}&limit=12&sort=rating`
-        );
-        
-        if (response.ok) {
-          const data = await response.json();
-          if (data.docs) {
-            // Filter out books already in user's reading list
-            const userBookKeys = userReadingList.map(book => book.key);
-            const newBooks = data.docs
-              .filter(book => !userBookKeys.includes(book.key) && book.cover_i)
-              .slice(0, 6);
-            
-            recommendations.push(...newBooks);
-          }
+    // Search based on shuffled subjects
+    for (const subject of shuffledSubjects.slice(0, subjectsToUse)) {
+      // Vary the sort method for more variety
+      const sortMethods = ['rating', 'new', 'old', 'random'];
+      const randomSort = sortMethods[Math.floor(Math.random() * sortMethods.length)];
+      
+      const response = await fetch(
+        `https://openlibrary.org/search.json?subject=${encodeURIComponent(subject)}&limit=15&sort=${randomSort}`
+      );
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.docs) {
+          const userBookKeys = userReadingList.map(book => book.key);
+          const newBooks = data.docs
+            .filter(book => !userBookKeys.includes(book.key) && book.cover_i)
+            .sort(() => 0.5 - Math.random()) // Shuffle results
+            .slice(0, 4 + Math.floor(Math.random() * 3)); // Vary number taken (4-6)
+          
+          recommendations.push(...newBooks);
         }
-        
-        // Add small delay to avoid rate limiting
-        await new Promise(resolve => setTimeout(resolve, 200));
       }
       
-      // Search based on top authors for variety - increased to get more books
-      for (const author of topAuthors.slice(0, 3)) {
-        const response = await fetch(
-          `https://openlibrary.org/search.json?author=${encodeURIComponent(author)}&limit=8&sort=rating`
-        );
-        
-        if (response.ok) {
-          const data = await response.json();
-          if (data.docs) {
-            const userBookKeys = userReadingList.map(book => book.key);
-            const newBooks = data.docs
-              .filter(book => !userBookKeys.includes(book.key) && book.cover_i)
-              .slice(0, 4);
-            
-            recommendations.push(...newBooks);
-          }
-        }
-        
-        await new Promise(resolve => setTimeout(resolve, 200));
-      }
-      
-      // Remove duplicates and ensure we have exactly 20 books
-      const uniqueRecommendations = recommendations
-        .filter((book, index, self) => 
-          index === self.findIndex(b => b.key === book.key)
-        );
-      
-      // If we have less than 20, fill with additional random searches
-      if (uniqueRecommendations.length < 20) {
-        const additionalBooks = await generateAdditionalBooks(20 - uniqueRecommendations.length, uniqueRecommendations);
-        uniqueRecommendations.push(...additionalBooks);
-      }
-      
-      return uniqueRecommendations.slice(0, 20);
-      
-    } catch (error) {
-      console.error('Error generating personalized recommendations:', error);
-      return [];
+      await new Promise(resolve => setTimeout(resolve, 200));
     }
-  };
+    
+    // Vary author-based recommendations (use 1-3 authors)
+    const authorsToUse = Math.min(shuffledAuthors.length, 1 + Math.floor(Math.random() * 3));
+    
+    for (const author of shuffledAuthors.slice(0, authorsToUse)) {
+      const response = await fetch(
+        `https://openlibrary.org/search.json?author=${encodeURIComponent(author)}&limit=10&sort=rating`
+      );
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.docs) {
+          const userBookKeys = userReadingList.map(book => book.key);
+          const newBooks = data.docs
+            .filter(book => !userBookKeys.includes(book.key) && book.cover_i)
+            .sort(() => 0.5 - Math.random())
+            .slice(0, 3 + Math.floor(Math.random() * 2)); // 3-4 books per author
+          
+          recommendations.push(...newBooks);
+        }
+      }
+      
+      await new Promise(resolve => setTimeout(resolve, 200));
+    }
+    
+    // Remove duplicates and shuffle final results
+    const uniqueRecommendations = recommendations
+      .filter((book, index, self) => 
+        index === self.findIndex(b => b.key === book.key)
+      )
+      .sort(() => 0.5 - Math.random()); // Final shuffle
+    
+    // If we have less than 20, fill with additional random searches
+    if (uniqueRecommendations.length < 20) {
+      const additionalBooks = await generateAdditionalBooks(20 - uniqueRecommendations.length, uniqueRecommendations);
+      uniqueRecommendations.push(...additionalBooks);
+    }
+    
+    return uniqueRecommendations.slice(0, 20);
+    
+  } catch (error) {
+    console.error('Error generating personalized recommendations:', error);
+    return [];
+  }
+};
 
   // Generate additional books to reach 20 total
   const generateAdditionalBooks = async (needed, existingBooks) => {
-    const additionalQueries = [
-      'popular fiction',
-      'bestseller',
-      'award winning',
-      'classic literature',
-      'contemporary fiction',
-      'mystery',
-      'romance',
-      'science fiction',
-      'fantasy',
-      'historical fiction',
-      'thriller',
-      'literary fiction'
-    ];
-    
-    const additionalBooks = [];
-    const existingKeys = existingBooks.map(book => book.key);
-    const userBookKeys = userReadingList.map(book => book.key);
-    const allExistingKeys = [...existingKeys, ...userBookKeys];
-    
-    try {
-      for (const query of additionalQueries) {
-        if (additionalBooks.length >= needed) break;
-        
-        const response = await fetch(
-          `https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&limit=10&sort=rating`
-        );
-        
-        if (response.ok) {
-          const data = await response.json();
-          if (data.docs) {
-            const newBooks = data.docs
-              .filter(book => 
-                !allExistingKeys.includes(book.key) && 
-                book.cover_i && 
-                book.title && 
-                book.author_name &&
-                !additionalBooks.some(existing => existing.key === book.key)
-              )
-              .slice(0, Math.min(3, needed - additionalBooks.length));
-            
-            additionalBooks.push(...newBooks);
-            allExistingKeys.push(...newBooks.map(book => book.key));
-          }
+  const additionalQueries = [
+    'popular fiction', 'bestseller', 'award winning', 'classic literature',
+    'contemporary fiction', 'mystery', 'romance', 'science fiction',
+    'fantasy', 'historical fiction', 'thriller', 'literary fiction',
+    'biography', 'adventure', 'horror', 'drama', 'comedy', 'memoir'
+  ];
+  
+  // Shuffle queries for variety each session
+  const shuffledQueries = [...additionalQueries].sort(() => 0.5 - Math.random());
+  
+  const additionalBooks = [];
+  const existingKeys = existingBooks.map(book => book.key);
+  const userBookKeys = userReadingList.map(book => book.key);
+  const allExistingKeys = [...existingKeys, ...userBookKeys];
+  
+  try {
+    for (const query of shuffledQueries) {
+      if (additionalBooks.length >= needed) break;
+      
+      // Vary sort method for each query
+      const sortMethods = ['rating', 'new', 'old'];
+      const randomSort = sortMethods[Math.floor(Math.random() * sortMethods.length)];
+      
+      const response = await fetch(
+        `https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&limit=12&sort=${randomSort}`
+      );
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.docs) {
+          const newBooks = data.docs
+            .filter(book => 
+              !allExistingKeys.includes(book.key) && 
+              book.cover_i && 
+              book.title && 
+              book.author_name &&
+              !additionalBooks.some(existing => existing.key === book.key)
+            )
+            .sort(() => 0.5 - Math.random()) // Shuffle results
+            .slice(0, Math.min(2 + Math.floor(Math.random() * 2), needed - additionalBooks.length)); // Take 2-3 books
+          
+          additionalBooks.push(...newBooks);
+          allExistingKeys.push(...newBooks.map(book => book.key));
         }
-        
-        await new Promise(resolve => setTimeout(resolve, 200));
       }
       
-      return additionalBooks;
-      
-    } catch (error) {
-      console.error('Error generating additional books:', error);
-      return [];
+      await new Promise(resolve => setTimeout(resolve, 200));
     }
-  };
+    
+    return additionalBooks;
+    
+  } catch (error) {
+    console.error('Error generating additional books:', error);
+    return [];
+  }
+};
 
   // Generate random recommendations as fallback
   const generateRandomRecommendations = async () => {
@@ -441,9 +474,9 @@ const clearSessionRecommendations = () => {
         const preferences = analyzeUserPreferences(readingList);
         recommendations = await generatePersonalizedRecommendations(preferences);
         
-        // Set recommendation basis message
+        // Set recommendation basis message with variety
         if (preferences.topSubjects.length > 0) {
-          basis = `Based on your interest in: ${preferences.topSubjects.slice(0, 3).join(', ')}`;
+          basis = generateRecommendationBasis(preferences);
         } else {
           basis = 'Based on your reading history';
         }
