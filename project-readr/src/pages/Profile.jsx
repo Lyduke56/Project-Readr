@@ -647,8 +647,10 @@ export function Profile() {
           )}
           
           <button className="friends" onClick={handleFriendList}> 
-            <FaUserFriends />
-             {totalFriends.length} Friends
+            <FaUserFriends className='friends-icon' />
+              <div className='friends-text'>
+              {totalFriends.length} Friends
+              </div>
           </button>
 
         </div>

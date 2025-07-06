@@ -323,7 +323,7 @@ export function AddProfile() {
 
   return (
     <div className="add-profile-page">
-      <div className="header">
+      <div className="ap-header">
         <h1>Add Friends</h1>
         <p>Discover and connect with other users</p>
       </div>

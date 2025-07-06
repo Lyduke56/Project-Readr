@@ -112,7 +112,7 @@
 
 .dropdown-item {
     padding: 0.75rem 1rem;
-    color: #ffd6af;
+    color: #6b4b3e;
     cursor: pointer;
     font-size: 0.875rem;
     font-weight: 300;
@@ -126,6 +126,6 @@
 
 .dropdown-item:hover {
     background-color: #c49e85;
-    color: #6b4b3e;
+    color: white;
     font-weight: 300;
 }
