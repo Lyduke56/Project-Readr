@@ -1,8 +1,8 @@
-import { motion, useMotionValue, useTransform } from "framer-motion";
-import { useState } from "react";
+import { motion, useMotionValue, useTransform, useMotionTemplate } from "framer-motion";
+import { useState, useRef, useCallback } from "react";
 import "./Stack.css";
 
-function CardRotate({ children, onSendToBack, sensitivity, onSwipeLeft, onSwipeRight, cardId, setRemovedCardId, setSwipeFeedback }) {
+function CardRotate({ children, onSendToBack, sensitivity, onSwipeLeft, onSwipeRight, cardId, setRemovedCardId, setSwipeFeedback, leftLabelRef, rightLabelRef }) {
   const x = useMotionValue(0);
   const y = useMotionValue(0);
   const rotateX = useTransform(y, [-100, 100], [60, -60]);
@@ -15,7 +15,46 @@ function CardRotate({ children, onSendToBack, sensitivity, onSwipeLeft, onSwipeR
   const borderColor = useTransform(x, [-500, 0, 500], ['rgba(244, 67, 54, 1)', 'rgba(0, 0, 0, 0)', 'rgba(76, 175, 80, 1)']);
   const borderWidth = useTransform(x, [-500, -sensitivity, 0, sensitivity, 500], [5, 2, 0, 2, 5]);
 
+  // Update label styles directly via refs (no React re-renders)
+  const updateLabels = useCallback((xValue) => {
+    if (leftLabelRef.current && rightLabelRef.current) {
+      const leftIsActive = xValue < -50;
+      const rightIsActive = xValue > 50;
+      
+      // Left label
+      const leftOpacity = leftIsActive ? Math.min(Math.abs(xValue) / 150, 1) : 0.3;
+      const leftScale = leftIsActive ? 1 + (Math.abs(xValue) / 500) : 1;
+      const leftColor = leftIsActive ? '#ef4444' : '#9ca3af';
+      
+      leftLabelRef.current.style.opacity = leftOpacity;
+      leftLabelRef.current.style.transform = `scale(${leftScale})`;
+      leftLabelRef.current.style.color = leftColor;
+      
+      // Right label
+      const rightOpacity = rightIsActive ? Math.min(Math.abs(xValue) / 150, 1) : 0.3;
+      const rightScale = rightIsActive ? 1 + (Math.abs(xValue) / 500) : 1;
+      const rightColor = rightIsActive ? '#22c55e' : '#9ca3af';
+      
+      rightLabelRef.current.style.opacity = rightOpacity;
+      rightLabelRef.current.style.transform = `scale(${rightScale})`;
+      rightLabelRef.current.style.color = rightColor;
+    }
+  }, [leftLabelRef, rightLabelRef]);
+
+  // Update labels directly without React state updates
+  x.on('change', updateLabels);
+
   function handleDragEnd(_, info) {
+    // Reset labels to default state
+    if (leftLabelRef.current && rightLabelRef.current) {
+      leftLabelRef.current.style.opacity = '0.3';
+      leftLabelRef.current.style.transform = 'scale(1)';
+      leftLabelRef.current.style.color = '#9ca3af';
+      rightLabelRef.current.style.opacity = '0.3';
+      rightLabelRef.current.style.transform = 'scale(1)';
+      rightLabelRef.current.style.color = '#9ca3af';
+    }
+    
     if (Math.abs(info.offset.x) > sensitivity) {
       setIsSwiping(true);
       setSwipeDirection(info.offset.x < 0 ? 'left' : 'right');
@@ -80,6 +119,7 @@ function CardRotate({ children, onSendToBack, sensitivity, onSwipeLeft, onSwipeR
       drag
       dragConstraints={{ top: 0, right: 0, bottom: 0, left: 0 }}
       dragElastic={0.6}
+      dragMomentum={false}
       whileTap={{ cursor: "grabbing" }}
       onDragEnd={handleDragEnd}
     >
@@ -105,14 +145,34 @@ export default function Stack({
           id: card.id || `card-${index}-${Date.now()}` 
         }))
       : [
-        { id: 1, img: "https://images.unsplash.com/photo-1480074568708-e7b720bb3f09?q=80&w=500&auto=format" },
-        { id: 2, img: "https://images.unsplash.com/photo-1449844908441-8829872d2607?q=80&w=500&auto=format" },
-        { id: 3, img: "https://images.unsplash.com/photo-1452626212852-811d58933cae?q=80&w=500&auto=format" },
-        { id: 4, img: "https://images.unsplash.com/photo-1572120360610-d971b9d7767c?q=80&w=500&auto=format" }
+        { id: 1, img: "https://images.unsplash.com/photo-1480074568708-e7b720bb3f09?q=80&w=500&auto=format", title: "Beautiful Landscape", author: "John Doe", genres: "Nature, Photography" },
+        { id: 2, img: "https://images.unsplash.com/photo-1449844908441-8829872d2607?q=80&w=500&auto=format", title: "Urban Architecture", author: "Jane Smith", genres: "Architecture, City" },
+        { id: 3, img: "https://images.unsplash.com/photo-1452626212852-811d58933cae?q=80&w=500&auto=format", title: "Mountain Views", author: "Bob Johnson", genres: "Adventure, Travel" },
+        { id: 4, img: "https://images.unsplash.com/photo-1572120360610-d971b9d7767c?q=80&w=500&auto=format", title: "Forest Path", author: "Alice Brown", genres: "Nature, Hiking" }
       ]
   );
   const [removedCardId, setRemovedCardId] = useState(null);
   const [swipeFeedback, setSwipeFeedback] = useState(null);
+  
+  // Create refs for direct DOM manipulation of labels
+  const leftLabelRef = useRef(null);
+  const rightLabelRef = useRef(null);
+
+  const getTitleClass = (title) => {
+    if (!title) return 's-book-title';
+    const length = title.length;
+    if (length > 30) return 's-book-title very-long-title';
+    if (length > 20) return 's-book-title long-title';
+    return 's-book-title';
+  };
+
+  const getAuthorClass = (author) => {
+    if (!author) return 's-book-author';
+    const length = author.length;
+    if (length > 40) return 's-book-author very-long-author';
+    if (length > 20) return 's-book-author long-author';
+    return 's-book-author';
+  };
 
   const sendToBack = (id) => {
     setCards((prev) => {
@@ -127,75 +187,107 @@ export default function Stack({
   };
 
   return (
-    <div
-      className="stack-container"
-      style={{
-        width: cardDimensions.width,
-        height: cardDimensions.height,
-        perspective: 600,
-      }}
-    >
-      {cards
-        .filter(card => card.id !== removedCardId)
-        .map((card, index) => {
-          const randomRotate = randomRotation
-            ? Math.random() * 10 - 5
-            : 0;
+    <div className="s-discovery-container">
+      {/* Skip Book Label - Left Side */}
+      <div className="side-label left-label">
+        <div 
+          ref={leftLabelRef}
+          className="label-text"
+          style={{
+            opacity: 0.3,
+            transform: 'scale(1)',
+            color: '#9ca3af',
+            transition: 'none' // Remove transitions for better performance
+          }}
+        >
+          Skip Book
+        </div>
+        <div className="label-icon">❌</div>
+      </div>
 
-          return (
-            <CardRotate
-              key={`card-${card.id}`}
-              onSendToBack={() => sendToBack(card.id)}
-              sensitivity={sensitivity}
-              onSwipeLeft={() => onSwipeLeft && onSwipeLeft(card)}
-              onSwipeRight={() => onSwipeRight && onSwipeRight(card)}
-              cardId={card.id}
-              setRemovedCardId={setRemovedCardId}
-              setSwipeFeedback={setSwipeFeedback}
-            >
-              <motion.div
-                className="card"
-                onClick={() => sendToBackOnClick && sendToBack(card.id)}
-                animate={{
-                  rotateZ: (cards.length - index - 1) * 4 + randomRotate,
-                  scale: 1 + index * 0.06 - cards.length * 0.06,
-                  transformOrigin: "90% 90%",
-                }}
-                initial={false}
-                transition={{
-                  type: "spring",
-                  stiffness: animationConfig.stiffness,
-                  damping: animationConfig.damping,
-                }}
-                style={{
-                  width: cardDimensions.width,
-                  height: cardDimensions.height,
-                }}
+      {/* Stack Container */}
+      <div
+        className="stack-container"
+        style={{
+          width: cardDimensions.width,
+          height: cardDimensions.height,
+        }}
+      >
+        {cards
+          .filter(card => card.id !== removedCardId)
+          .map((card, index) => {
+            const randomRotate = randomRotation ? Math.random() * 10 - 5 : 0;
+
+            return (
+              <CardRotate
+                key={`card-${card.id}`}
+                onSendToBack={() => sendToBack(card.id)}
+                sensitivity={sensitivity}
+                onSwipeLeft={() => onSwipeLeft && onSwipeLeft(card)}
+                onSwipeRight={() => onSwipeRight && onSwipeRight(card)}
+                cardId={card.id}
+                setRemovedCardId={setRemovedCardId}
+                setSwipeFeedback={setSwipeFeedback}
+                leftLabelRef={leftLabelRef}
+                rightLabelRef={rightLabelRef}
               >
-                <div className="card-image-container">
-                  {card.coverUrl ? (
-                    <img
-                      src={card.coverUrl}
-                      alt={card.title || `card-${card.id}`}
-                      className="card-image"
-                    />
-                  ) : (
-                    <img
-                      src={card.img}
-                      alt={`card-${card.id}`}
-                      className="card-image"
-                    />
-                  )}
-                </div>
-                <div className="card-content">
-                  {card.title && <h3 className="book-title">{card.title}</h3>}
-                  {card.author && <p className="book-author">{card.author}</p>}
-                  {card.genres && <p className="book-genres">{card.genres}</p>}
-                </div>
-              </motion.div>
-            </CardRotate>
-          );
-        })}
+                <motion.div
+                  className="sss-cards"
+                  onClick={() => sendToBackOnClick && sendToBack(card.id)}
+                  animate={{
+                    rotateZ: (cards.length - index - 1) * 4 + randomRotate,
+                    scale: 1 + index * 0.06 - cards.length * 0.06,
+                    transformOrigin: "90% 90%",
+                  }}
+                  initial={false}
+                  transition={{
+                    type: "spring",
+                    stiffness: animationConfig.stiffness,
+                    damping: animationConfig.damping,
+                  }}
+                >
+                  <div className="s-card-image-container">
+                    {card.coverUrl ? (
+                      <img
+                        src={card.coverUrl}
+                        alt={card.title || `card-${card.id}`}
+                        className="s-card-image"
+                      />
+                    ) : (
+                      <img
+                        src={card.img}
+                        alt={`card-${card.id}`}
+                        className="s-card-image"
+                      />
+                    )}
+                  </div>
+                  <div className="s-card-content">
+                    {card.title && <h3 className={getTitleClass(card.title)}>{card.title}</h3>}
+                    {card.author && <p className={getAuthorClass(card.author)}>{card.author}</p>}
+                    {card.genres && <p className="s-book-genres">{card.genres}</p>}
+                  </div>
+                </motion.div>
+              </CardRotate>
+            );
+          })}
+      </div>
+
+      {/* Save Book Label - Right Side */}
+      <div className="side-label right-label">
+        <div 
+          ref={rightLabelRef}
+          className="label-text"
+          style={{
+            opacity: 0.3,
+            transform: 'scale(1)',
+            color: '#9ca3af',
+            transition: 'none' // Remove transitions for better performance
+          }}
+        >
+          Save Book
+        </div>
+        <div className="label-icon">✅</div>
+      </div>
     </div>
   );
 }

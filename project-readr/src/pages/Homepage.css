@@ -368,15 +368,15 @@
   font-size: 10px;
   font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.2s ease;
+  transition: all 0.3s ease;
   width: 100%;
   margin-top: 6px;
 }
 
 .add-to-list-btn-small:hover {
-  background-color: #c49e85;
-  color: black;
-  transform: translateY(-1px);
+  background-color: #A0522D;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(139, 69, 19, 0.3);
 }
 
 .add-to-list-btn-small:active {
@@ -393,15 +393,15 @@
   border-radius: 5px;
   border: none;
   background-color: #6b4b3e;
-  transition: background-color 0.3s ease, transform 0.2s ease;
+  transition: all 0.3s ease, transform 0.2s ease;
   color: white;
   cursor: pointer;
 }
 
 .refresh-button:hover{
-  background-color:#c49e85;
-  color: black;
-  transform: translateY(-1px);
+  background-color: #A0522D;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(139, 69, 19, 0.3);
 }
 
 .refresh-button:disabled {
@@ -520,7 +520,7 @@
   grid-template-columns: 80px 1fr 120px; 
   align-items: center;
   gap: 20px;
-  padding: 16px 20px;
+  padding: 20px 20px;
   border-bottom: 1px solid #e5e5e5;
   min-height: 160px;
   cursor: pointer;
@@ -557,7 +557,7 @@
 }
 
 .book-cover-small {
-  width: 100px; /* Increased from 50px */
+  width: 95px; /* Increased from 50px */
   height: 140px; /* Increased from 75px */
   flex-shrink: 0;
   position: relative;

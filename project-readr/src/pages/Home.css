@@ -45,7 +45,7 @@
 }
 
 .filter-dropdown:focus {
-  border-color: #3498db;
+  border-color: #A0522D;
 }
 
 .search-controls{
@@ -64,7 +64,7 @@
 }
 
 .search-bar:focus {
-  border-color: #3498db;
+  border-color: #A0522D;
 }
 
 .search-bar::placeholder {
@@ -287,14 +287,14 @@
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.2s ease;
+  transition: all 0.3s ease;
   width: 100%;
 }
 
 .add-to-list-btn:hover {
-  color:white;
-  background-color: #c49e85;
-  transform: translateY(-1px);
+  background-color: #A0522D;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(139, 69, 19, 0.3);
 }
 
 .add-to-list-btn:active {

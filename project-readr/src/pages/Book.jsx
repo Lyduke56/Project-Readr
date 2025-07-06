@@ -139,7 +139,7 @@ const ReviewItem = ({ review, currentUser }) => {
       </div>
       
       <div className="review-content">
-        <p className="review-text">{displayText}</p>
+        <p className="review-text" >{displayText}</p>
         {shouldTruncate && (
           <button 
             className="expand-btn"
@@ -800,7 +800,7 @@ export const Book = () => {
               {/* User Rating integrated directly into the rating section */}
               {currentUser && (
                 <>
-                  <h4>Your Rating</h4>
+                  <h4 className="b-your-rating">Your Rating</h4>
                     <div className="user-rating-section">
                       <div className="rating-display">
                         <StarRating
