@@ -700,6 +700,9 @@ export const Book = () => {
 
   return (
     <div className="book-page">
+        <button className="back-btn">
+          ← Go Back
+        </button>
       <div className="book-container">
         <div className="book-detail-header">
           <div className="book-cover-container">
