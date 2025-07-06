@@ -2,6 +2,8 @@ import { useNavigate, useLocation  } from "react-router-dom"
 import { useState, useRef, useEffect } from "react"
 import { supabase } from '../supabaseClient';
 import "./HomepageNavbar.css"
+import { FaUserPlus } from "react-icons/fa";
+import { FriendRequestBell } from "./FriendRequestBell";
 
 export function HomepageNavbar() {
     const navigate = useNavigate();
@@ -125,6 +127,10 @@ export function HomepageNavbar() {
         'Discover New Books'
     ];
 
+    const handleAddProfile = () => {
+            navigate('/AddProfile')
+    };
+
     return (
         <>
             <div className="welcome-navbar">
@@ -141,8 +147,10 @@ export function HomepageNavbar() {
                             </button>
                         )}
 
-                        <button className="icon-button" onClick={() => console.log('Iconclicked')}>
-                            <img className="icon" alt="Bell icon" src="bell.png" />
+                        <FriendRequestBell currentUserId={user?.id} />
+
+                        <button className="icon-button" onClick={handleAddProfile}>
+                            <FaUserPlus  className="icon"/>
                         </button>
                         
                         <div className="group" ref={dropdownRef}>

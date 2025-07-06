@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { UserAuth } from '../context/AuthContext';
 import { supabase } from '../supabaseClient';
-import { Link, useNavigate } from "react-router-dom"
+import { Link, useNavigate, useViewTransitionState } from "react-router-dom"
 import './Profile.css';
-import { FaFacebook, FaInstagram, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
+import { FaFacebook, FaInstagram, FaChevronLeft, FaChevronRight, FaUserFriends } from 'react-icons/fa';
 import { ResetPass } from './ResetPass';
 import { Modal } from '../Modal/Modal';
 import { EditProfile } from './editProfile';
@@ -30,7 +30,9 @@ export function Profile() {
   
   // Carousel state for rated books
   const [currentRatedIndex, setCurrentRatedIndex] = useState(0);
-  const [visibleRatedBooks, setVisibleRatedBooks] = useState(4); // Number of books to show at once
+  const [visibleRatedBooks, setVisibleRatedBooks] = useState(4); 
+
+  const [totalFriends , setTotalFriends] = useState([]); 
 
   // Fetch user profile data
   useEffect(() => {
@@ -130,6 +132,31 @@ export function Profile() {
     fetchRatedBooks();
   }, [user?.id]);
 
+  useEffect (() => {
+    const fetchTotalFriends = async () => {
+      if (!user?.id) {
+              console.error('No user has been found!');
+              return;
+            }
+            try {
+              const { data, error } = await supabase
+                .from('accepted_friendships')
+                .select('*')
+                .eq('user_id', user.id)
+                .order('created_at', { ascending: false });
+
+              if (error) {
+                console.error('Error fetching rated books:', error);
+              } else {
+                setTotalFriends(data || []);
+              }
+            } catch (err) {
+              console.error('Error fetching rated books:', err);
+            }
+          }
+    fetchTotalFriends()
+  }, [user?.id]);
+
   // Handle window resize for responsive carousel
   useEffect(() => {
     const handleResize = () => {
@@ -148,6 +175,7 @@ export function Profile() {
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
+
 
   const fetchBookRatings = async (bookId) => {
     try {
@@ -278,6 +306,11 @@ export function Profile() {
     }
   };
 
+  const handleFriendList = () => {
+    console.log("succeeded friend list");
+      navigate('/FriendList');
+  };
+
   //Edit profile function   
   const handleEditProfile = (e) => {
     e.preventDefault();
@@ -289,6 +322,7 @@ export function Profile() {
     e.preventDefault();
     setIsResetPasswordOpened(true);
   };
+
 
   // Helper function to truncate text
   const truncateText = (text, maxLength = 40) => {
@@ -595,19 +629,28 @@ export function Profile() {
         </div>
         
         <div className="profile-names">
-          <h1 className="display-name">
-            {profileData.display_name || profileData.full_name || 'Anonymous Reader'}
-          </h1>
+          <div className="in-line-display">
+            <h1 className="display-name">
+              {profileData.display_name || profileData.full_name || 'Anonymous Reader'}
+            </h1>
+            <div className="profile-status">
+              {profileData.is_private ? (
+                <span className="status-badge private">🔒 Private Profile</span>
+              ) : (
+                <span className="status-badge public">🌐 Public Profile</span>
+              )}
+            </div>
+          </div>
+           
           {profileData.display_name && profileData.full_name && (
             <h2 className="full-name">{profileData.full_name}</h2>
           )}
-          <div className="profile-status">
-            {profileData.is_private ? (
-              <span className="status-badge private">🔒 Private Profile</span>
-            ) : (
-              <span className="status-badge public">🌐 Public Profile</span>
-            )}
-          </div>
+          
+          <button className="friends" onClick={handleFriendList}> 
+            <FaUserFriends />
+             {totalFriends.length} Friends
+          </button>
+
         </div>
 
         <div className="profile-actions">
