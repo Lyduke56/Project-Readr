@@ -52,15 +52,34 @@ export const Home = () => {
   const loadTrendingBooks = async () => {
     try {
       // Search for popular books from recent years (2020-2024)
-      const queries = [
-        'subject:fiction trending',
-        'subject:romance popular',
-        'subject:fantasy bestseller',
-        'subject:mystery thriller'
-      ];
+    const allTrendingQueries = [
+      'subject:fiction trending',
+      'subject:romance popular',
+      'subject:fantasy bestseller',
+      'subject:mystery thriller',
+      'subject:science_fiction popular',
+      'subject:young_adult bestseller',
+      'subject:contemporary_fiction',
+      'subject:horror popular',
+      'subject:biography bestseller',
+      'subject:self_help popular',
+      'subject:historical_fiction trending',
+      'subject:crime thriller'
+    ];
+
+    // Randomly select 4 queries from the array
+    const shuffledQueries = allTrendingQueries.sort(() => 0.5 - Math.random());
+    const queries = shuffledQueries.slice(0, 4);
       
-      const allBooks = [];
-      
+    const allBooks = [];
+    
+    const sortOptions = ['rating', 'new', 'old'];
+    const randomSort = sortOptions[Math.floor(Math.random() * sortOptions.length)];
+
+    const response = await fetch(
+      `https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&limit=8&sort=${randomSort}&publish_year=2020,2021,2022,2023,2024`
+    );
+
       for (const query of queries) {
         const response = await fetch(
           `https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&limit=8&sort=rating&publish_year=2020,2021,2022,2023,2024`
@@ -75,15 +94,16 @@ export const Home = () => {
       }
       
       // Remove duplicates and filter books with covers
-      const uniqueBooks = allBooks
-        .filter((book, index, self) => 
-          index === self.findIndex(b => b.key === book.key) && 
-          book.cover_i && 
-          book.title && 
-          book.author_name
-        )
-        .slice(0, 20);
-      
+     const uniqueBooks = allBooks
+      .filter((book, index, self) => 
+        index === self.findIndex(b => b.key === book.key) && 
+        book.cover_i && 
+        book.title && 
+        book.author_name
+      )
+      .sort(() => 0.5 - Math.random()) // Randomize the order
+      .slice(0, 20);
+          
       setTrendingBooks(uniqueBooks);
     } catch (error) {
       console.error('Error loading trending books:', error);
@@ -105,12 +125,24 @@ export const Home = () => {
   // Load classic books (books published before 1980)
   const loadClassicBooks = async () => {
     try {
-      const queries = [
-        'subject:classics literature',
-        'subject:american_literature',
-        'subject:english_literature',
-        'subject:world_literature'
-      ];
+    const allClassicQueries = [
+      'subject:classics literature',
+      'subject:american_literature',
+      'subject:english_literature',
+      'subject:world_literature',
+      'subject:victorian_literature',
+      'subject:modernist_literature',
+      'subject:russian_literature',
+      'subject:french_literature',
+      'subject:philosophy classic',
+      'subject:poetry classic',
+      'subject:drama classic',
+      'subject:gothic_literature'
+    ];
+
+    // Randomly select 4 queries from the array
+    const shuffledQueries = allClassicQueries.sort(() => 0.5 - Math.random());
+    const queries = shuffledQueries.slice(0, 4);
       
       const allBooks = [];
       
@@ -129,15 +161,16 @@ export const Home = () => {
       
       // Remove duplicates and filter books with covers
       const uniqueBooks = allBooks
-        .filter((book, index, self) => 
-          index === self.findIndex(b => b.key === book.key) && 
-          book.cover_i && 
-          book.title && 
-          book.author_name &&
-          book.first_publish_year && 
-          book.first_publish_year <= 1980
-        )
-        .slice(0, 20);
+      .filter((book, index, self) => 
+        index === self.findIndex(b => b.key === book.key) && 
+        book.cover_i && 
+        book.title && 
+        book.author_name &&
+        book.first_publish_year && 
+        book.first_publish_year <= 1980
+      )
+      .sort(() => 0.5 - Math.random()) // Randomize the order
+      .slice(0, 20);
       
       setClassicBooks(uniqueBooks);
     } catch (error) {
@@ -599,11 +632,11 @@ export const Home = () => {
       });
 
       return Array.from(uniqueAuthors.values()).map((author, index) => (
-      <div className="books-card" key={index} onClick={() => handleCardClick({
-        author_name: [author.name],
-        author_key: [author.key],
-        title: author.books[0] || 'Unknown Book'
-      })}>
+        <div className="books-card" key={index} onClick={() => handleCardClick({
+          author_name: [author.name],
+          author_key: [author.key],
+          title: author.books[0] || 'Unknown Book'
+        })}>
         
         <div className="books-cover">
           <div className="books-cover-holder">
@@ -624,13 +657,12 @@ export const Home = () => {
 
         <div className="book-information">
           <div className='book-text-group'>
-            <h3 className={getTitleClass(title)} title={title}>
-              {truncateText(title, 50)}
+           <h3 className={getTitleClass(author.name)} title={author.name}>
+              {truncateText(author.name, 50)}
             </h3>
-            <p className={getAuthorClass(author)} title={author}>
-              by {truncateText(author, 40)}
+            <p className={getAuthorClass(`${author.books.length} books`)} title={`${author.books.length} books`}>
+              {author.books.length} books
             </p>
-            {publishYear && <p className={getYearClass(title, author)}>({publishYear})</p>}
           </div>
         </div>
 

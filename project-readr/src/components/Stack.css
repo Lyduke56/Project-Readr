@@ -1,60 +1,169 @@
 .stack-container {
   position: relative;
   perspective: 600px;
+  margin: 0 auto; /* Center the entire stack container */
+  display: flex;
+  justify-content: center;
 }
 
 .card-rotate {
   position: absolute;
   cursor: grab;
+  border: #FFF1E3;
+  padding-right: 20px;
+  padding-left: 10px;
+  padding-bottom: 25px;
+  will-change: transform;
+  backface-visibility: hidden;
+  transform-style: preserve-3d;
 }
 
-.card {
+.sss-cards {
   display: flex;
   flex-direction: column;
   border-radius: 20px;
   border: 5px solid #fff;
-  width: 300px;
-  height: 500px !important;
+  width: 320px;
+  height: 570px !important;
+  padding: 30px;
+  background-color: white;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  will-change: transform;
+  backface-visibility: hidden;
 }
 
-.card-image-container {
-  height: 70%;
+.s-card-image-container {
+  height: 390px;
+  width: 250px; /* Keep original width */
   overflow: hidden;
+  background-color: #9ca3af;;
+  border-radius: 8px; 
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  margin: 0 auto; 
 }
 
-.card-image {
+.placeholder-text {
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
+  text-align: center;
+}
+
+.s-card-image {
   pointer-events: none;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: cover; /* Changed from 'fill' to 'cover' for proper cropping */
+  display: block; 
+  object-position: center center;
 }
 
-.card-content {
-  height: 30%;
+.s-card-content {
+  height: 100px;
   padding: 8px;
   background: white;
   display: flex;
   flex-direction: column;
   justify-content: center;
+  margin-top: auto;
+  
 }
 
-.book-title {
-  font-size: 1rem;
+.s-book-title {
+  font-size: 1.7rem;
   font-weight: bold;
   margin: 0 0 4px 0;
   font-family: 'Arial', sans-serif;
+  margin-top: 8px;
+  text-align: center;
 }
 
-.book-author {
+.s-book-title.long-title{
+  font-size: 1.5rem;
+}
+
+.s-book-title.very-long-title{
+  font-size: 1.0rem;
+}
+
+.s-book-author.long-author{
   font-size: 0.8rem;
-  margin: 0 0 2px 0;
+}
+
+.s-book-author.very-long-author{
+  font-size: 0.7rem;
+}
+
+.s-book-genres.long-genre{
+  font-size: 0.9rem;
+}
+
+.s-book-genres.very-long-genre{
+  font-size: 0.8rem;
+}
+
+.s-book-author {
+  font-size: 1.1rem;
+  margin-bottom: 5px;
   color: #555;
   font-family: 'Arial', sans-serif;
+  text-align: center;
 }
 
-.book-genres {
-  font-size: 0.7rem;
+.s-book-genres {
+  font-size: 1rem;
   margin: 0;
   color: #777;
   font-family: 'Arial', sans-serif;
+  text-align: center;
+}
+
+.s-discovery-container {
+  display: flex;
+  align-items: center;
+  justify-content: center; /* Center the stack container */
+  width: 100vw !important;
+  min-height: 100vh;
+  background: transparent;
+  padding: 20px;
+  position: relative;
+}
+
+.side-label {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 10;
+  user-select: none;
+  pointer-events: none;
+  margin-top: 70px;
+}
+
+.left-label {
+  left: 0px;
+  padding-right: 20px; /* Increased from 20px to 100px */
+}
+
+.right-label {
+  right: 0px; /* Increased from 20px to 100px */
+}
+
+.label-text {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: black;
+  margin-bottom: 8px;
+  transition: all 0.2s ease;
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+}
+
+.label-icon {
+  font-size: 2rem;
 }

@@ -17,6 +17,7 @@ import DiscoverPage from './pages/Discover'
 import { ResetPass } from './pages/ResetPass'
 import { AddProfile } from './pages/AddProfile'
 import { FriendList } from './pages/FriendList'
+import GenrePage from './pages/Genre'
 
 function App() {
   return (
@@ -36,6 +37,7 @@ function App() {
           <Route path="/Author" element={<Author />} />
           <Route path="/Book" element={<Book />} />
           <Route path="/Discover" element={<DiscoverPage />} />
+          <Route path="/Genre" element={<GenrePage />} />
           <Route path="/reset-password" element={<ResetPass />} />
           <Route path="/AddProfile" element={<AddProfile />} />
           <Route path="/FriendList" element={<FriendList />} />

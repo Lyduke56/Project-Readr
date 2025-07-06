@@ -47,6 +47,9 @@ export function HomepageNavbar() {
             case 'Discover New Books':
                 navigate('/Discover');
                 break;
+            case 'Genres':
+                navigate('/Genre');
+                break;
             default:
                 break;
         }
@@ -124,7 +127,8 @@ export function HomepageNavbar() {
     const dropdownOptions = [
         'Top Rated Books',
         'My Reading List', 
-        'Discover New Books'
+        'Discover New Books',
+        'Genres'
     ];
 
     const handleAddProfile = () => {
