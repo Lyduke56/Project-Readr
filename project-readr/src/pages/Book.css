@@ -5,6 +5,31 @@ body{
   font-size: larger;
 }
 
+.back-btn {
+  background-color: #8B4513;
+  color: white;
+  border: none;
+  padding: 0.7rem 1.2rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: 'Libre Baskerville', serif;
+  white-space: nowrap;
+  margin-left: 1rem;
+}
+
+.back-btn:hover {
+  background-color: #A0522D;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(139, 69, 19, 0.3);
+}
+
+.back-btn:active {
+  transform: translateY(0);
+}
+
 .book-page {
   background-color: #FFF1E3;
   min-height: 80vh;

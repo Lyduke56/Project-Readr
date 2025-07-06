@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import "./Book.css";
 import { supabase } from "../supabaseClient";
 import { UserAuth } from "../context/AuthContext";
+import { useNavigate } from 'react-router-dom';
 
 // StarRating component definition
 const StarRating = ({ 
@@ -326,6 +327,11 @@ export const Book = () => {
 
   const { session } = UserAuth();
   const user = session?.user;
+
+  const navigate = useNavigate();
+  const handleBack = () => {
+    navigate(-1); // Go back one step in the browser history
+  };
 
   useEffect(() => {
         const getCurrentUser = async () => {
@@ -700,6 +706,9 @@ export const Book = () => {
 
   return (
     <div className="book-page">
+        <button onClick={handleBack} className="back-btn">
+          ← Go Back
+        </button>
       <div className="book-container">
         <div className="book-detail-header">
           <div className="book-cover-container">

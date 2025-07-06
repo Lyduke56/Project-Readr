@@ -632,11 +632,11 @@ export const Home = () => {
       });
 
       return Array.from(uniqueAuthors.values()).map((author, index) => (
-      <div className="books-card" key={index} onClick={() => handleCardClick({
-        author_name: [author.name],
-        author_key: [author.key],
-        title: author.books[0] || 'Unknown Book'
-      })}>
+        <div className="books-card" key={index} onClick={() => handleCardClick({
+          author_name: [author.name],
+          author_key: [author.key],
+          title: author.books[0] || 'Unknown Book'
+        })}>
         
         <div className="books-cover">
           <div className="books-cover-holder">
@@ -657,13 +657,12 @@ export const Home = () => {
 
         <div className="book-information">
           <div className='book-text-group'>
-            <h3 className={getTitleClass(title)} title={title}>
-              {truncateText(title, 50)}
+           <h3 className={getTitleClass(author.name)} title={author.name}>
+              {truncateText(author.name, 50)}
             </h3>
-            <p className={getAuthorClass(author)} title={author}>
-              by {truncateText(author, 40)}
+            <p className={getAuthorClass(`${author.books.length} books`)} title={`${author.books.length} books`}>
+              {author.books.length} books
             </p>
-            {publishYear && <p className={getYearClass(title, author)}>({publishYear})</p>}
           </div>
         </div>
 
