@@ -62,10 +62,12 @@ export function SignUp(){
                 <div className="signup-form-container">
                     <div className="signup-title">
                         <p>
-                            <span className="tracking-[0.23px]">Welcome to <span className="readr-title">Readr</span></span>
+                            <span className="tracking-[0.23px]">
+                                Welcome to <span className="readr-title">Readr</span>
+                            </span>
                         </p>
                     </div>
-                        <form onSubmit={handleSignUp}>
+                    <form onSubmit={handleSignUp}>
                         <div className="input-group email-input">
                             <label>Email</label>
                             <input 
@@ -103,12 +105,12 @@ export function SignUp(){
                             Register
                         </button>
                     </form>
-                    <p className="signup-link">
+                    <div className="signup-link">
                         Already have an account? <Link to="/SignIn">Sign in!</Link>
-                    </p>
+                    </div>
                 </div>
                 <div className="signup-image-container">
-                    <ImageCarousel imagePath="/HomepagePic.png" />
+                    <ImageCarousel imagePath="/WhyReadr.png" sectionPositions={[-5, 30, 60, 90]} />
                 </div>
             </div>
         </div>

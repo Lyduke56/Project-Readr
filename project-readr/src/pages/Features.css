@@ -1,0 +1,237 @@
+@import url('https://fonts.googleapis.com/css2?family=Merriweather&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville&display=swap');
+
+.features-page {
+  font-family: 'Libre Baskerville', serif;
+  color: #2d2d2d;
+  background: #FFF1E3;
+  padding-bottom: 60px;
+  min-height: 100vh;
+}
+
+.features-hero {
+  min-height: 50vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #E1CBB3 0%, #c49e85 50%, #6b4b3e 100%);
+  color: #2d2d2d;
+  padding: 80px 20px 40px 20px;
+  text-align: center;
+}
+
+.features-hero h1 {
+  font-family: 'Merriweather', serif;
+  font-size: 3.5rem;
+  margin-bottom: 20px;
+  font-weight: bold;
+}
+
+.features-highlight {
+  color: #6b4b3e;
+  font-weight: bold;
+}
+
+.features-tagline {
+  font-size: 1.4rem;
+  margin-top: 10px;
+  color: #2d2d2d;
+  font-family: 'Libre Baskerville', serif;
+}
+
+/* Features Section */
+.features-section {
+  max-width: 1200px;
+  margin: 0 auto 60px auto;
+  padding: 60px 20px;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(107, 75, 62, 0.1);
+  margin-top: -40px;
+  position: relative;
+  z-index: 2;
+}
+
+.features-section h2 {
+  font-family: 'Merriweather', serif;
+  font-size: 2.5rem;
+  text-align: center;
+  margin-bottom: 50px;
+  color: #6b4b3e;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 30px;
+  justify-content: center;
+}
+
+.feature-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  padding: 30px;
+  background: #f4ead2;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(107, 75, 62, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.feature-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 32px rgba(107, 75, 62, 0.2);
+}
+
+.feature-icon {
+  font-size: 3rem;
+  flex-shrink: 0;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.1));
+}
+
+.feature-content h3 {
+  font-family: 'Merriweather', serif;
+  font-size: 1.4rem;
+  margin-bottom: 12px;
+  color: #6b4b3e;
+}
+
+.feature-content p {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #2d2d2d;
+  margin: 0;
+}
+
+/* Stats Section */
+.features-stats {
+  max-width: 1000px;
+  margin: 0 auto 60px auto;
+  padding: 40px 20px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 30px;
+}
+
+.stat-item {
+  text-align: center;
+  padding: 30px 20px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(107, 75, 62, 0.1);
+  transition: transform 0.3s ease;
+}
+
+.stat-item:hover {
+  transform: translateY(-8px);
+}
+
+.stat-item h3 {
+  font-family: 'Merriweather', serif;
+  font-size: 2.5rem;
+  color: #6b4b3e;
+  margin-bottom: 10px;
+}
+
+.stat-item p {
+  font-size: 1.1rem;
+  color: #2d2d2d;
+  margin: 0;
+}
+
+/* Call to Action Section */
+.features-cta {
+  max-width: 800px;
+  margin: 0 auto;
+  background: linear-gradient(135deg, #6b4b3e 0%, #8B4513 100%);
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(107, 75, 62, 0.2);
+  padding: 60px 40px;
+  text-align: center;
+  color: #fff;
+}
+
+.features-cta h2 {
+  font-family: 'Merriweather', serif;
+  font-size: 2.5rem;
+  margin-bottom: 20px;
+}
+
+.features-cta p {
+  font-size: 1.2rem;
+  margin-bottom: 30px;
+  line-height: 1.6;
+}
+
+.features-cta-btn {
+  display: inline-block;
+  background: #fff;
+  color: #6b4b3e;
+  padding: 16px 40px;
+  border-radius: 30px;
+  font-weight: bold;
+  font-size: 1.2rem;
+  text-decoration: none;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+  font-family: 'Merriweather', serif;
+}
+
+.features-cta-btn:hover {
+  background: #E1CBB3;
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .features-grid {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .features-hero h1 {
+    font-size: 2.5rem;
+  }
+  
+  .features-section h2,
+  .features-cta h2 {
+    font-size: 2rem;
+  }
+  
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .features-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .feature-card {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .feature-icon {
+    align-self: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .features-cta {
+    padding: 40px 20px;
+  }
+  
+  .features-cta h2 {
+    font-size: 1.8rem;
+  }
+}

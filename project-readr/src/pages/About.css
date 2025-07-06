@@ -1,0 +1,440 @@
+@import url('https://fonts.googleapis.com/css2?family=Merriweather&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville&display=swap');
+
+.about-page {
+  font-family: 'Libre Baskerville', serif;
+  color: #2d2d2d;
+  background: #FFF1E3;
+  padding-bottom: 60px;
+  min-height: 100vh;
+}
+
+.about-hero {
+  min-height: 50vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #E1CBB3 0%, #c49e85 50%, #6b4b3e 100%);
+  color: #2d2d2d;
+  padding: 80px 20px 40px 20px;
+  text-align: center;
+}
+
+.about-hero h1 {
+  font-family: 'Merriweather', serif;
+  font-size: 3.5rem;
+  margin-bottom: 20px;
+  font-weight: bold;
+}
+
+.about-highlight {
+  color: #6b4b3e;
+  font-weight: bold;
+}
+
+.about-tagline {
+  font-size: 1.4rem;
+  margin-top: 10px;
+  color: #2d2d2d;
+  font-family: 'Libre Baskerville', serif;
+}
+
+/* Why Readr Section */
+.why-readr-section {
+  max-width: 1200px;
+  margin: 0 auto 60px auto;
+  padding: 60px 20px;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(107, 75, 62, 0.1);
+  margin-top: -40px;
+  position: relative;
+  z-index: 2;
+}
+
+.why-readr-section h2 {
+  font-family: 'Merriweather', serif;
+  font-size: 2.5rem;
+  text-align: center;
+  margin-bottom: 50px;
+  color: #6b4b3e;
+}
+
+.why-readr-content {
+  display: flex;
+  gap: 60px;
+  align-items: center;
+}
+
+.why-readr-left {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.animated-books {
+  position: relative;
+  width: 500px;
+  height: 500px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.book-stack {
+  position: relative;
+  width: 400px;
+  height: 400px;
+}
+
+.book {
+  position: absolute;
+  width: 250px;
+  height: 395px;
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  object-fit: cover;
+}
+
+.book-1 {
+  background: linear-gradient(45deg, #8B4513, #A0522D);
+  top: 20px;
+  left: 60px;
+  transform-origin: center center;
+}
+
+.book-2 {
+  background: linear-gradient(45deg, #6b4b3e, #8B4513);
+  top: 40px;
+  left: 40px;
+  transform-origin: center center;
+}
+
+.book-3 {
+  background: linear-gradient(45deg, #c49e85, #6b4b3e);
+  top: 60px;
+  left: 80px;
+  transform-origin: center center;
+}
+
+.book-4 {
+  background: linear-gradient(45deg, #E1CBB3, #c49e85);
+  top: 80px;
+  left: 20px;
+  transform-origin: center center;
+}
+
+.floating-hearts {
+  position: absolute;
+  top: -20px;
+  right: -20px;
+  font-size: 2rem;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+}
+
+.why-readr-right {
+  flex: 1;
+}
+
+.why-readr-intro {
+  font-size: 1.2rem;
+  line-height: 1.6;
+  color: #2d2d2d;
+  margin-bottom: 40px;
+  font-family: 'Libre Baskerville', serif;
+}
+
+.why-readr-features {
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+.why-readr-feature {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  padding: 20px;
+  background: #f4ead2;
+  border-radius: 12px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.why-readr-feature:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 24px rgba(107, 75, 62, 0.15);
+}
+
+.feature-icon {
+  font-size: 2.5rem;
+  flex-shrink: 0;
+}
+
+.feature-content h3 {
+  font-family: 'Merriweather', serif;
+  font-size: 1.3rem;
+  margin-bottom: 8px;
+  color: #6b4b3e;
+}
+
+.feature-content p {
+  font-size: 1rem;
+  line-height: 1.5;
+  color: #2d2d2d;
+  margin: 0;
+}
+
+/* Stats Section */
+.about-stats {
+  max-width: 1000px;
+  margin: 0 auto 60px auto;
+  padding: 40px 20px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 30px;
+}
+
+.stat-item {
+  text-align: center;
+  padding: 30px 20px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(107, 75, 62, 0.1);
+  transition: transform 0.3s ease;
+}
+
+.stat-item:hover {
+  transform: translateY(-8px);
+}
+
+.stat-item h3 {
+  font-family: 'Merriweather', serif;
+  font-size: 2.5rem;
+  color: #6b4b3e;
+  margin-bottom: 10px;
+}
+
+.stat-item p {
+  font-size: 1.1rem;
+  color: #2d2d2d;
+  margin: 0;
+}
+
+/* Team Section */
+.about-team {
+  max-width: 1200px;
+  margin: 0 auto 60px auto;
+  padding: 60px 20px;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(107, 75, 62, 0.1);
+}
+
+.about-team h2 {
+  font-family: 'Merriweather', serif;
+  font-size: 2.5rem;
+  text-align: center;
+  margin-bottom: 50px;
+  color: #6b4b3e;
+}
+
+.about-team-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 30px;
+  justify-content: center;
+}
+
+.about-team-card {
+  background: #f4ead2;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(107, 75, 62, 0.1);
+  padding: 30px 25px;
+  text-align: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.about-team-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 32px rgba(107, 75, 62, 0.2);
+}
+
+.about-team-img {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-bottom: 20px;
+  border: 4px solid #6b4b3e;
+}
+
+.about-team-card h3 {
+  font-family: 'Merriweather', serif;
+  font-size: 1.4rem;
+  margin-bottom: 8px;
+  color: #6b4b3e;
+}
+
+.about-team-role {
+  color: #8B4513;
+  font-weight: 600;
+  margin-bottom: 12px;
+  font-size: 1.1rem;
+}
+
+.about-team-bio {
+  font-size: 1rem;
+  color: #2d2d2d;
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+.about-team-links {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+}
+
+.about-team-links a {
+  color: #6b4b3e;
+  text-decoration: none;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 8px;
+  background: #E1CBB3;
+  transition: all 0.3s ease;
+}
+
+.about-team-links a:hover {
+  background: #6b4b3e;
+  color: #fff;
+}
+.about-team-img-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Call to Action Section */
+.about-cta {
+  max-width: 800px;
+  margin: 0 auto;
+  background: linear-gradient(135deg, #6b4b3e 0%, #8B4513 100%);
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(107, 75, 62, 0.2);
+  padding: 60px 40px;
+  text-align: center;
+  color: #fff;
+}
+
+.about-cta h2 {
+  font-family: 'Merriweather', serif;
+  font-size: 2.5rem;
+  margin-bottom: 20px;
+}
+
+.about-cta p {
+  font-size: 1.2rem;
+  margin-bottom: 30px;
+  line-height: 1.6;
+}
+
+.about-cta-btn {
+  display: inline-block;
+  background: #fff;
+  color: #6b4b3e;
+  padding: 16px 40px;
+  border-radius: 30px;
+  font-weight: bold;
+  font-size: 1.2rem;
+  text-decoration: none;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+  font-family: 'Merriweather', serif;
+}
+
+.about-cta-btn:hover {
+  background: #E1CBB3;
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .why-readr-content {
+    flex-direction: column;
+    gap: 40px;
+  }
+  
+  .animated-books {
+    width: 450px;
+    height: 450px;
+  }
+  
+  .book-stack {
+    width: 350px;
+    height: 350px;
+  }
+  
+  .book {
+    width: 130px;
+    height: 195px;
+  }
+}
+
+@media (max-width: 768px) {
+  .about-hero h1 {
+    font-size: 2.5rem;
+  }
+  
+  .why-readr-section h2,
+  .about-team h2,
+  .about-cta h2 {
+    font-size: 2rem;
+  }
+  
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .about-team-cards {
+    grid-template-columns: 1fr;
+  }
+  
+  .why-readr-feature {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .feature-icon {
+    align-self: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .about-cta {
+    padding: 40px 20px;
+  }
+  
+  .about-cta h2 {
+    font-size: 1.8rem;
+  }
+}
