@@ -6,7 +6,7 @@ import './Profile.css';
 import { FaFacebook, FaInstagram, FaChevronLeft, FaChevronRight } from 'react-icons/fa';
 import { ResetPass } from './ResetPass';
 import { Modal } from '../Modal/Modal';
-import { EditProfile } from './editProfile';
+import { EditProfile } from './EditProfile';
 import { StarRating } from '../components/StarRating';
 
 export function Profile() {

@@ -278,8 +278,8 @@ export const ReadingList = () => {
               <div className="empty-state">
                 <p className="empty-message">
                   {searchQuery 
-                    ? `No books found matching "${searchQuery}" in ${activeFilter.toLowerCase().replace('_', ' ')}`
-                    : `No books in ${activeFilter.toLowerCase().replace('_', ' ')} yet`
+                    ? `No books found matching "${searchQuery}" in ${activeFilter.toLowerCase().replaceAll('_', ' ')}`
+                    : `No books in ${activeFilter.toLowerCase().replaceAll('_', ' ')} yet`
                   }
                 </p>
                 {!searchQuery && (
