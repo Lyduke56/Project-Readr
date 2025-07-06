@@ -527,17 +527,6 @@ const DiscoverPage = () => {
         />
       </div>
       
-      <div className="swipe-instructions">
-        <div className="swipe-instruction">
-          <span className="swipe-direction left">👈</span>
-          <span>Skip</span>
-        </div>
-        <div className="swipe-instruction">
-          <span className="swipe-direction right">👉</span>
-          <span>Save to Reading List</span>
-        </div>
-      </div>
-      
       {/* Refresh button */}
       <div className="refresh-container">
         <button 

@@ -36,13 +36,20 @@
   height: 390px;
   width: 250px; /* Keep original width */
   overflow: hidden;
-  background-color: aqua;
+  background-color: #9ca3af;;
   border-radius: 8px; 
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
   margin: 0 auto; 
+}
+
+.placeholder-text {
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 500;
+  text-align: center;
 }
 
 .s-card-image {
@@ -79,15 +86,23 @@
 }
 
 .s-book-title.very-long-title{
-  font-size: 1.2rem;
+  font-size: 1.0rem;
 }
 
 .s-book-author.long-author{
-  font-size: 0.9rem;
+  font-size: 0.8rem;
 }
 
 .s-book-author.very-long-author{
   font-size: 0.7rem;
+}
+
+.s-book-genres.long-genre{
+  font-size: 0.9rem;
+}
+
+.s-book-genres.very-long-genre{
+  font-size: 0.8rem;
 }
 
 .s-book-author {
@@ -142,6 +157,7 @@
 .label-text {
   font-size: 1.5rem;
   font-weight: bold;
+  color: black;
   margin-bottom: 8px;
   transition: all 0.2s ease;
   will-change: transform, opacity;
