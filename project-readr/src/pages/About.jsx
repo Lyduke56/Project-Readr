@@ -126,14 +126,16 @@ export function About() {
         <div className="about-team-cards">
           {team.map((member, idx) => (
             <motion.div className="about-team-card" key={member.name} initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: idx * 0.15 }} viewport={{ once: true }}>
-              <img src={member.img} alt={member.name} className="about-team-img" />
-              <h3>{member.name}</h3>
-              <p className="about-team-role">{member.role}</p>
-              <p className="about-team-bio">{member.bio}</p>
-              <div className="about-team-links">
-                <a href={member.github} target="_blank" rel="noopener noreferrer">GitHub</a>
-                <a href={member.linkedin} target="_blank" rel="noopener noreferrer">LinkedIn</a>
+              <div className="about-team-img-container">
+                <img src={member.img} alt={member.name} className="about-team-img" />
+                <h3>{member.name}</h3>
+                <p className="about-team-role">{member.role}</p>
+                <p className="about-team-bio">{member.bio}</p>
               </div>
+                <div className="about-team-links">
+                  <a href={member.github} target="_blank" rel="noopener noreferrer">GitHub</a>
+                  <a href={member.linkedin} target="_blank" rel="noopener noreferrer">LinkedIn</a>
+                </div>
             </motion.div>
           ))}
         </div>
