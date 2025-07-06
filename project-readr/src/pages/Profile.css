@@ -904,3 +904,12 @@ body {
     padding: 16px;
   }
 }
+
+.in-line-display {
+  display: flex;
+  gap: 15px;
+}
+
+.friends {
+  font-size: 25px;
+}
