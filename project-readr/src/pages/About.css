@@ -76,8 +76,8 @@
 
 .animated-books {
   position: relative;
-  width: 300px;
-  height: 300px;
+  width: 500px;
+  height: 500px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -85,16 +85,17 @@
 
 .book-stack {
   position: relative;
-  width: 200px;
-  height: 200px;
+  width: 400px;
+  height: 400px;
 }
 
 .book {
   position: absolute;
-  width: 80px;
-  height: 120px;
+  width: 250px;
+  height: 395px;
   border-radius: 4px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  object-fit: cover;
 }
 
 .book-1 {
@@ -371,18 +372,18 @@
   }
   
   .animated-books {
-    width: 250px;
-    height: 250px;
+    width: 450px;
+    height: 450px;
   }
   
   .book-stack {
-    width: 150px;
-    height: 150px;
+    width: 350px;
+    height: 350px;
   }
   
   .book {
-    width: 60px;
-    height: 90px;
+    width: 130px;
+    height: 195px;
   }
 }
 

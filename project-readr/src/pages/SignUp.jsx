@@ -110,7 +110,7 @@ export function SignUp(){
                     </div>
                 </div>
                 <div className="signup-image-container">
-                    <ImageCarousel imagePath="/HomepagePic.png" />
+                    <ImageCarousel imagePath="/WhyReadr.png" sectionPositions={[-5, 30, 60, 90]} />
                 </div>
             </div>
         </div>

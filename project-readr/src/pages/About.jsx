@@ -3,34 +3,34 @@ import './About.css';
 
 const team = [
   {
-    name: 'Alice',
+    name: 'Bartolabac, Axziel Jay',
     role: 'Front End Developer',
-    bio: 'Loves crafting beautiful UIs and smooth user experiences.',
-    img: 'https://randomuser.me/api/portraits/women/44.jpg',
+    bio: 'Loves beautiful UIs and smooth user experiences.',
+    img: '/Screenshot 2025-07-06 231352.png',
     github: '#',
     linkedin: '#',
   },
   {
-    name: 'Bob',
-    role: 'Back End Developer',
-    bio: 'API wizard and database enthusiast.',
-    img: 'https://randomuser.me/api/portraits/men/46.jpg',
-    github: '#',
-    linkedin: '#',
-  },
-  {
-    name: 'Carol',
+    name: 'Ybañez, Aaron Lee ',
     role: 'UI/UX Designer',
     bio: 'Passionate about intuitive and accessible design.',
-    img: 'https://randomuser.me/api/portraits/women/65.jpg',
+    img: '/Screenshot 2025-07-06 231416.png',
     github: '#',
     linkedin: '#',
   },
   {
-    name: 'Dave',
+    name: 'Rosal, Clyde Justine',
     role: 'Project Lead',
     bio: 'Keeps the team on track and motivated.',
-    img: 'https://randomuser.me/api/portraits/men/68.jpg',
+    img: '/Screenshot 2025-07-06 231433.png',
+    github: '#',
+    linkedin: '#',
+  },
+  {
+    name: 'Longakit, Benideck',
+    role: 'Back End Developer',
+    bio: 'API wizard and database enthusiast.',
+    img: '/Screenshot 2025-07-06 231446.png',
     github: '#',
     linkedin: '#',
   },
@@ -82,14 +82,11 @@ export function About() {
           <div className="why-readr-left">
             <motion.div className="animated-books" initial={{ opacity: 0, scale: 0.8 }} whileInView={{ opacity: 1, scale: 1 }} transition={{ duration: 1, delay: 0.3 }} viewport={{ once: true }}>
               <div className="book-stack">
-                <motion.div className="book book-1" animate={{ rotateY: [0, 360] }} transition={{ duration: 8, repeat: Infinity, ease: "linear" }}></motion.div>
-                <motion.div className="book book-2" animate={{ rotateY: [0, -360] }} transition={{ duration: 6, repeat: Infinity, ease: "linear" }}></motion.div>
-                <motion.div className="book book-3" animate={{ rotateY: [0, 360] }} transition={{ duration: 10, repeat: Infinity, ease: "linear" }}></motion.div>
-                <motion.div className="book book-4" animate={{ rotateY: [0, -360] }} transition={{ duration: 7, repeat: Infinity, ease: "linear" }}></motion.div>
+                <motion.img src="/960px-To_Kill_a_Mockingbird_(first_edition_cover).png" alt="To Kill a Mockingbird" className="book book-1" animate={{ rotateY: [0, 360] }} transition={{ duration: 8, repeat: Infinity, ease: "linear" }} />
+                <motion.img src="/The_Great_Gatsby_Cover_1925_Retouched.png" alt="The Great Gatsby" className="book book-2" animate={{ rotateY: [0, -360] }} transition={{ duration: 6, repeat: Infinity, ease: "linear" }} />
+                <motion.img src="/don-quixote-111.png" alt="Don Quixote" className="book book-3" animate={{ rotateY: [0, 360] }} transition={{ duration: 10, repeat: Infinity, ease: "linear" }} />
+                <motion.img src="/les-miserables-305.png" alt="Les Miserables" className="book book-4" animate={{ rotateY: [0, -360] }} transition={{ duration: 7, repeat: Infinity, ease: "linear" }} />
               </div>
-              <motion.div className="floating-hearts" animate={{ y: [-10, 10, -10] }} transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}>
-                ❤️ 📖 ✨
-              </motion.div>
             </motion.div>
           </div>
           <div className="why-readr-right">
@@ -146,7 +143,7 @@ export function About() {
       <motion.section className="about-cta" initial={{ opacity: 0, y: 40 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.8 }} viewport={{ once: true }}>
         <h2>Ready to Start Your Reading Journey?</h2>
         <p>Join thousands of readers who have already discovered their next favorite book with Readr.</p>
-        <a href="/SignUp" className="about-cta-btn">Get Started Today</a>
+        <a href="/SignIn" className="about-cta-btn">Get Started Today</a>
       </motion.section>
     </div>
   );

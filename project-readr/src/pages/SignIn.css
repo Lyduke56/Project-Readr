@@ -1,5 +1,5 @@
 .signin-container {
-    background-color: #ffffff;
+    background-color: #f4f7f2;
     display: flex;
     flex-direction: row;
     justify-content: center;
@@ -8,7 +8,7 @@
 }
 
 .signin-content {
-    background-color: #ffffff;
+    background-color: #f4f7f2;
     overflow: hidden;
     width: 100%;
     max-width: 1440px;
