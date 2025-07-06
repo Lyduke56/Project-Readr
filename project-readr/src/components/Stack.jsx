@@ -1,8 +1,9 @@
 import { motion, useMotionValue, useTransform, useMotionTemplate } from "framer-motion";
+import { useNavigate, useLocation  } from "react-router-dom"
 import { useState, useRef, useCallback } from "react";
 import "./Stack.css";
 
-function CardRotate({ children, onSendToBack, sensitivity, onSwipeLeft, onSwipeRight, cardId, setRemovedCardId, setSwipeFeedback, leftLabelRef, rightLabelRef }) {
+function CardRotate({ children, onSendToBack, sensitivity, onSwipeLeft, onSwipeRight, cardId, setRemovedCardId, setSwipeFeedback, leftLabelRef, rightLabelRef, onCardClick }) {
   const x = useMotionValue(0);
   const y = useMotionValue(0);
   const rotateX = useTransform(y, [-100, 100], [60, -60]);
@@ -10,6 +11,7 @@ function CardRotate({ children, onSendToBack, sensitivity, onSwipeLeft, onSwipeR
   const [isSwiping, setIsSwiping] = useState(false);
   const [swipeDirection, setSwipeDirection] = useState(null);
   const [animateToPosition, setAnimateToPosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
   
   // Dynamic border color and thickness based on swipe distance
   const borderColor = useTransform(x, [-500, 0, 500], ['rgba(244, 67, 54, 1)', 'rgba(0, 0, 0, 0)', 'rgba(76, 175, 80, 1)']);
@@ -44,7 +46,13 @@ function CardRotate({ children, onSendToBack, sensitivity, onSwipeLeft, onSwipeR
   // Update labels directly without React state updates
   x.on('change', updateLabels);
 
+  function handleDragStart() {
+    setIsDragging(true);
+  }
+
   function handleDragEnd(_, info) {
+    setIsDragging(false);
+    
     // Reset labels to default state
     if (leftLabelRef.current && rightLabelRef.current) {
       leftLabelRef.current.style.opacity = '0.3';
@@ -98,6 +106,13 @@ function CardRotate({ children, onSendToBack, sensitivity, onSwipeLeft, onSwipeR
     }
   }
 
+  function handleClick(e) {
+    // Only handle click if we weren't dragging
+    if (!isDragging && onCardClick) {
+      onCardClick(e);
+    }
+  }
+
   return (
     <motion.div
       className={`card-rotate ${isSwiping ? `swiping-${swipeDirection}` : ''}`}
@@ -121,7 +136,9 @@ function CardRotate({ children, onSendToBack, sensitivity, onSwipeLeft, onSwipeR
       dragElastic={0.6}
       dragMomentum={false}
       whileTap={{ cursor: "grabbing" }}
+      onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
+      onClick={handleClick}
     >
       {children}
     </motion.div>
@@ -136,8 +153,12 @@ export default function Stack({
   animationConfig = { stiffness: 260, damping: 20 },
   sendToBackOnClick = false,
   onSwipeLeft,
-  onSwipeRight
+  onSwipeRight,
+  onCardClick, // New prop for handling card clicks
+  redirectUrl = "/Book" // Default redirect URL
 }) {
+  const navigate = useNavigate(); // Add navigate hook
+  
   const [cards, setCards] = useState(
     cardsData.length
       ? cardsData.map((card, index) => ({ 
@@ -161,8 +182,8 @@ export default function Stack({
   const getTitleClass = (title) => {
     if (!title) return 's-book-title';
     const length = title.length;
-    if (length > 30) return 's-book-title very-long-title';
-    if (length > 20) return 's-book-title long-title';
+    if (length > 20) return 's-book-title very-long-title';
+    if (length > 15) return 's-book-title long-title';
     return 's-book-title';
   };
 
@@ -172,6 +193,14 @@ export default function Stack({
     if (length > 40) return 's-book-author very-long-author';
     if (length > 20) return 's-book-author long-author';
     return 's-book-author';
+  };
+
+  const getGenreClass = (genre) => {
+    if (!genre) return 's-book-genres';
+    const length = genre.length;
+    if (length > 60) return 's-book-genres very-long-genre';
+    if (length > 40) return 's-book-genres long-genre';
+    return 's-book-genres';
   };
 
   const sendToBack = (id) => {
@@ -186,6 +215,40 @@ export default function Stack({
     });
   };
 
+  // Helper function to check if card has a valid cover image
+  const hasValidCover = (card) => {
+    return card.coverUrl || card.img;
+  };
+
+  const truncateTitle = (title, maxLength = 30) => {
+    if (!title) return '';
+    if (title.length <= maxLength) return title;
+    return title.substring(0, maxLength) + '...';
+  };
+
+  const truncateAuthor = (author, maxLength = 40) => {
+    if (!author) return '';
+    if (author.length <= maxLength) return author;
+    return author.substring(0, maxLength) + '...';
+  };
+
+  const truncateGenre = (genre, maxLength = 50) => {
+    if (!genre) return '';
+    if (genre.length <= maxLength) return genre;
+    return genre.substring(0, maxLength) + '...';
+  };
+
+  // Handle card click for redirection
+  const handleCardClick = (card) => {
+    if (onCardClick) {
+      // Use custom click handler if provided
+      onCardClick(card);
+    } else {
+      // Use React Router navigate to redirect to /Book page
+      navigate('/Book');
+    }
+  };
+
   return (
     <div className="s-discovery-container">
       {/* Skip Book Label - Left Side */}
@@ -196,13 +259,12 @@ export default function Stack({
           style={{
             opacity: 0.3,
             transform: 'scale(1)',
-            color: '#9ca3af',
+            color: 'brown',
             transition: 'none' // Remove transitions for better performance
           }}
         >
           Skip Book
         </div>
-        <div className="label-icon">❌</div>
       </div>
 
       {/* Stack Container */}
@@ -230,6 +292,7 @@ export default function Stack({
                 setSwipeFeedback={setSwipeFeedback}
                 leftLabelRef={leftLabelRef}
                 rightLabelRef={rightLabelRef}
+                onCardClick={() => handleCardClick(card)}
               >
                 <motion.div
                   className="sss-cards"
@@ -247,24 +310,22 @@ export default function Stack({
                   }}
                 >
                   <div className="s-card-image-container">
-                    {card.coverUrl ? (
+                    {hasValidCover(card) ? (
                       <img
-                        src={card.coverUrl}
+                        src={card.coverUrl || card.img}
                         alt={card.title || `card-${card.id}`}
                         className="s-card-image"
                       />
                     ) : (
-                      <img
-                        src={card.img}
-                        alt={`card-${card.id}`}
-                        className="s-card-image"
-                      />
+                      <div className="s-card-image-placeholder">
+                        <span className="placeholder-text">Book Cover</span>
+                      </div>
                     )}
                   </div>
                   <div className="s-card-content">
-                    {card.title && <h3 className={getTitleClass(card.title)}>{card.title}</h3>}
-                    {card.author && <p className={getAuthorClass(card.author)}>{card.author}</p>}
-                    {card.genres && <p className="s-book-genres">{card.genres}</p>}
+                    {card.title && <h3 className={getTitleClass(card.title)}>{truncateTitle(card.title)}</h3>}
+                    {card.author && <p className={getAuthorClass(card.author)}>{truncateAuthor(card.author)}</p>}
+                    {card.genres && <p className={getGenreClass(card.genres)}>{truncateGenre(card.genres)}</p>}
                   </div>
                 </motion.div>
               </CardRotate>
@@ -280,13 +341,12 @@ export default function Stack({
           style={{
             opacity: 0.3,
             transform: 'scale(1)',
-            color: '#9ca3af',
+            color: 'brown',
             transition: 'none' // Remove transitions for better performance
           }}
         >
           Save Book
         </div>
-        <div className="label-icon">✅</div>
       </div>
     </div>
   );
