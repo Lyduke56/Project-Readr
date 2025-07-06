@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link, useNavigate } from "react-router-dom"
+import { Link, useNavigate, useLocation } from "react-router-dom"
 import { UserAuth } from '../context/AuthContext';
 import './Home.css';
 
@@ -19,6 +19,7 @@ export const Home = () => {
   const [sectionsLoading, setSectionsLoading] = useState(true);
   
   const navigate = useNavigate();
+  const location = useLocation();
   const trendingRef = useRef(null);
   const classicsRef = useRef(null);
   const booksWeLoveRef = useRef(null);
@@ -31,6 +32,34 @@ export const Home = () => {
   useEffect(() => {
     loadSectionsData();
   }, []);
+
+  useEffect(() => {
+    if (location.state?.autoSearch && location.state?.searchTerm) {
+      // Set the search term and display term
+      const searchTerm = location.state.searchTerm;
+      const displayTerm = location.state.displaySearchTerm || searchTerm;
+      
+      console.log('Auto-searching for:', searchTerm);
+      console.log('Display term:', displayTerm);
+      
+      // Set hasSearched to true IMMEDIATELY to hide default sections
+      setHasSearched(true);
+      
+      // Set all the necessary states
+      setSearchTerm(displayTerm);
+      setFilterBy('All');
+      setCurrentPage(1);
+      setSearchResults([]);
+      setError('');
+      setIsLoading(true); // Show loading state
+      
+      // Fetch search results
+      fetchDataSearch(1, searchTerm);
+      
+      // Clear the navigation state to prevent repeated searches
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   // Function to load all sections data
   const loadSectionsData = async () => {
@@ -76,13 +105,9 @@ export const Home = () => {
     const sortOptions = ['rating', 'new', 'old'];
     const randomSort = sortOptions[Math.floor(Math.random() * sortOptions.length)];
 
-    const response = await fetch(
-      `https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&limit=8&sort=${randomSort}&publish_year=2020,2021,2022,2023,2024`
-    );
-
       for (const query of queries) {
         const response = await fetch(
-          `https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&limit=8&sort=rating&publish_year=2020,2021,2022,2023,2024`
+          `https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&limit=15&sort=rating&publish_year=2020,2021,2022,2023,2024`
         );
         
         if (response.ok) {
@@ -102,7 +127,7 @@ export const Home = () => {
         book.author_name
       )
       .sort(() => 0.5 - Math.random()) // Randomize the order
-      .slice(0, 20);
+      .slice(0,50);
           
       setTrendingBooks(uniqueBooks);
     } catch (error) {
@@ -110,7 +135,7 @@ export const Home = () => {
       // Fallback to a simple search if the complex query fails
       try {
         const response = await fetch(
-          `https://openlibrary.org/search.json?q=fiction&limit=20&sort=rating`
+          `https://openlibrary.org/search.json?q=fiction&limit=15&sort=rating`
         );
         if (response.ok) {
           const data = await response.json();
@@ -148,7 +173,7 @@ export const Home = () => {
       
       for (const query of queries) {
         const response = await fetch(
-          `https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&limit=8&sort=rating&publish_year=[* TO 1980]`
+          `https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&limit=15&sort=rating&publish_year=[* TO 1980]`
         );
         
         if (response.ok) {
@@ -170,7 +195,7 @@ export const Home = () => {
         book.first_publish_year <= 1980
       )
       .sort(() => 0.5 - Math.random()) // Randomize the order
-      .slice(0, 20);
+      .slice(0, 50);
       
       setClassicBooks(uniqueBooks);
     } catch (error) {
@@ -178,7 +203,7 @@ export const Home = () => {
       // Fallback search
       try {
         const response = await fetch(
-          `https://openlibrary.org/search.json?q=classics&limit=20&sort=rating`
+          `https://openlibrary.org/search.json?q=classics&limit=50&sort=rating`
         );
         if (response.ok) {
           const data = await response.json();
@@ -204,7 +229,7 @@ export const Home = () => {
       
       for (const query of queries) {
         const response = await fetch(
-          `https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&limit=8&sort=rating`
+          `https://openlibrary.org/search.json?q=${encodeURIComponent(query)}&limit=15&sort=rating`
         );
         
         if (response.ok) {
@@ -223,7 +248,7 @@ export const Home = () => {
           book.title && 
           book.author_name
         )
-        .slice(0, 20);
+        .slice(0, 50);
       
       setBooksWeLove(uniqueBooks);
     } catch (error) {
@@ -231,7 +256,7 @@ export const Home = () => {
       // Fallback search
       try {
         const response = await fetch(
-          `https://openlibrary.org/search.json?q=award winners&limit=20&sort=rating`
+          `https://openlibrary.org/search.json?q=award winners&limit=30&sort=rating`
         );
         if (response.ok) {
           const data = await response.json();
@@ -287,6 +312,8 @@ export const Home = () => {
 
   // Fetch search results
   const fetchDataSearch = async (page = 1, searchQuery = searchTerm) => {
+    console.log('fetchDataSearch called with:', { page, searchQuery, filterBy }); // Debug log
+    
     if (!searchQuery?.trim()) {
       setError('Please enter a book title.');
       return;
@@ -305,17 +332,28 @@ export const Home = () => {
       let searchUrl;
       const encodedTitle = encodeURIComponent(searchQuery);
       
-      switch (filterBy) {
-        case 'Title':
-          searchUrl = `https://openlibrary.org/search.json?title=${encodedTitle}&limit=${resultsPerPage}&offset=${offset}`;
-          break;
-        case 'Author':
-          searchUrl = `https://openlibrary.org/search.json?author=${encodedTitle}&limit=${resultsPerPage}&offset=${offset}`;
-          break;
-        case 'All':
-        default:
-          searchUrl = `https://openlibrary.org/search.json?q=${encodedTitle}&limit=${resultsPerPage}&offset=${offset}`;
-          break;
+      console.log('Search query:', searchQuery); // Debug log
+      console.log('Filter by:', filterBy); // Debug log
+      
+      // Check if it's a subject search (from genre page)
+      if (searchQuery.startsWith('subject:')) {
+        searchUrl = `https://openlibrary.org/search.json?q=${encodedTitle}&limit=${resultsPerPage}&offset=${offset}`;
+        console.log('Using subject search URL:', searchUrl); // Debug log
+      } else {
+        // Regular search logic
+        switch (filterBy) {
+          case 'Title':
+            searchUrl = `https://openlibrary.org/search.json?title=${encodedTitle}&limit=${resultsPerPage}&offset=${offset}`;
+            break;
+          case 'Author':
+            searchUrl = `https://openlibrary.org/search.json?author=${encodedTitle}&limit=${resultsPerPage}&offset=${offset}`;
+            break;
+          case 'All':
+          default:
+            searchUrl = `https://openlibrary.org/search.json?q=${encodedTitle}&limit=${resultsPerPage}&offset=${offset}`;
+            break;
+        }
+        console.log('Using regular search URL:', searchUrl); // Debug log
       }
 
       const response = await fetch(searchUrl);
@@ -325,6 +363,9 @@ export const Home = () => {
       }
 
       const data = await response.json();
+      
+      console.log('Search results:', data); // Debug log
+      console.log('Number of results:', data.docs?.length || 0); // Debug log
       
       if (page === 1) {
         setSearchResults(data.docs || []);
@@ -406,18 +447,15 @@ export const Home = () => {
 
   // Handle book card click
   const handleCardClick = (book) => {
-    // Store book data for the next page
+    // Store selected book in localStorage
     localStorage.setItem('selectedBook', JSON.stringify(book));
-    
+
     if (filterBy === 'Author') {
-      // For author searches, navigate to author page with first author
-      const authorName = Array.isArray(book.author_name) && book.author_name.length > 0 
-        ? book.author_name[0]
-        : 'Unknown Author';
-      navigate('/Author', { state: { authorName } });
+      // Open Author.jsx in a new tab
+      window.open('/Author', '_blank');
     } else {
-      // For title/all searches, navigate to book page
-      navigate('/Book');
+      // Open Book.jsx in a new tab
+      window.open('/Book', '_blank');
     }
   };
 

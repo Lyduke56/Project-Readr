@@ -1,23 +1,36 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './Genre.css';
 
 const GenrePage = () => {
   const [selectedLetter, setSelectedLetter] = useState('All');
   const [filteredGenres, setFilteredGenres] = useState([]);
+  const navigate = useNavigate();
 
   // Mock data for genres - this will be replaced with API integration later
   const mockGenres = [
-    'Action', 'Adventure', 'Autobiography', 'Biography', 'Business',
-    'Children', 'Comedy', 'Comics', 'Cooking', 'Crime',
-    'Drama', 'Education', 'Fantasy', 'Fiction', 'Folklore',
-    'Graphic Novel', 'Health', 'Historical Fiction', 'History', 'Horror',
-    'Inspirational', 'Journalism', 'Law', 'Literature', 'Manga',
-    'Mathematics', 'Memoir', 'Mystery', 'Mythology', 'Nature',
-    'Non-fiction', 'Novel', 'Paranormal', 'Philosophy', 'Poetry',
-    'Politics', 'Psychology', 'Religion', 'Romance', 'Science',
-    'Science Fiction', 'Self-help', 'Short Stories', 'Sports', 'Suspense',
-    'Technology', 'Thriller', 'Travel', 'True Crime', 'War',
-    'Western', 'Women', 'Young Adult'
+    'Action', 'Adventure', 'Anthology', 'Art', 'Autobiography', 
+    'Biography', 'Business',
+    'Children', 'Comedy', 'Comics', 'Coming of Age', 'Cooking', 'Crime', 'Cyberpunk',
+    'Drama', 'Dystopian',
+    'Education', 'Epic Fantasy', 'Espionage',
+    'Fairy Tales', 'Family Saga', 'Fantasy', 'Fiction', 'Folklore',
+    'Gothic', 'Graphic Novel',
+    'Health', 'High Fantasy', 'Historical Fiction', 'Historical Romance', 'History', 'Horror', 'Humor',
+    'Inspirational',
+    'Journalism',
+    'Law', 'Legal Thriller', 'LGBTQ+', 'Light Novel', 'Literature', 'LitRPG',
+    'Magical Realism', 'Manga', 'Mathematics', 'Memoir', 'Military Fiction', 'Multicultural', 'Mystery', 'Mythology',
+    'Nature', 'New Adult', 'Noir', 'Non-fiction', 'Novel',
+    'Paranormal', 'Parenting', 'Philosophy', 'Picture Book', 'Poetry', 'Politics', 'Post-Apocalyptic', 'Psychology', 'Psychological Thriller',
+    'Realistic Fiction', 'Religion', 'Romance',
+    'Satire', 'Science', 'Science Fiction', 'Self-help', 'Short Stories', 'Slice of Life', 'Space Opera', 'Speculative Fiction', 'Sports', 'Spy Fiction', 'Steampunk', 'Supernatural', 'Survival', 'Suspense',
+    'Technology', 'Thriller', 'Time Travel', 'Transgressive', 'Travel', 'True Crime',
+    'Urban Fantasy',
+    'Vampire',
+    'War', 'Western', 'Women',
+    'Young Adult',
+    'Zombie'
   ];
 
   // Generate alphabet letters for filtering
@@ -51,8 +64,19 @@ const GenrePage = () => {
   const groupedGenres = groupGenresByLetter(filteredGenres);
 
   const handleGenreClick = (genre) => {
-    // This will be implemented later for navigation to genre-specific pages
-    console.log(`Clicked on genre: ${genre}`);
+    // Format genre for OpenLibrary API - handle spaces and special characters
+    const formattedGenre = genre.toLowerCase()
+      .replace(/\s+/g, '_')
+      .replace(/[^a-z0-9_]/g, ''); // Remove special characters except underscores
+    
+    // Navigate to home page with genre search parameters
+    navigate('../Home', { 
+      state: { 
+        searchTerm: `subject:${formattedGenre}`,
+        autoSearch: true,
+        displaySearchTerm: genre
+      }
+    });
   };
 
   return (
