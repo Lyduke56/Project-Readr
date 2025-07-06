@@ -91,7 +91,7 @@ body {
   align-items: center;
   gap: 30px;
   padding: 30px;
-  background: linear-gradient(135deg, #2c3e50 0%, #34495e 30%, #95a5a6 70%, #ecf0f1 100%);
+  background: linear-gradient(135deg, #6b4b3e 0%, #a78f84 40%, #d7c9c1 80%, #f5f1ee 100%);
   border-radius: 16px;
   margin-bottom: 30px;
   color: white;
@@ -129,10 +129,10 @@ body {
 .profile-names {
   flex-grow: 1;
   min-width: 0; /* Allow text to wrap */
+  margin-bottom: 10px ;
 }
 
 .display-name {
-  margin: 0 0 8px 0;
   font-size: 32px;
   font-weight: 700;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
@@ -166,7 +166,7 @@ body {
 }
 
 .status-badge.public {
-  background: rgba(40, 167, 69, 0.2);
+  background:#8B4513;
   border: 1px solid rgba(40, 167, 69, 0.3);
 }
 
@@ -192,15 +192,15 @@ body {
 }
 
 .edit-profile-btn {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(139, 69, 19, 0.2);
   color: white;
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  border: 2px solid #c49385;
   backdrop-filter: blur(10px);
 }
 
 .edit-profile-btn:hover {
-  background: rgba(255, 255, 255, 0.3);
-  border-color: rgba(255, 255, 255, 0.5);
+  background: #8B4513;
+  border-color:2px solid #c49385;
   transform: translateY(-1px);
 }
 
@@ -218,15 +218,15 @@ body {
 }
 
 .reset-password-btn {
-  background: rgba(0, 123, 255, 0.2);
+  background: rgba(139, 69, 19, 0.2);
   color: white;
-  border: 2px solid rgba(0, 123, 255, 0.3);
+  border: 2px solid #c49385;
   backdrop-filter: blur(10px);
 }
 
 .reset-password-btn:hover {
-  background: rgba(0, 123, 255, 0.3);
-  border-color: rgba(0, 123, 255, 0.5);
+  background: #8B4513;
+  border-color:2px solid #c49385;
   transform: translateY(-1px);
 }
 
@@ -907,9 +907,26 @@ body {
 
 .in-line-display {
   display: flex;
-  gap: 15px;
+  gap: 20px;
 }
 
 .friends {
-  font-size: 25px;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+ 
+  
+  padding-top: 3px;
+  padding-bottom:3px;
+  background-color: transparent;
+  color: white;
+  border-radius: 4px;
+  min-width: 120px;
+  border: none;
 }
+
+.friends-text{
+  padding-left: 10px;
+
+}
+
