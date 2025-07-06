@@ -267,87 +267,95 @@ const Author = () => {
     const hasMoreWorks = authorWorks.length > 20;
 
     return (
-        <div className="author-container">
-            <button onClick={handleBack} className="back-btn">
-            ← Go Back
-            </button>
-            <div className="author-header">
-                <div className="author-photo-container">
-                    {authorData.key ? (
-                        <>
-                            <img
-                                src={getAuthorPhoto(authorData.key)}
-                                alt={`Photo of ${authorName}`}
-                                className="author-photo"
-                                onError={(e) => {
-                                    e.target.style.display = 'none';
-                                    e.target.nextElementSibling.style.display = 'flex';
-                                }}
-                            />
-                            <div className="author-photo-placeholder" style={{ display: 'none' }}>
-                                👤
+        <div className="author-page">
+            <div className="author-container">
+                <button onClick={handleBack} className="back-btn">
+                    ← Go Back
+                </button>
+                
+                <div className="author-detail-header">
+                    <div className="author-photo-container">
+                        {authorData.key ? (
+                            <>
+                                <img
+                                    src={getAuthorPhoto(authorData.key)}
+                                    alt={`Photo of ${authorName}`}
+                                    className="author-photo"
+                                    onError={(e) => {
+                                        e.target.style.display = 'none';
+                                        e.target.nextElementSibling.style.display = 'flex';
+                                    }}
+                                />
+                                <div className="author-photo-placeholder" style={{ display: 'none' }}>
+                                    👤
+                                </div>
+                            </>
+                        ) : (
+                            <div className="author-photo-placeholder">👤</div>
+                        )}
+                    </div>
+                    
+                    <div className="author-detail-info">
+                        <div className="author-header-top">
+                            <h1 className="author-name">{authorName}</h1>
+                        </div>
+                        
+                        {(birthDate || deathDate) && (
+                            <div className="author-dates">
+                                {birthDate || 'Unknown'} {deathDate ? ` - ${deathDate}` : ''}
                             </div>
-                        </>
-                    ) : (
-                        <div className="author-photo-placeholder">👤</div>
-                    )}
-                </div>
-                <div className="author-info">
-                    <h1>{authorName}</h1>
-                    {(birthDate || deathDate) && (
-                        <div className="author-dates">
-                            {birthDate || 'Unknown'} {deathDate ? ` - ${deathDate}` : ''}
-                        </div>
-                    )}
-                    <div className="author-meta">
-                        <div className="meta-item">
-                            <span className="label">Known Works</span>
-                            <span className="value">
-                                {authorWorks.length} book{authorWorks.length !== 1 ? 's' : ''}
-                            </span>
-                        </div>
-                        {alternateNames.length > 0 && (
+                        )}
+                        
+                        <div className="author-meta">
                             <div className="meta-item">
-                                <span className="label">Also Known As</span>
-                                <span className="value">{alternateNames.slice(0, 3).join(', ')}</span>
+                                <span className="label">Known Works</span>
+                                <span className="value">
+                                    {authorWorks.length} book{authorWorks.length !== 1 ? 's' : ''}
+                                </span>
+                            </div>
+                            {alternateNames.length > 0 && (
+                                <div className="meta-item">
+                                    <span className="label">Also Known As</span>
+                                    <span className="value">{alternateNames.slice(0, 3).join(', ')}</span>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+
+                <div className="author-section">
+                    <h3>📝 Biography</h3>
+                    <p>{bio}</p>
+                </div>
+
+                {authorWorks.length > 0 && (
+                    <div className="author-section">
+                        <h3>📚 Notable Works</h3>
+                        <ul className="works-list">
+                            {worksToShow.map((work, index) => (
+                                <li key={index}>
+                                    <strong>{work.title}</strong>
+                                    {work.first_publish_year && <span> ({work.first_publish_year})</span>}
+                                </li>
+                            ))}
+                        </ul>
+                        
+                        {hasMoreWorks && (
+                            <div className="works-toggle">
+                                <button 
+                                    onClick={toggleShowAllWorks}
+                                    className="toggle-works-btn"
+                                >
+                                    {showAllWorks 
+                                        ? 'Show Less' 
+                                        : `Show All ${authorWorks.length} Works`
+                                    }
+                                </button>
                             </div>
                         )}
                     </div>
-                </div>
+                )}
             </div>
-
-            <div className="author-section">
-                <h3>📝 Biography</h3>
-                <p>{bio}</p>
-            </div>
-
-            {authorWorks.length > 0 && (
-                <div className="author-section">
-                    <h3>📚 Notable Works</h3>
-                    <ul className="works-list">
-                        {worksToShow.map((work, index) => (
-                            <li key={index}>
-                                <strong>{work.title}</strong>
-                                {work.first_publish_year && ` (${work.first_publish_year})`}
-                            </li>
-                        ))}
-                    </ul>
-                    
-                    {hasMoreWorks && (
-                        <div className="works-toggle">
-                            <button 
-                                onClick={toggleShowAllWorks}
-                                className="toggle-works-btn"
-                            >
-                                {showAllWorks 
-                                    ? 'Show Less' 
-                                    : `Show All ${authorWorks.length} Works`
-                                }
-                            </button>
-                        </div>
-                    )}
-                </div>
-            )}
         </div>
     );
 };
