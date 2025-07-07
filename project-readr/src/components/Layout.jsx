@@ -6,7 +6,7 @@ import { Outlet, useLocation } from "react-router-dom"
 export function Layout(){
     const location = useLocation();
   
-    const isHomepage = location.pathname === "/Homepage" || location.pathname === "/AddProfile" || location.pathname === "/Profile" || location.pathname ==="/ReadingList" || location.pathname ==="/Home" || location.pathname ==="/Discover" || location.pathname ==="/Book" || location.pathname ==="/Author" || location.pathname === "/Genre";
+    const isHomepage = location.pathname === "/Homepage" || location.pathname === "/FriendsList " || location.pathname === "/AddProfile" || location.pathname === "/Profile" || location.pathname ==="/ReadingList" || location.pathname ==="/Home" || location.pathname ==="/Discover" || location.pathname ==="/Book" || location.pathname ==="/Author" || location.pathname === "/Genre";
 
     return(
         <>

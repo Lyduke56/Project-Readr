@@ -8,6 +8,8 @@ import { ResetPass } from './ResetPass';
 import { Modal } from '../Modal/Modal';
 import { EditProfile } from './EditProfile';
 import { StarRating } from '../components/StarRating';
+import { FriendProfile } from './FriendProfile';
+
 
 export function Profile() {
   const { session, signOut } = UserAuth();
@@ -33,6 +35,14 @@ export function Profile() {
   const [visibleRatedBooks, setVisibleRatedBooks] = useState(4); 
 
   const [totalFriends , setTotalFriends] = useState([]); 
+  const [totalFriendsFromOther , setTotalFriendsFromOther] = useState([]); 
+
+  const [friends, setFriends] = useState([]);
+  const [friendsLoading, setFriendsLoading] = useState(true);
+  const [showAllFriends, setShowAllFriends] = useState(false);
+  const [selectedFriend, setSelectedFriend] = useState(null);
+  const [isFriendProfileOpen, setIsFriendProfileOpen] = useState(false);
+
 
   // Fetch user profile data
   useEffect(() => {
@@ -102,6 +112,86 @@ export function Profile() {
     fetchReadingList();
   }, [user?.id]);
 
+  // Add this useEffect to fetch friends data
+  useEffect(() => {
+    const fetchFriends = async () => {
+      if (!user?.id) {
+        setFriendsLoading(false);
+        return;
+      }
+
+    try {
+      // Method 1: Fetch friendships first, then get user details separately
+      
+      // Get all friendships where current user is involved
+      const { data: friendships, error: friendshipsError } = await supabase
+        .from('accepted_friendships')
+        .select('*')
+        .or(`user_id.eq.${user.id},friend_id.eq.${user.id}`)
+        .order('created_at', { ascending: false });
+
+      if (friendshipsError) {
+        console.error('Error fetching friendships:', friendshipsError);
+        setFriends([]);
+        return;
+      }
+
+      console.log('📋 Raw friendships data:', friendships);
+
+      if (!friendships || friendships.length === 0) {
+        console.log('🚫 No friendships found');
+        setFriends([]);
+        return;
+      }
+
+      // Extract friend IDs
+      const friendIds = friendships.map(friendship => {
+        // If current user is the user_id, then friend is friend_id
+        // If current user is the friend_id, then friend is user_id
+        return friendship.user_id === user.id ? friendship.friend_id : friendship.user_id;
+      });
+
+      console.log('🔍 Friend IDs:', friendIds);
+
+      // Fetch user details for all friends
+      const { data: friendsData, error: friendsError } = await supabase
+        .from('users')
+        .select('id, display_name, full_name, email, profile_image, bio, location')
+        .in('id', friendIds);
+
+      if (friendsError) {
+        console.error('Error fetching friends data:', friendsError);
+        setFriends([]);
+        return;
+      }
+
+      console.log('👥 Friends data:', friendsData);
+
+      // Combine friendship info with user data
+      const friendsWithDates = friendsData.map(friend => {
+        const friendship = friendships.find(f => 
+          f.user_id === friend.id || f.friend_id === friend.id
+        );
+        return {
+          ...friend,
+          friendship_date: friendship?.created_at
+        };
+      });
+
+      console.log('✅ Final friends with dates:', friendsWithDates);
+      setFriends(friendsWithDates);
+
+    } catch (err) {
+      console.error('💥 Error in fetchFriends:', err);
+      setFriends([]);
+    } finally {
+      setFriendsLoading(false);
+    }
+  };
+
+  fetchFriends();
+}, [user?.id]);
+
   // Fetch user's rated books
   useEffect(() => {
     const fetchRatedBooks = async () => {
@@ -132,6 +222,49 @@ export function Profile() {
     fetchRatedBooks();
   }, [user?.id]);
 
+  const handleFriendClick = async (friend, event) => {
+    // Check if the click was on the unfriend button
+    if (event.target.classList.contains('unfriend-btn') || event.target.closest('.unfriend-btn')) {
+      event.stopPropagation();
+      
+      const confirmed = window.confirm(`Are you sure you want to unfriend ${friend.display_name || friend.full_name}?`);
+      if (!confirmed) return;
+      
+      try {
+        // Remove friendship from both directions
+        const { error1 } = await supabase
+          .from('accepted_friendships')
+          .delete()
+          .or(`and(user_id.eq.${user.id},friend_id.eq.${friend.id}),and(user_id.eq.${friend.id},friend_id.eq.${user.id})`);
+        
+        if (error1) {
+          console.error('Error removing friendship:', error1);
+          alert('Failed to remove friend');
+          return;
+        }
+        
+        // Update local state
+        setFriends(prev => prev.filter(f => f.id !== friend.id));
+        setTotalFriends(prev => prev.filter(f => f.friend_id !== friend.id));
+        setTotalFriendsFromOther(prev => prev.filter(f => f.user_id !== friend.id));
+        
+        alert('Friend removed successfully');
+      } catch (error) {
+        console.error('Error unfriending:', error);
+        alert('An error occurred while removing friend');
+      }
+    } else {
+      // Normal click - open profile
+      setSelectedFriend(friend);
+      setIsFriendProfileOpen(true);
+    }
+  };
+
+  const handleCloseFriendProfile = () => {
+    setIsFriendProfileOpen(false);
+    setSelectedFriend(null);
+  };
+
   useEffect (() => {
     const fetchTotalFriends = async () => {
       if (!user?.id) {
@@ -153,9 +286,38 @@ export function Profile() {
             } catch (err) {
               console.error('Error fetching rated books:', err);
             }
+
           }
     fetchTotalFriends()
+    const interval = setInterval(fetchTotalFriends, 4000);
+    return () => clearInterval(interval);
   }, [user?.id]);
+
+  useEffect (() => {
+    const fetchTotalFriendsFromOther = async () => {
+      if (!user?.id) {
+              console.error('No user has been found!');
+              return;
+            }
+            try {
+              const { data, error } = await supabase
+                .from('accepted_friendships')
+                .select('*')
+                .eq('friend_id', user.id)
+                .order('created_at', { ascending: false });
+
+              if (error) {
+                console.error('Error fetching rated books:', error);
+              } else {
+                setTotalFriendsFromOther(data || []);
+              }
+            } catch (err) {
+              console.error('Error fetching rated books:', err);
+            }
+          }
+   fetchTotalFriendsFromOther()
+  }, [user?.id]);
+
 
   // Handle window resize for responsive carousel
   useEffect(() => {
@@ -308,7 +470,7 @@ export function Profile() {
 
   const handleFriendList = () => {
     console.log("succeeded friend list");
-      navigate('/FriendList');
+      navigate('/FriendsList');
   };
 
   //Edit profile function   
@@ -453,6 +615,110 @@ export function Profile() {
       </div>
     );
   };
+
+  // Add this Friends List Component (place it with your other components)
+const FriendsListSection = () => {
+  console.log('🎯 FriendsListSection render:', { 
+    friendsLoading, 
+    friendsLength: friends.length, 
+    friends 
+  }); // DEBUG
+
+  if (friendsLoading) {
+    return (
+      <div className="profile-section">
+        <h3>Friends</h3>
+        <div className="friends-loading">
+          <div className="loading-spinner"></div>
+          <p>Loading friends...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (friends.length === 0) {
+    console.log('🚫 No friends to display'); // DEBUG
+    return (
+      <div className="profile-section">
+        <h3>Friends</h3>
+        <div className="empty-friends-list">
+          <div className="empty-icon">👥</div>
+          <h4>No friends yet</h4>
+          <p>Start making connections with other readers!</p>
+        </div>
+      </div>
+    );
+  }
+
+  const displayedFriends = showAllFriends ? friends : friends.slice(0, 6);
+  const hasMoreFriends = friends.length > 6;
+
+  console.log('🎨 Displaying friends:', { 
+    displayedFriends, 
+    hasMoreFriends, 
+    showAllFriends 
+  }); // DEBUG
+
+  return (
+    <div className="profile-section">
+      <div className="section-header">
+        <h3>Friends ({friends.length})</h3>
+        {hasMoreFriends && (
+          <button 
+            className="see-more-btn"
+            onClick={() => setShowAllFriends(!showAllFriends)}
+          >
+            {showAllFriends ? 'Show Less' : 'See More'}
+          </button>
+        )}
+      </div>
+      
+      <div className="friends-grid">
+        {displayedFriends.map((friend) => (
+          <div 
+            key={friend.id} 
+            className="friend-card"
+            onClick={(e) => handleFriendClick(friend, e)}
+          >
+            <div className="friend-avatar">
+              {friend.profile_image ? (
+                <img 
+                  src={friend.profile_image} 
+                  alt={`${friend.display_name || friend.full_name}'s avatar`}
+                  className="friend-avatar-image"
+                />
+              ) : (
+                <div className="friend-avatar-placeholder">
+                  {(friend.display_name || friend.full_name || friend.email)
+                    .charAt(0)
+                    .toUpperCase()}
+                </div>
+              )}
+            </div>
+            
+            <div className="friend-info">
+              <h4 className="friend-name">
+                {friend.display_name || friend.full_name || 'Anonymous Reader'}
+              </h4>
+              {friend.location && (
+                <p className="friend-location">📍 {friend.location}</p>
+              )}
+              {friend.bio && (
+                <p className="friend-bio" title={friend.bio}>
+                  {friend.bio.length > 50 ? `${friend.bio.substring(0, 50)}...` : friend.bio}
+                </p>
+              )}
+              <p className="friendship-date">
+                Friends since {formatDate(friend.friendship_date)}
+              </p>
+            </div>
+            
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
 
   // Reading List Component with improved UI
   const ReadingListSection = () => {
@@ -647,10 +913,8 @@ export function Profile() {
           )}
           
           <button className="friends" onClick={handleFriendList}> 
-            <FaUserFriends className='friends-icon' />
-              <div className='friends-text'>
-              {totalFriends.length} Friends
-              </div>
+            <FaUserFriends />
+             { (totalFriends?.length || 0) + (totalFriendsFromOther?.length || 0) } Friends
           </button>
 
         </div>
@@ -667,7 +931,7 @@ export function Profile() {
           <button className="sign-out-btn" onClick={handleSignOut}>
             Sign Out
           </button>
-        </div>
+        </div>  
       </div>
 
       {/* Modal part */}
@@ -690,8 +954,22 @@ export function Profile() {
             <p className="bio-text">{profileData.bio}</p>
           </div>
         )}
+  
+        <FriendsListSection />
 
-        
+        {isFriendProfileOpen && selectedFriend && (
+          <Modal isOpened={isFriendProfileOpen} onClose={handleCloseFriendProfile}>
+            <FriendProfile 
+              friend={selectedFriend} 
+              onUnfriend={(friendId) => {
+                setFriends(prev => prev.filter(f => f.id !== friendId));
+                setTotalFriends(prev => prev.filter(f => f.friend_id !== friendId));
+                setTotalFriendsFromOther(prev => prev.filter(f => f.user_id !== friendId));
+              }}
+              onClose={handleCloseFriendProfile}
+            />
+          </Modal>
+        )}
 
         <div className="profile-details">
           <div className="profile-section">
