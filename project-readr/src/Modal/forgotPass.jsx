@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
-import './ForgotPass.css';
+import './forgotPass.css';
 
 export const ForgotPass = ({ email: initialEmail = '' }) => {
   const [email, setEmail] = useState(initialEmail);
