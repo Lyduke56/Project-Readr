@@ -31,14 +31,12 @@ export function FriendRequestBell() {
     };
   }, []);
 
-  // Fetch friend requests
+  // Fetch friend requests (also with 6-second interval)
   useEffect(() => {
+    if (!currentUserId) return;
+
     const fetchFriendRequests = async () => {
-      if (!currentUserId) return;
-      
-      setLoading(true);
       try {
-        // Get incoming friend requests with user details
         const { data: requestsData, error: requestsError } = await supabase
           .from('friendships')
           .select(`
@@ -55,7 +53,7 @@ export function FriendRequestBell() {
           .eq('friend_id', currentUserId)
           .eq('status', 'pending')
           .order('created_at', { ascending: false });
-        
+
         if (requestsError) {
           console.error('Error fetching friend requests:', requestsError);
         } else {
@@ -63,12 +61,14 @@ export function FriendRequestBell() {
         }
       } catch (err) {
         console.error('Unexpected error:', err);
-      } finally {
-        setLoading(false);
       }
     };
 
-    fetchFriendRequests();
+    fetchFriendRequests(); 
+
+    const interval = setInterval(fetchFriendRequests, 4000); 
+
+    return () => clearInterval(interval); 
   }, [currentUserId]);
 
   // Close dropdown when clicking outside
@@ -85,56 +85,83 @@ export function FriendRequestBell() {
     };
   }, []);
 
-  const handleAcceptRequest = async (requestId, userId) => {
+  const notifySender = async (recipientId, message) => {
     try {
-      const { error } = await supabase
-        .from('friendships')
-        .update({ status: 'accepted' })
-        .eq('id', requestId);
-      
-      if (error) {
-        console.error('Error accepting friend request:', error);
-      } else {
-        // Remove from local state
-        setFriendRequests(prev => prev.filter(req => req.id !== requestId));
-      }
+      await supabase.from('notifications').insert({
+        user_id: recipientId,
+        message,
+        created_at: new Date().toISOString(),
+        read: false
+      });
     } catch (err) {
-      console.error('Unexpected error:', err);
+      console.error('Error sending notification:', err);
     }
   };
 
-  const handleRejectRequest = async (requestId, userId) => {
-    try {
-      const { error } = await supabase
-        .from('friendships')
-        .delete()
-        .eq('id', requestId);
-      
-      if (error) {
-        console.error('Error rejecting friend request:', error);
-      } else {
-        // Remove from local state
-        setFriendRequests(prev => prev.filter(req => req.id !== requestId));
-      }
-    } catch (err) {
-      console.error('Unexpected error:', err);
+  const sendNotification = async (toUserId, message) => {
+  try {
+    const { error } = await supabase
+      .from('notifications')
+      .insert([
+        { user_id: toUserId, message }
+      ]);
+
+    if (error) console.error('Error sending notification:', error);
+  } catch (err) {
+    console.error('Unexpected error:', err);
+  }
+};
+
+const handleAcceptRequest = async (requestId, userId) => {
+  try {
+    const { error } = await supabase
+      .from('friendships')
+      .update({ status: 'accepted' })
+      .eq('id', requestId);
+
+    if (error) {
+      console.error('Error accepting friend request:', error);
+    } else {
+      setFriendRequests(prev => prev.filter(req => req.id !== requestId));
+      await sendNotification(userId, 'Your friend request has been accepted!');
     }
-  };
+  } catch (err) {
+    console.error('Unexpected error:', err);
+  }
+};
+
+const handleRejectRequest = async (requestId, userId) => {
+  try {
+    const { error } = await supabase
+      .from('friendships')
+      .delete()
+      .eq('id', requestId);
+
+    if (error) {
+      console.error('Error rejecting friend request:', error);
+    } else {
+      setFriendRequests(prev => prev.filter(req => req.id !== requestId));
+      await sendNotification(userId, 'Your friend request has been rejected.');
+    }
+  } catch (err) {
+    console.error('Unexpected error:', err);
+  }
+};
 
   const formatTimeAgo = (timestamp) => {
     const now = new Date();
     const requestTime = new Date(timestamp);
     const diffInMinutes = Math.floor((now - requestTime) / (1000 * 60));
-    
+
     if (diffInMinutes < 1) return 'Just now';
     if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
-    
+
     const diffInHours = Math.floor(diffInMinutes / 60);
     if (diffInHours < 24) return `${diffInHours}h ago`;
-    
+
     const diffInDays = Math.floor(diffInHours / 24);
     if (diffInDays < 7) return `${diffInDays}d ago`;
-    
+
     return requestTime.toLocaleDateString();
   };
 
@@ -144,7 +171,7 @@ export function FriendRequestBell() {
 
   return (
     <div className="friend-request-bell" ref={dropdownRef}>
-      <button 
+      <button
         className={`bell-button ${friendRequests.length > 0 ? 'has-notifications' : ''}`}
         onClick={toggleDropdown}
         aria-label="Friend requests"
@@ -181,9 +208,9 @@ export function FriendRequestBell() {
                   <div key={request.id} className="request-item">
                     <div className="request-avatar">
                       {request.users?.profile_image ? (
-                        <img 
-                          src={request.users.profile_image} 
-                          alt={request.users.display_name} 
+                        <img
+                          src={request.users.profile_image}
+                          alt={request.users.display_name}
                         />
                       ) : (
                         <div className="avatar-placeholder">
@@ -191,7 +218,7 @@ export function FriendRequestBell() {
                         </div>
                       )}
                     </div>
-                    
+
                     <div className="request-info">
                       <div className="request-header">
                         <h4>{request.users?.display_name || 'Unknown User'}</h4>
@@ -200,15 +227,15 @@ export function FriendRequestBell() {
                         </span>
                       </div>
                       <p className="request-message">wants to be your friend</p>
-                      
+
                       <div className="request-actions">
-                        <button 
+                        <button
                           className="accept-btn"
                           onClick={() => handleAcceptRequest(request.id, request.user_id)}
                         >
                           <FaUserCheck /> Accept
                         </button>
-                        <button 
+                        <button
                           className="reject-btn"
                           onClick={() => handleRejectRequest(request.id, request.user_id)}
                         >
