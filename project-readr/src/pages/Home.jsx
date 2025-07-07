@@ -696,6 +696,7 @@ const handleAddToReadingList = async (e, book, index) => {
   const author = Array.isArray(book.author_name) && book.author_name.length > 0
     ? book.author_name.filter(name => name?.trim()).slice(0, 2).join(", ")
     : "Unknown author";
+  const editionCount = book.edition_count || "Unknown";
 
   // Get existing reading list
   let readingList = JSON.parse(localStorage.getItem('readingList') || '[]');
@@ -704,7 +705,8 @@ const handleAddToReadingList = async (e, book, index) => {
     author: author,
     key: book.key,
     cover_id: book.cover_i,
-    publish_year: book.first_publish_year
+    publish_year: book.first_publish_year,
+    edition_count:  editionCount
   };
   
   // Check if book is already in reading list
@@ -1160,10 +1162,24 @@ const handleFeelingLucky = () => {
     });
   };
 
+  //const clearAndRebuildReadingList = () => {
+  // Clear the localStorage
+     // localStorage.removeItem('readingList');
+      
+      // Reset the state
+    //  setReadingListBooks(new Set());
+      
+      // If you have Supabase data, you can rebuild from there
+      // Otherwise, start fresh
+    //  console.log('Reading list cleared and reset');
+    //  alert('Reading list has been cleared. You can now add books fresh.');
+    //};
+
   const totalPages = Math.ceil(totalResults / resultsPerPage);
   const hasMoreResults = currentPage < totalPages;
 
  return (
+  
   <div className="home-container">
     <header className="header">
       <div className="controls">
@@ -1180,7 +1196,21 @@ const handleFeelingLucky = () => {
               <option value="Author">Author</option>
               <option value="Subject">Subject</option>
             </select>
-            
+            {/*<button 
+                    className="clear-reading-list-btn" 
+                    onClick={clearAndRebuildReadingList}
+                    style={{ 
+                      marginLeft: '10px', 
+                      padding: '5px 10px', 
+                      fontSize: '12px',
+                      backgroundColor: '#ff4444',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '4px'
+                    }}
+                    >
+                  Clear Reading List(Reset)
+            </button> */}
             <input
               type="text"
               className="search-bar"
@@ -1338,7 +1368,6 @@ const handleFeelingLucky = () => {
                     )}
                   </div>
                 </div>
-                
                 <button 
                   className="scroll-button right" 
                   onClick={() => scrollSection(booksWeLoveRef, 'right')}

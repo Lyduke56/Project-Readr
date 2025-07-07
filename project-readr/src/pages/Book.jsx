@@ -5,6 +5,39 @@ import { UserAuth } from "../context/AuthContext";
 import { useNavigate } from 'react-router-dom';
 import { FaEdit } from "react-icons/fa";
 
+const insertReadingList = async (bookData, book, userId) => {
+  try {
+    // Check if book already exists in user's reading list
+    const { data: existingBook, error: checkError } = await supabase
+      .from('reading_list')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('book_key', book.key)
+      .single();
+
+    if (checkError && checkError.code !== 'PGRST116') {
+      throw checkError;
+    }
+
+    if (existingBook) {
+      console.log('Book already in reading list');
+      return { success: false, message: 'Book already in reading list' };
+    }
+
+    // Insert the book into reading list
+    const { data, error } = await supabase
+      .from('reading_list')
+      .insert([bookData]);
+
+    if (error) throw error;
+
+    return { success: true, data };
+  } catch (error) {
+    console.error('Error inserting to reading list:', error);
+    throw error;
+  }
+};
+
 // StarRating component definition
 const StarRating = ({ 
   rating = 0, 
@@ -74,6 +107,7 @@ const ReviewItem = ({ review, currentUser, onReviewUpdated }) => {
     const [editText, setEditText] = useState(review.review_text || '');
     const [isUpdating, setIsUpdating] = useState(false);
     const [editError, setEditError] = useState('');
+    const [readingListBooks, setReadingListBooks] = useState(new Set());
 
     const isCurrentUserReview = currentUser && currentUser.id === review.user_id;
     const reviewText = review.review_text || '';
@@ -123,38 +157,38 @@ const ReviewItem = ({ review, currentUser, onReviewUpdated }) => {
       setEditError('');
     };
     
-  const handleDeleteReview = async () => {
-    if (!isCurrentUserReview) return;
-    
-    setIsDeleting(true);
-    try {
-      const { error } = await supabase
-        .from('book_ratings')
-        .delete()
-        .eq('id', review.id);
-
-      if (error) throw error;
+    const handleDeleteReview = async () => {
+      if (!isCurrentUserReview) return;
       
-      // Trigger a refresh of reviews (this will be handled by the parent component)
-      window.location.reload();
-    } catch (error) {
-      console.error('Error deleting review:', error);
-    } finally {
-      setIsDeleting(false);
-    }
-  };
+      setIsDeleting(true);
+      try {
+        const { error } = await supabase
+          .from('book_ratings')
+          .delete()
+          .eq('id', review.id);
 
-  const formatDate = (dateString) => {
-    try {
-      return new Date(dateString).toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric'
-      });
-    } catch {
-      return 'Unknown date';
-    }
-  };
+        if (error) throw error;
+        
+        // Trigger a refresh of reviews (this will be handled by the parent component)
+        window.location.reload();
+      } catch (error) {
+        console.error('Error deleting review:', error);
+      } finally {
+        setIsDeleting(false);
+      }
+   };
+
+    const formatDate = (dateString) => {
+       try {
+          return new Date(dateString).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+          });
+        } catch {
+          return 'Unknown date';
+        }
+      };
 
   return (
     <div className="review-item">
@@ -337,6 +371,8 @@ const handleSubmitReview = async (e) => {
           book_title: title,
           book_author: author,
           cover_id: coverId,
+          publish_year: bookData.first_publish_year || bookData.publish_year || null,
+          edition_count: bookData.edition_count || null,
           username: currentUser.display_name || currentUser.email?.split('@')[0] || 'Anonymous',
           user_avatar: currentUser.profile_image || null,
           created_at: new Date().toISOString(),
@@ -351,7 +387,6 @@ const handleSubmitReview = async (e) => {
     setReviewRating(0);
     setReviewRatingHover(null);
     
-    // Notify parent component
     onReviewSubmitted();
 
   } catch (error) {
@@ -602,7 +637,7 @@ const shouldShowBackButton = () => {
   return true;
 };
 
-  const fetchBookRatings = async (bookId) => {
+  const fetchBookRatings = async (bookId, skipUserRating = false) => {
     if (!bookId) return;
 
     try {
@@ -628,7 +663,7 @@ const shouldShowBackButton = () => {
         setTotalRatings(0);
       }
 
-      if (currentUser && !skipUserRating) {
+      if (currentUser) {
         const { data: userRatingData, error: userError } = await supabase
           .from("book_ratings")
           .select("rating")
@@ -726,6 +761,8 @@ const shouldShowBackButton = () => {
           book_title: title,
           book_author: author,
           cover_id: coverId,
+          publish_year: bookData.first_publish_year || bookData.publish_year || null,
+          edition_count: bookData.edition_count || null,
           username: currentUser.display_name || currentUser.email?.split('@')[0] || 'Anonymous',
           user_avatar: currentUser.profile_image || null,
           created_at: new Date().toISOString(),
@@ -735,7 +772,7 @@ const shouldShowBackButton = () => {
       if (insertError) throw insertError;
     }
 
-    await fetchBookRatings(bookId, true);
+    await fetchBookRatings(bookId);
     await fetchBookReviews(bookId); 
 
   } catch (error) {
@@ -749,7 +786,7 @@ const shouldShowBackButton = () => {
 
   const handleReviewSubmitted = async () => {
     if (bookData) {
-      await fetchBookReviews(bookData.key || bookData.id);
+      await fetchBookReviews(bookData.key || bookData.id,  false);
       await fetchBookRatings(bookData.key || bookData.id);
     }
   };
@@ -772,9 +809,78 @@ const shouldShowBackButton = () => {
     };
 
 
-  const handleAddToReadingList = () => {
-    console.log("Add to reading list clicked");
-  };
+  const handleAddToReadingList = async (e, book) => {
+        e.stopPropagation();
+      
+      const title = book.title?.trim() || "No title available";
+      const author = Array.isArray(book.author_name) && book.author_name.length > 0
+        ? book.author_name.filter(name => name?.trim()).slice(0, 2).join(", ")
+        : "Unknown author";
+
+      // Get existing reading list
+      let readingList = JSON.parse(localStorage.getItem('readingList') || '[]');
+      const bookData = {
+        user_id: user.id,
+        book_key: book.key,
+        title: title,
+        author: author,
+        cover_id: book.cover_i,
+        publish_year: book.first_publish_year,
+        edition_count: book.edition_count || null,
+        isbn: book.isbn ? book.isbn[0] : null,
+        subject: book.subject ? book.subject.slice(0, 5).join(", ") : null,
+        added_at: new Date().toISOString(),
+        status: toBeRead
+      };
+      
+      // Check if book is already in reading list
+      const exists = readingList.some(item => item.key === book.key);
+      if (!exists) {
+        readingList.push(bookToAdd);
+        localStorage.setItem('readingList', JSON.stringify(readingList));
+        
+        // Update the state to reflect the change
+        setReadingListBooks(prev => new Set([...prev, book.key]));
+      }
+
+      // Insert to Supabase
+      try {
+          console.log("Book title: ", title);
+          console.log("Author: ", author);
+          const toBeRead = "TO_BE_READ";
+
+          const bookData = {
+            user_id: user.id,
+            book_key: book.key,
+            title: title,
+            author: author,
+            cover_id: book.cover_i,
+            publish_year: book.first_publish_year,
+            isbn: book.isbn ? book.isbn[0] : null,
+            subject: book.subject ? book.subject.slice(0, 5).join(", ") : null,
+            added_at: new Date().toISOString(),
+            status: toBeRead
+          };
+          
+          const result = await insertReadingList(bookData, book, user.id);
+          
+          if (result.success) {
+            console.log('Successfully added to reading list');
+            // Optional: Show success message to user
+          } else {
+            console.log(result.message);
+            // Optional: Show message to user that book is already in list
+          }
+        } catch (error) {
+          console.error('Error handling add to reading list:', error);
+          // If there's an error, revert the local state
+          setReadingListBooks(prev => {
+            const newSet = new Set(prev);
+            newSet.delete(book.key);
+            return newSet;
+          });
+        }
+      };
 
   const handleClearReview = async () => {
     if (!currentUser || !bookData) return;
@@ -896,7 +1002,7 @@ const shouldShowBackButton = () => {
               <h1 className={getTitleClass(title)}>{title}</h1>
               <button 
                 className="add-to-reading-list-btn"
-                onClick={handleAddToReadingList}
+                onClick={(e) => handleAddToReadingList(e, bookData)}
                 type="button"
               >
                 Add to Reading List

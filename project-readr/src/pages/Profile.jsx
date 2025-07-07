@@ -425,7 +425,8 @@ export function Profile() {
       title: book.title || book.book_title,
       author_name: book.author ? [book.author] : (book.book_author ? [book.book_author] : ['Unknown Author']),
       cover_i: book.cover_id,
-      first_publish_year: book.publish_year
+      first_publish_year: book.publish_year,
+      edition_count: book.edition_count
     };
     
     localStorage.setItem('selectedBook', JSON.stringify(bookData));
@@ -577,7 +578,7 @@ export function Profile() {
                 </div>
                 
                 <div className="book-info">
-                  <div className="book-content">
+                  <div className="book-content" onClick={() => handleBookClick(ratedBook)}>
                     <h4 className="book-title" title={ratedBook.book_title}>
                       {truncateText(ratedBook.book_title, 30)}
                     </h4>
@@ -705,7 +706,7 @@ const FriendsListSection = () => {
               )}
               {friend.bio && (
                 <p className="friend-bio" title={friend.bio}>
-                  {friend.bio.length > 50 ? `${friend.bio.substring(0, 50)}...` : friend.bio}
+                  {friend.bio.length > 20 ? `${friend.bio.substring(0, 20)}...` : friend.bio}
                 </p>
               )}
               <p className="friendship-date">
@@ -760,8 +761,8 @@ const FriendsListSection = () => {
             
             // Updated JSX for the reading list book card
             return (
-              <div key={book.id} className="reading-list-book-card">
-                <div className="book-cover" onClick={() => handleBookClick(book)}>
+              <div key={book.id} className="reading-list-book-card " onClick={() => handleBookClick(book)}>
+                <div className="book-cover">
                   {book.cover_id ? (
                     <>
                       <img 
@@ -912,10 +913,10 @@ const FriendsListSection = () => {
             <h2 className="full-name">{profileData.full_name}</h2>
           )}
           
-          <button className="friends" onClick={handleFriendList}> 
+          <div className="friends" onClick={handleFriendList}> 
             <FaUserFriends />
              { (totalFriends?.length || 0) + (totalFriendsFromOther?.length || 0) } Friends
-          </button>
+          </div>
 
         </div>
 
