@@ -873,31 +873,31 @@ const handleFeelingLucky = () => {
       });
 
       return Array.from(uniqueAuthors.values()).map((author, index) => (
-        <div className="books-card" key={index} onClick={() => handleCardClick({
+        <div className="h-author-card" key={index} onClick={() => handleCardClick({
           author_name: [author.name],
           author_key: [author.key],
           title: author.books[0] || 'Unknown Book'
         })}>
         
-        <div className="books-cover">
-          <div className="books-cover-holder">
+        <div className="h-author-photo">
+          <div className="h-author-photo-holder">
             <img
               src={`https://covers.openlibrary.org/a/olid/${author.key}-M.jpg`}
               alt={`Photo of ${author.name}`}
-              className="books-cover-holder"
+              className="h-author-photo-holder"
               onError={(e) => {
                 e.target.style.display = 'none';
                 e.target.nextElementSibling.style.display = 'block';
               }}
             />
-            <div className="books-cover-holder" style={{ display: 'none' }}>
+            <div className="h-author-photo-holder" style={{ display: 'none' }}>
               <span>Author Photo</span>
             </div>
           </div>
         </div>
 
-        <div className="book-information">
-          <div className='book-text-group'>
+        <div className="h-author-information">
+          <div className='h-author-text-group'>
            <h3 className={getTitleClass(author.name)} title={author.name}>
               {truncateText(author.name, 50)}
             </h3>
