@@ -4,6 +4,22 @@ import { UserAuth } from '../context/AuthContext';
 import './Home.css';
 
 export const Home = () => {
+  const getDisplayResultsCount = () => {
+  if (filterBy === 'Author') {
+    const uniqueAuthors = new Map();
+    searchResults.forEach(book => {
+      if (Array.isArray(book.author_name)) {
+        book.author_name.forEach((authorName) => {
+          if (!uniqueAuthors.has(authorName)) {
+            uniqueAuthors.set(authorName, true);
+          }
+        });
+      }
+    });
+    return uniqueAuthors.size;
+  }
+  return searchResults.length;
+}; // HELPER
   // State management
   const [searchTerm, setSearchTerm] = useState('');
   const [filterBy, setFilterBy] = useState('All');
@@ -1123,10 +1139,6 @@ const handleFeelingLucky = () => {
             <h3 className={getTitleClass(author.name)} title={author.name}>
               {truncateText(author.name, 50)}
             </h3>
-            <p className={getAuthorClass(author.bio ? truncateText(author.bio, 100) : 'No biography available')} 
-              title={author.bio || 'No biography available'}>
-              {author.bio ? truncateText(author.bio, 100) : 'No biography available'}
-            </p>
           </div>
         </div>
 
@@ -1419,7 +1431,7 @@ const handleFeelingLucky = () => {
                   Showing Results for "{searchDetails.term}" ({searchDetails.filter})
                 </h2>
                 <p className="search-details-info">
-                  Displaying {searchResults.length} results out of {totalResults.toLocaleString()}.
+                  Displaying {getDisplayResultsCount()} results out of {totalResults.toLocaleString()}.
                 </p>
               </div>
               

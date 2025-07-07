@@ -418,9 +418,23 @@ export function Profile() {
   };
 
   // Handle book click - navigate to book details
-  const handleBookClick = (book) => {
-    // Convert reading list format back to search result format
-    const bookData = {
+const handleBookClick = (book) => {
+  let bookData;
+  
+  // Check if this is a rated book (has book_id) or reading list book (has book_key)
+  if (book.book_id) {
+    // This is from the rated books (book_ratings table)
+    bookData = {
+      key: book.book_id,
+      title: book.book_title,
+      author_name: book.book_author ? [book.book_author] : ['Unknown Author'],
+      cover_i: book.cover_id,
+      first_publish_year: book.publish_year,
+      edition_count: book.edition_count
+    };
+  } else {
+    // This is from reading list - keep your existing logic
+    bookData = {
       key: book.book_key || book.book_id,
       title: book.title || book.book_title,
       author_name: book.author ? [book.author] : (book.book_author ? [book.book_author] : ['Unknown Author']),
@@ -428,10 +442,11 @@ export function Profile() {
       first_publish_year: book.publish_year,
       edition_count: book.edition_count
     };
-    
-    localStorage.setItem('selectedBook', JSON.stringify(bookData));
-    navigate('/Book');
-  };
+  }
+  
+  localStorage.setItem('selectedBook', JSON.stringify(bookData));
+  navigate('/Book');
+};
 
   // Carousel navigation functions
   const handlePrevRated = () => {
