@@ -379,8 +379,14 @@
   box-shadow: 0 4px 12px rgba(139, 69, 19, 0.3);
 }
 
-.add-to-list-btn-small:active {
-  transform: translateY(0);
+.add-to-list-btn-small.in-reading-list {
+  background-color: #28a745;
+  color: white;
+  opacity: 0.7;
+}
+
+.add-to-list-btn-small.in-reading-list:hover {
+  background-color: #28a745;
 }
 
 .refresh-recommendations{

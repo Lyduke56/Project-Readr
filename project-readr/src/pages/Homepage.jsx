@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import './Homepage.css';
 import { useNavigate } from 'react-router-dom';
 import { UserAuth } from '../context/AuthContext';
-import { supabase } from '../supabaseClient'; // Add this import
+import { supabase } from '../supabaseClient';
 
 export const Homepage = () => {
   // State for different sections
@@ -11,6 +11,7 @@ export const Homepage = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('All');
   const [loading, setLoading] = useState(true);
+  const [readingListBooks, setReadingListBooks] = useState(new Set());
   const [recommendationsLoading, setRecommendationsLoading] = useState(true);
   const [userReadingList, setUserReadingList] = useState([]);
   const [recommendationBasis, setRecommendationBasis] = useState('');
@@ -111,6 +112,32 @@ export const Homepage = () => {
     
   } catch (error) {
     console.error('Error in fetchTopRatedBooks:', error);
+  }
+};
+
+const loadReadingListStatus = async () => {
+  try {
+    let bookKeys = new Set();
+    
+    // Get from localStorage
+    const localReadingList = JSON.parse(localStorage.getItem('readingList') || '[]');
+    localReadingList.forEach(book => bookKeys.add(book.key));
+    
+    // If user is logged in, also get from Supabase
+    if (user) {
+      const { data, error } = await supabase
+        .from('reading_list')
+        .select('book_key')
+        .eq('user_id', user.id);
+      
+      if (data && !error) {
+        data.forEach(item => bookKeys.add(item.book_key));
+      }
+    }
+    
+    setReadingListBooks(bookKeys);
+  } catch (error) {
+    console.error('Error loading reading list status:', error);
   }
 };
 
@@ -539,6 +566,8 @@ useEffect(() => {
         setRecommendationBasis(cached.basis);
         setRecommendationsLoading(false);
         console.log('Loaded cached recommendations');
+
+        await loadReadingListStatus();
       } else {
         // Generate new recommendations
         await loadRecommendations();
@@ -554,7 +583,7 @@ useEffect(() => {
   };
 
   fetchData();
-}, []);
+}, [user]);
 
 // Clear cache when navigating to other pages (except book description)
 useEffect(() => {
@@ -622,35 +651,43 @@ useEffect(() => {
 };
 
 
-  const handleAddToReadingList = async (e, book, index) => {
-    e.stopPropagation();
-    
-    // Check if this is a top-rated book (has rank and score properties)
-    const isTopRatedBook = book.hasOwnProperty('rank') && book.hasOwnProperty('score');
-    
-    let title, author, bookKey, coverId, publishYear, subjects;
-    
-    if (isTopRatedBook) {
-      // Handle top-rated books structure
-      title = book.title?.trim() || "No title available";
-      author = book.author || "Unknown author";
-      bookKey = book.id; // top-rated books use 'id' instead of 'key'
-      coverId = book.coverID;
-      publishYear = book.publish_year || null;
-      subjects = book.subjects || null;
-    } else {
-      // Handle regular Open Library books structure
-      title = book.title?.trim() || "No title available";
-      author = Array.isArray(book.author_name) && book.author_name.length > 0
-        ? book.author_name.filter(name => name?.trim()).slice(0, 2).join(", ")
-        : "Unknown author";
-      bookKey = book.key;
-      coverId = book.cover_i;
-      publishYear = book.first_publish_year;
-      subjects = book.subject ? book.subject.slice(0, 5).join(", ") : null;
-    }
+const handleAddToReadingList = async (e, book, index) => {
+  e.stopPropagation();
+  
+  // Check if this is a top-rated book (has rank and score properties)
+  const isTopRatedBook = book.hasOwnProperty('rank') && book.hasOwnProperty('score');
+  
+  let title, author, bookKey, coverId, publishYear, subjects;
+  
+  if (isTopRatedBook) {
+    // Handle top-rated books structure
+    title = book.title?.trim() || "No title available";
+    author = book.author || "Unknown author";
+    bookKey = book.id;
+    coverId = book.coverID;
+    publishYear = book.publish_year || null;
+    subjects = book.subjects || null;
+  } else {
+    // Handle regular Open Library books structure
+    title = book.title?.trim() || "No title available";
+    author = Array.isArray(book.author_name) && book.author_name.length > 0
+      ? book.author_name.filter(name => name?.trim()).slice(0, 2).join(", ")
+      : "Unknown author";
+    bookKey = book.key;
+    coverId = book.cover_i;
+    publishYear = book.first_publish_year;
+    subjects = book.subject ? book.subject.slice(0, 5).join(", ") : null;
+  }
 
-    // Get existing reading list
+  // Check if book is already in reading list
+  const isInReadingList = readingListBooks.has(bookKey);
+  
+  if (isInReadingList) {
+    // If book is already in reading list, redirect to Reading List page
+    window.open('/ReadingList', '_blank');
+    return;
+  } else {
+    // Add to reading list
     let readingList = JSON.parse(localStorage.getItem('readingList') || '[]');
     
     const bookToAdd = {
@@ -662,25 +699,16 @@ useEffect(() => {
       subject: subjects
     };
     
-    // Check if book is already in reading list
-    const exists = readingList.some(item => item.key === bookKey);
-    if (!exists) {
-      readingList.push(bookToAdd);
-      localStorage.setItem('readingList', JSON.stringify(readingList));
-      
-      // Updated success message to match second script
-      alert('Added to reading list! Your recommendations will be updated next time you visit.');
-    } else {
-      alert('Book already in reading list!');
-    }
+    readingList.push(bookToAdd);
+    localStorage.setItem('readingList', JSON.stringify(readingList));
+    
+    // Update state
+    setReadingListBooks(prev => new Set([...prev, bookKey]));
 
-    // Insert to Supabase - only if user is logged in
+    // Insert to Supabase if user is logged in
     if (user) {
       try {
-        console.log("Book title: ", title);
-        console.log("Author: ", author);
         const toBeRead = "TO_BE_READ";
-
         const bookData = {
           user_id: user.id,
           book_key: bookKey,
@@ -694,15 +722,19 @@ useEffect(() => {
           status: toBeRead
         };
         
-        const result = await insertReadingList(bookData, book, user.id);
-        console.log("Successfully added to Supabase reading list");
-
+        await insertReadingList(bookData, book, user.id);
       } catch (error) {
-        console.error('Error handling add to reading list:', error);
-        alert('An error occurred. Please try again.');
+        console.error('Error adding to Supabase:', error);
+        // Revert state if error
+        setReadingListBooks(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(bookKey);
+          return newSet;
+        });
       }
     }
-  };
+  }
+};
 
   const handleRefreshRecommendations = () => {
     clearSessionRecommendations();
@@ -781,52 +813,54 @@ useEffect(() => {
   );
 };
 
-  const RecommendationCard = ({ book }) => {
-    const title = book.title?.trim() || "No title available";
-    const author = Array.isArray(book.author_name) && book.author_name.length > 0
-      ? book.author_name.filter(name => name?.trim()).slice(0, 2).join(", ")
-      : "Unknown author";
-    const coverId = book.cover_i?.toString().trim() ? book.cover_i : null;
+const RecommendationCard = ({ book, readingListBooks }) => {
+  const title = book.title?.trim() || "No title available";
+  const author = Array.isArray(book.author_name) && book.author_name.length > 0
+    ? book.author_name.filter(name => name?.trim()).slice(0, 2).join(", ")
+    : "Unknown author";
+  const coverId = book.cover_i?.toString().trim() ? book.cover_i : null;
+  
+  const isInReadingList = readingListBooks.has(book.key);
 
-    return (
-      <div className="recommendation-card" onClick={() => handleRecommendationClick(book)}>
-            <div className="recommendation-cover">
-              {coverId ? (
-                <img 
-                  src={`https://covers.openlibrary.org/b/id/${coverId}-M.jpg`}
-                  alt={`Cover of ${title}`} 
-                  className="cover-image"
-                  onError={(e) => {
-                    e.target.style.display = 'none';
-                    e.target.nextElementSibling.style.display = 'flex';
-                  }}
-                />
-              ) : null}
-              <div className="cover-placeholder" style={{ display: coverId ? 'none' : 'flex' }}>
-                <span>Book Cover</span>
-              </div>
-            </div>
-
-        <div className="recommendation-info">
-          <div className='recommendation-text-group'>
-            <h4 className="recommendation-title" title={title}>
-              {truncateText(title, 35)}
-            </h4>
-            <p className="recommendation-author" title={author}>
-              by {truncateText(author, 30)}
-            </p>
-          </div>
-
-          <button 
-            className="add-to-list-btn-small"
-            onClick={(e) => handleAddToReadingList(e, book)}
-          >
-            Add to List
-          </button>
+  return (
+    <div className="recommendation-card" onClick={() => handleRecommendationClick(book)}>
+      <div className="recommendation-cover">
+        {coverId ? (
+          <img 
+            src={`https://covers.openlibrary.org/b/id/${coverId}-M.jpg`}
+            alt={`Cover of ${title}`} 
+            className="cover-image"
+            onError={(e) => {
+              e.target.style.display = 'none';
+              e.target.nextElementSibling.style.display = 'flex';
+            }}
+          />
+        ) : null}
+        <div className="cover-placeholder" style={{ display: coverId ? 'none' : 'flex' }}>
+          <span>Book Cover</span>
         </div>
       </div>
-    );
-  };
+
+      <div className="recommendation-info">
+        <div className='recommendation-text-group'>
+          <h4 className="recommendation-title" title={title}>
+            {truncateText(title, 35)}
+          </h4>
+          <p className="recommendation-author" title={author}>
+            by {truncateText(author, 30)}
+          </p>
+        </div>
+
+        <button 
+          className={`add-to-list-btn-small ${isInReadingList ? 'in-reading-list' : ''}`}
+          onClick={(e) => handleAddToReadingList(e, book)}
+        >
+          {isInReadingList ? 'In Reading List' : 'Add to List'}
+        </button>
+      </div>
+    </div>
+  );
+};
 
   // Loading component for recommendations - now shows 20 skeletons
   const RecommendationSkeleton = () => (
@@ -895,10 +929,13 @@ useEffect(() => {
                     <RecommendationSkeleton key={index} />
                   ))
                 ) : (
-                  // Show actual recommendations (should be 20)
-                  recommendedBooks.map(book => (
-                    <RecommendationCard key={book.key} book={book} />
-                  ))
+                recommendedBooks.map(book => (
+                      <RecommendationCard 
+                        key={book.key} 
+                        book={book} 
+                        readingListBooks={readingListBooks}
+                      />
+                    ))
                 )}
               </div>
             </div>
@@ -974,7 +1011,7 @@ useEffect(() => {
             </button>
             <button 
               className="action-button secondary"
-              onClick={() => navigate('/ReadingList')}
+              onClick={() => window.open('/ReadingList', '_blank')}
             >
               View Reading List
             </button>
