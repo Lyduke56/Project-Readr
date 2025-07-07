@@ -12,6 +12,7 @@
   color: #333;
   display: flex;
   flex-direction: column;
+  overflow-x: hidden;
 }
 
 .profile-header-inmodal {
@@ -125,6 +126,7 @@
 
 .profile-content-inmodal {
   padding: 24px;
+  overflow-x: hidden;
   overflow-y: auto;
   max-height: calc(90vh - 120px);
 }
@@ -202,9 +204,11 @@
 /* Rated Books Section */
 .friend-rated-books-grid-inmodal {
   display: grid;
-  grid-template-columns: repeat(2, minmax(250px, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 20px;
   margin-top: 20px;
+  overflow-x: hidden;
+  max-width: 100%;
 }
 .rated-book-card-inmodal {
   background: #f8f9fa;
@@ -212,7 +216,7 @@
   padding: 14px;
   border: 1px solid #e9ecef;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
-  max-width: 180px !important;
+  max-width: 100%;
   min-width: 0;
   display: flex;
   flex-direction: column;
