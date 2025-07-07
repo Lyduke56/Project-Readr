@@ -86,7 +86,7 @@ export const Homepage = () => {
         }
         return b.total_ratings - a.total_ratings;
       })
-      .slice(0, 10); // Get top 10 books
+      .slice(0, 25); // Get top 10 books
 
     // Format the data for display
     const formattedBooks = processedBooks.map((book, index) => ({

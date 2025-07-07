@@ -441,19 +441,41 @@ const DiscoverPage = () => {
   };
 
   // Force refresh
-  const handleRefreshBooks = () => {
+  const handleRefreshBooks = async () => {
+    setIsLoading(true);
+    setError('');
+    
+    // Clear all session data
     clearSessionData();
+    
+    // Reset all state immediately
     setSavedBooks([]);
     setSwipedBooks([]);
     setDisplayedBooks([]);
     setBookCache([]);
-    setIsLoading(true);
     
-    // Reset component state
-    setTimeout(() => {
-      setIsInitialized(false);
-      setTimeout(() => setIsInitialized(true), 100);
-    }, 100);
+    try {
+      // Fetch fresh books directly
+      const freshBooks = await fetchBooksFromAPI(30);
+      const processedBooks = processBooks(freshBooks);
+      
+      // Update cache and session
+      setBookCache(processedBooks);
+      setSessionData(SESSION_KEYS.BOOK_CACHE, processedBooks);
+      setSessionData(SESSION_KEYS.SEEN_BOOK_IDS, Array.from(seenBookIds.current));
+      setSessionData(SESSION_KEYS.LAST_FETCH_TIME, Date.now().toString());
+      
+      // Set initial displayed books
+      const initialDisplayed = processedBooks.slice(0, 10);
+      setDisplayedBooks(initialDisplayed);
+      setSessionData(SESSION_KEYS.DISPLAYED_BOOKS, initialDisplayed);
+      
+    } catch (error) {
+      console.error('Error refreshing books:', error);
+      setError('Failed to refresh books. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Loading state
@@ -487,25 +509,6 @@ const DiscoverPage = () => {
     );
   }
 
-  // No books state
-  if (displayedBooks.length === 0 && !isLoading) {
-    return (
-      <div className="discover-container">
-        <h1 className="discover-title">Discover Books</h1>
-        <div className="no-books-container">
-          <h2>No more books to discover!</h2>
-          <p>Try refreshing to get new recommendations.</p>
-          <button 
-            className="refresh-button"
-            onClick={handleRefreshBooks}
-          >
-            Get New Books
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="discover-container">
       <h1 className="discover-title">Discover Books</h1>
@@ -513,7 +516,7 @@ const DiscoverPage = () => {
       {/* Progress indicator */}
       <div className="progress-container">
         <p className="progress-text">
-          {savedBooks.length} saved • {swipedBooks.length} skipped • {displayedBooks.length} remaining
+          {swipedBooks.length} Books Skipped   ||   {savedBooks.length} Books Saved
         </p>
       </div>
       
@@ -532,7 +535,7 @@ const DiscoverPage = () => {
         <button 
           className="refresh-books-button"
           onClick={handleRefreshBooks}
-          disabled={isLoading}
+          disabled={isLoading || isFetching}
         >
           {isLoading ? 'Loading...' : 'Get New Books'}
         </button>
