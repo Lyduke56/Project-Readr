@@ -238,17 +238,6 @@ export default function Stack({
     return genre.substring(0, maxLength) + '...';
   };
 
-  // Handle card click for redirection
-  const handleCardClick = (card) => {
-    if (onCardClick) {
-      // Use custom click handler if provided
-      onCardClick(card);
-    } else {
-      // Use React Router navigate to redirect to /Book page
-      navigate('/Book');
-    }
-  };
-
   return (
     <div className="s-discovery-container">
       {/* Skip Book Label - Left Side */}

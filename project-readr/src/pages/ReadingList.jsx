@@ -103,6 +103,9 @@ export const ReadingList = () => {
 
 const handleRemoveBook = async (bookId) => {
   try {
+    // Get the book data before removing it so we can get the book_key
+    const bookToRemove = books.find(book => book.id === bookId);
+    
     // Remove from Supabase
     const { error } = await supabase
       .from('reading_list')
@@ -118,13 +121,23 @@ const handleRemoveBook = async (bookId) => {
 
     // Update local state to remove the book
     setBooks(prev => prev.filter(book => book.id !== bookId));
+
+    // Remove from localStorage as well
+    let readingList = JSON.parse(localStorage.getItem('readingList') || '[]');
+    readingList = readingList.filter(item => item.key !== bookToRemove.book_key);
+    localStorage.setItem('readingList', JSON.stringify(readingList));
+
+    // Dispatch custom event to notify other components with the correct book_key
+    window.dispatchEvent(new CustomEvent('readingListUpdated', {
+      detail: { action: 'removed', bookKey: bookToRemove.book_key }
+    }));
+
     alert('Book removed from reading list!');
   } catch (err) {
     console.error('Unexpected error removing book:', err);
     alert('Failed to remove book!');
   }
 };
-
 
   const handleSearch = (query) => {
     setSearchQuery(query);

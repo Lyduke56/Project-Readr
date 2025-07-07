@@ -16,7 +16,7 @@ import { Book } from './pages/Book'
 import DiscoverPage from './pages/Discover'
 import { ResetPass } from './pages/ResetPass'
 import { AddProfile } from './pages/AddProfile'
-import { FriendList } from './pages/FriendList'
+import { FriendProfile } from './pages/FriendProfile'
 import GenrePage from './pages/Genre'
 
 function App() {
@@ -40,7 +40,7 @@ function App() {
           <Route path="/Genre" element={<GenrePage />} />
           <Route path="/reset-password" element={<ResetPass />} />
           <Route path="/AddProfile" element={<AddProfile />} />
-          <Route path="/FriendList" element={<FriendList />} />
+          <Route path="/FriendProfile" element={<FriendProfile />} />
         </Route>
       </Routes>
     </Router>

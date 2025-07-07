@@ -3,6 +3,7 @@ import "./Book.css";
 import { supabase } from "../supabaseClient";
 import { UserAuth } from "../context/AuthContext";
 import { useNavigate } from 'react-router-dom';
+import { FaEdit } from "react-icons/fa";
 
 // StarRating component definition
 const StarRating = ({ 
@@ -62,18 +63,66 @@ const StarRating = ({
 };
 
 // Review component for individual review display
-const ReviewItem = ({ review, currentUser }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
+const ReviewItem = ({ review, currentUser, onReviewUpdated }) => {
+    const [isExpanded, setIsExpanded] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
+    
+    // Add these new state variables for editing
+    const [isEditing, setIsEditing] = useState(false);
+    const [editRating, setEditRating] = useState(review.rating);
+    const [editRatingHover, setEditRatingHover] = useState(null);
+    const [editText, setEditText] = useState(review.review_text || '');
+    const [isUpdating, setIsUpdating] = useState(false);
+    const [editError, setEditError] = useState('');
 
-  const TRUNCATE_LIMIT = 300;
-  const shouldTruncate = review.review_text && review.review_text.length > TRUNCATE_LIMIT;
-  const displayText = shouldTruncate && !isExpanded 
-    ? review.review_text.substring(0, TRUNCATE_LIMIT) + "..."
-    : review.review_text;
+    const isCurrentUserReview = currentUser && currentUser.id === review.user_id;
+    const reviewText = review.review_text || '';
+    const shouldTruncate = reviewText.length > 200;
+    const displayText = shouldTruncate && !isExpanded 
+      ? reviewText.substring(0, 200) + '...' 
+      : reviewText;
 
-  const isCurrentUserReview = currentUser && currentUser.id === review.user_id;
 
+    // Add this new function for handling review updates
+    const handleUpdateReview = async () => {
+      if (!isCurrentUserReview || !editText.trim() || editRating === 0) {
+        setEditError('Please provide both a rating and review text.');
+        return;
+      }
+
+      setIsUpdating(true);
+      setEditError('');
+
+      try {
+        const { error } = await supabase
+          .from('book_ratings')
+          .update({
+            rating: editRating,
+            review_text: editText.trim(),
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', review.id);
+
+        if (error) throw error;
+
+        setIsEditing(false);
+        if (onReviewUpdated) onReviewUpdated();
+        
+      } catch (error) {
+        console.error('Error updating review:', error);
+        setEditError('Failed to update review. Please try again.');
+      } finally {
+        setIsUpdating(false);
+      }
+    };
+
+    const handleCancelEdit = () => {
+      setIsEditing(false);
+      setEditRating(review.rating);
+      setEditText(review.review_text || '');
+      setEditError('');
+    };
+    
   const handleDeleteReview = async () => {
     if (!isCurrentUserReview) return;
     
@@ -129,6 +178,7 @@ const ReviewItem = ({ review, currentUser }) => {
             <span className="review-date">{formatDate(review.created_at)}</span>
           </div>
         </div>
+        
         <div className="review-rating">
           <StarRating
             rating={review.rating}
@@ -136,26 +186,85 @@ const ReviewItem = ({ review, currentUser }) => {
             size={20}
           />
         </div>
+        {!isEditing && (
+            <button 
+              className="edit-review-btn"
+              onClick={() => setIsEditing(true)}
+            >
+              <FaEdit size={20}/>
+            </button>
+          )}
       </div>
       
       <div className="review-content">
-        <p className="review-text" >{displayText}</p>
-        {shouldTruncate && (
-          <button 
-            className="expand-btn"
-            onClick={() => setIsExpanded(!isExpanded)}
-          >
-            {isExpanded ? 'Show less' : 'Read more'}
-          </button>
-        )}
-      </div>
+            {isEditing ? (
+              <div className="edit-review-form">
+                <div className="edit-rating-input">
+                  <label>Rating:</label>
+                  <StarRating
+                    rating={editRating}
+                    hover={editRatingHover}
+                    onRating={setEditRating}
+                    onHover={setEditRatingHover}
+                    readonly={isUpdating}
+                    size={24}
+                  />
+                </div>
+                
+                <div className="edit-text-input">
+                  <textarea
+                    value={editText}
+                    onChange={(e) => setEditText(e.target.value)}
+                    placeholder="Share your thoughts about this book..."
+                    rows={4}
+                    maxLength={2000}
+                    disabled={isUpdating}
+                  />
+                  <div className="char-count">
+                    {editText.length}/2000 characters
+                  </div>
+                </div>
+
+                {editError && <div className="error-message">{editError}</div>}
+
+                <div className="edit-review-actions">
+                  <button 
+                    className="save-edit-btn"
+                    onClick={handleUpdateReview}
+                    disabled={isUpdating || !editText.trim() || editRating === 0}
+                  >
+                    {isUpdating ? 'Saving...' : 'Save Changes'}
+                  </button>
+                  <button 
+                    className="cancel-edit-btn"
+                    onClick={handleCancelEdit}
+                    disabled={isUpdating}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <>
+                <p className="review-text">{displayText}</p>
+                {shouldTruncate && (
+                  <button 
+                    className="expand-btn"
+                    onClick={() => setIsExpanded(!isExpanded)}
+                  >
+                    {isExpanded ? 'Show less' : 'Read more'}
+                  </button>
+                )}
+              </>
+            )}
+          </div>
 
       {isCurrentUserReview && (
         <div className="review-actions">
           <button 
             className="delete-review-btn"
             onClick={handleDeleteReview}
-            disabled={isDeleting}
+            disabled={isDeleting || isEditing}
           >
             {isDeleting ? 'Deleting...' : 'Delete Review'}
           </button>
@@ -173,88 +282,85 @@ const ReviewForm = ({ bookData, currentUser, onReviewSubmitted }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
 
-  const handleSubmitReview = async (e) => {
-    e.preventDefault();
-    
-    if (!reviewText.trim() || reviewRating === 0) {
-      setError('Please provide both a rating and a review text.');
-      return;
+const handleSubmitReview = async (e) => {
+  e.preventDefault();
+  
+  if (!reviewText.trim() || reviewRating === 0) {
+    setError('Please provide both a rating and a review text.');
+    return;
+  }
+
+  setIsSubmitting(true);
+  setError('');
+
+  try {
+    const bookId = bookData.key || bookData.id;
+    const coverId = bookData.cover_i || bookData.coverID || null;
+    const title = bookData.title || "No title available";
+    const author = Array.isArray(bookData.author_name) && bookData.author_name.length > 0
+      ? bookData.author_name.filter(name => name?.trim()).slice(0, 2).join(", ")
+      : "Unknown author";
+
+    // Check if user already has ANY entry (rating-only or rating+review)
+    const { data: existingEntry, error: fetchError } = await supabase
+      .from('book_ratings')
+      .select('id, rating, review_text')
+      .eq('book_id', bookId)
+      .eq('user_id', currentUser.id)
+      .single();
+
+    if (fetchError && fetchError.code !== 'PGRST116') {
+      throw fetchError;
     }
 
-    setIsSubmitting(true);
-    setError('');
-
-    try {
-      const bookId = bookData.key || bookData.id;
-      const coverID = bookData.cover_i || bookData.coverID || null;
-      const title = bookData.title || "No title available";
-      const author = Array.isArray(bookData.author_name) && bookData.author_name.length > 0
-        ? bookData.author_name.filter(name => name?.trim()).slice(0, 2).join(", ")
-        : "Unknown author";
-      
-
-
-      // Check if user already has a review 
-      const { data: existingReview, error: fetchError } = await supabase
+    if (existingEntry) {
+      // UPDATE EXISTING ENTRY - add review_text and update rating
+      const { error: updateError } = await supabase
         .from('book_ratings')
-        .select('id')
-        .eq('book_id', bookId)
-        .eq('user_id', currentUser.id)
-        .single();
+        .update({
+          review_text: reviewText.trim(),
+          rating: reviewRating, // This will update the rating if user changes it
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', existingEntry.id);
 
-      if (fetchError && fetchError.code !== 'PGRST116') {
-        throw fetchError;
-      }
+      if (updateError) throw updateError;
+    } else {
+      // CREATE NEW ENTRY - both rating and review
+      const { error: insertError } = await supabase
+        .from('book_ratings')
+        .insert({
+          book_id: bookId,
+          user_id: currentUser.id,
+          review_text: reviewText.trim(),
+          rating: reviewRating,
+          book_title: title,
+          book_author: author,
+          cover_id: coverId,
+          username: currentUser.display_name || currentUser.email?.split('@')[0] || 'Anonymous',
+          user_avatar: currentUser.profile_image || null,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        });
 
-      if (existingReview) {
-        // Update existing review
-        const { error: updateError } = await supabase
-          .from('book_ratings')
-          .update({
-            review_text: reviewText.trim(),
-            rating: reviewRating,
-            updated_at: new Date().toISOString()
-          })
-          .eq('id', existingReview.id);
-
-        if (updateError) throw updateError;
-      } else {
-
-        // Create new review
-        const { error: insertError } = await supabase
-          .from('book_ratings')
-          .insert({
-            book_id: bookId,
-            user_id: currentUser.id,
-            review_text: reviewText.trim(),
-            rating: reviewRating,
-            book_title: title,
-            book_author: author,
-            cover_id: coverID,
-            username: currentUser.display_name || currentUser.email?.split('@')[0] || 'Anonymous',
-            user_avatar: currentUser.profile_image || null,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          });
-
-        if (insertError) throw insertError;
-      }
-
-      // Reset form
-      setReviewText('');
-      setReviewRating(0);
-      setReviewRatingHover(null);
-      
-      // Notify parent component
-      onReviewSubmitted();
-
-    } catch (error) {
-      console.error('Error submitting review:', error);
-      setError('Failed to submit review. Please try again.');
-    } finally {
-      setIsSubmitting(false);
+      if (insertError) throw insertError;
     }
-  };
+
+    // Reset form
+    setReviewText('');
+    setReviewRating(0);
+    setReviewRatingHover(null);
+    
+    // Notify parent component
+    onReviewSubmitted();
+
+  } catch (error) {
+    console.error('Error submitting review:', error);
+    setError('Failed to submit review. Please try again.');
+  } finally {
+    setIsSubmitting(false);
+  }
+};
 
   return (
     <div className="review-form">
@@ -324,6 +430,7 @@ export const Book = () => {
   const [reviews, setReviews] = useState([]);
   const [reviewsLoading, setReviewsLoading] = useState(false);
   const [userHasReview, setUserHasReview] = useState(false);
+  
 
   const { session } = UserAuth();
   const user = session?.user;
@@ -334,8 +441,10 @@ export const Book = () => {
   };
 
   useEffect(() => {
-  window.scrollTo(0, 0);
-}, []);
+    window.scrollTo(0, 0);
+  }, []);
+
+  
 
   useEffect(() => {
         const getCurrentUser = async () => {
@@ -430,6 +539,69 @@ export const Book = () => {
     fetchBookData();
   }, []);
 
+  useEffect(() => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const hideFromUrl = urlParams.get('hideBack');
+  
+  // Clean up URL parameter if it exists
+  if (hideFromUrl === 'true') {
+    // Remove the parameter from URL without refreshing the page
+    const newUrl = window.location.pathname;
+    window.history.replaceState({}, document.title, newUrl);
+  }
+  
+  // Clean up localStorage flag
+  const hideBackData = localStorage.getItem('hideBackButton');
+  if (hideBackData) {
+    try {
+      const parsedData = JSON.parse(hideBackData);
+      if (parsedData.value === true) {
+        // Clean up localStorage after using it
+        localStorage.removeItem('hideBackButton');
+      }
+    } catch (error) {
+      // Clean up malformed data
+      localStorage.removeItem('hideBackButton');
+    }
+  }
+}, []);
+
+const shouldShowBackButton = () => {
+  // Check URL parameter first
+  const urlParams = new URLSearchParams(window.location.search);
+  const hideFromUrl = urlParams.get('hideBack');
+  
+  if (hideFromUrl === 'true') {
+    return false;
+  }
+  
+  // Check localStorage with timestamp validation
+  const hideBackData = localStorage.getItem('hideBackButton');
+  
+  if (hideBackData) {
+    try {
+      const parsedData = JSON.parse(hideBackData);
+      const currentTime = Date.now();
+      
+      // Check if the flag is still valid (not expired)
+      if (parsedData.value === true && 
+          parsedData.timestamp && 
+          parsedData.expires && 
+          currentTime < parsedData.expires) {
+        return false;
+      } else {
+        // Clean up expired flag
+        localStorage.removeItem('hideBackButton');
+      }
+    } catch (error) {
+      // If parsing fails, assume it's the old format and clean it up
+      localStorage.removeItem('hideBackButton');
+    }
+  }
+  
+  return true;
+};
+
   const fetchBookRatings = async (bookId) => {
     if (!bookId) return;
 
@@ -456,7 +628,7 @@ export const Book = () => {
         setTotalRatings(0);
       }
 
-      if (currentUser) {
+      if (currentUser && !skipUserRating) {
         const { data: userRatingData, error: userError } = await supabase
           .from("book_ratings")
           .select("rating")
@@ -472,6 +644,7 @@ export const Book = () => {
           setUserRating(0);
         }
       }
+
     } catch (error) {
       console.error("Error in fetchBookRatings:", error);
     }
@@ -510,7 +683,6 @@ export const Book = () => {
   const handleUserRatingSubmit = async (rating) => {
   if (!currentUser || !bookData) return;
 
-  // Immediately update the UI to show the selected rating
   setUserRating(rating);
   setSubmittingRating(true);
 
@@ -521,37 +693,30 @@ export const Book = () => {
       ? bookData.author_name.filter(name => name?.trim()).slice(0, 2).join(", ")
       : "Unknown author";
     const coverId = bookData.cover_i || bookData.coverID || null;
-    const subjects = formatSubjects(workDetails?.subjects || bookData.subject || []);
-    const publishYear = bookData.first_publish_year || 
-                       bookData.publish_year || 
-                       (Array.isArray(bookData.publish_year) ? bookData.publish_year[0] : null) || 
-                       "Unknown";
 
-    // Check if the user already has a rating for this book
-    const { data: existingRating, error: fetchError } = await supabase
+    const { data: existingEntry, error: fetchError } = await supabase
       .from('book_ratings')
-      .select('id, rating')
+      .select('id, rating, review_text')
       .eq('book_id', bookId)
       .eq('user_id', currentUser.id)
       .single();
 
-    if (fetchError && fetchError.code !== 'PGRST116') { // PGRST116 = no rows found
+    if (fetchError && fetchError.code !== 'PGRST116') {
       throw fetchError;
     }
 
-    if (existingRating) {
-      // Update existing rating
+    if (existingEntry) {
       const { error: updateError } = await supabase
         .from('book_ratings')
         .update({
           rating: rating,
           updated_at: new Date().toISOString()
         })
-        .eq('id', existingRating.id);
+        .eq('id', existingEntry.id);
 
       if (updateError) throw updateError;
     } else {
-      // Create new rating
+      // CREATE NEW ENTRY - rating only, no review_text
       const { error: insertError } = await supabase
         .from('book_ratings')
         .insert({
@@ -561,8 +726,8 @@ export const Book = () => {
           book_title: title,
           book_author: author,
           cover_id: coverId,
-          subjects: formatSubjects(subjects),
-          publish_year: publishYear,
+          username: currentUser.display_name || currentUser.email?.split('@')[0] || 'Anonymous',
+          user_avatar: currentUser.profile_image || null,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString()
         });
@@ -570,14 +735,12 @@ export const Book = () => {
       if (insertError) throw insertError;
     }
 
-    // Refresh the overall rating stats
-    await fetchBookRatings(bookId);
+    await fetchBookRatings(bookId, true);
+    await fetchBookReviews(bookId); 
 
   } catch (error) {
     console.error('Error submitting rating:', error);
     setError('Failed to submit rating. Please try again.');
-    
-    // Revert the rating on error
     await fetchBookRatings(bookData.key || bookData.id);
   } finally {
     setSubmittingRating(false);
@@ -608,18 +771,8 @@ export const Book = () => {
       return 'authors';
     };
 
-  const handleStatusChange = (newStatus) => {
-    setStatus(newStatus);
-    console.log(`Status changed to: ${newStatus}`);
-  };
-
-  const handleScoreChange = (newScore) => {
-    setUserScore(newScore);
-    console.log(`Score changed to: ${newScore}`);
-  };
 
   const handleAddToReadingList = () => {
-    // TODO: Implement add to reading list logic
     console.log("Add to reading list clicked");
   };
 
@@ -640,8 +793,9 @@ export const Book = () => {
       // Update local state
       setUserRating(0);
       
-      // Refresh the overall rating stats
+      // Only refresh overall ratings (not user rating) and reviews
       await fetchBookRatings(bookId);
+      await fetchBookReviews(bookId);
 
     } catch (error) {
       console.error('Error clearing review:', error);
@@ -710,9 +864,11 @@ export const Book = () => {
 
   return (
     <div className="book-page">
-        <button onClick={handleBack} className="b-back-btn">
-          ← Go Back
-        </button>
+        {shouldShowBackButton() && (
+          <button className="b-back-btn" onClick={handleBack}>
+            ← Go Back
+          </button>
+        )}
       <div className="book-container">
         <div className="book-detail-header">
           <div className="book-cover-container">
@@ -880,6 +1036,7 @@ export const Book = () => {
                   key={review.id} 
                   review={review}
                   currentUser={currentUser}
+                  onReviewUpdated={handleReviewSubmitted} // Add this prop
                 />
               ))}
             </div>
@@ -887,7 +1044,7 @@ export const Book = () => {
             <div className="no-reviews">
               <p>
                 No user reviews available yet. Be the first to write a review!
-              </p>
+              </p>  
             </div>
           )}
 
