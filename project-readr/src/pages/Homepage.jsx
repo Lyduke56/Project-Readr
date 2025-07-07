@@ -140,11 +140,15 @@ let cachedRecommendationBasis = null;
 // Replace getSessionRecommendations function
 const getSessionRecommendations = () => {
   try {
-    if (cachedRecommendations && cachedRecommendationBasis) {
-      if (cachedRecommendations.length > 0) {
+    const cached = sessionStorage.getItem('currentRecommendations');
+    const cachedBasis = sessionStorage.getItem('currentRecommendationBasis');
+    
+    if (cached && cachedBasis) {
+      const recommendations = JSON.parse(cached);
+      if (recommendations.length > 0) {
         return {
-          recommendations: cachedRecommendations,
-          basis: cachedRecommendationBasis
+          recommendations: recommendations,
+          basis: cachedBasis
         };
       }
     }
@@ -157,8 +161,8 @@ const getSessionRecommendations = () => {
 // Replace setSessionRecommendations function
 const setSessionRecommendations = (recommendations, basis) => {
   try {
-    cachedRecommendations = recommendations;
-    cachedRecommendationBasis = basis;
+    sessionStorage.setItem('currentRecommendations', JSON.stringify(recommendations));
+    sessionStorage.setItem('currentRecommendationBasis', basis);
   } catch (error) {
     console.error('Error caching recommendations:', error);
   }
@@ -167,8 +171,8 @@ const setSessionRecommendations = (recommendations, basis) => {
 // Replace clearSessionRecommendations function
 const clearSessionRecommendations = () => {
   try {
-    cachedRecommendations = null;
-    cachedRecommendationBasis = null;
+    sessionStorage.removeItem('currentRecommendations');
+    sessionStorage.removeItem('currentRecommendationBasis');
   } catch (error) {
     console.error('Error clearing cached recommendations:', error);
   }
@@ -317,12 +321,12 @@ const clearSessionRecommendations = () => {
       .sort(() => 0.5 - Math.random()); // Final shuffle
     
     // If we have less than 20, fill with additional random searches
-    if (uniqueRecommendations.length < 20) {
-      const additionalBooks = await generateAdditionalBooks(20 - uniqueRecommendations.length, uniqueRecommendations);
+    if (uniqueRecommendations.length < 40) {
+      const additionalBooks = await generateAdditionalBooks(40 - uniqueRecommendations.length, uniqueRecommendations);
       uniqueRecommendations.push(...additionalBooks);
     }
     
-    return uniqueRecommendations.slice(0, 20);
+    return uniqueRecommendations.slice(0, 40);
     
   } catch (error) {
     console.error('Error generating personalized recommendations:', error);
@@ -436,7 +440,7 @@ const clearSessionRecommendations = () => {
           index === self.findIndex(b => b.key === book.key)
         )
         .sort(() => 0.5 - Math.random())
-        .slice(0, 20);
+        .slice(0, 40);
       
       return uniqueRecommendations;
       
@@ -491,13 +495,13 @@ const clearSessionRecommendations = () => {
       }
       
       // Ensure exactly 20 recommendations
-      if (recommendations.length < 20 && readingList.length === 0) {
+      if (recommendations.length < 40 && readingList.length === 0) {
         const additional = await generateRandomRecommendations();
         recommendations = [...recommendations, ...additional]
           .filter((book, index, self) => 
             index === self.findIndex(b => b.key === book.key)
           )
-          .slice(0, 20);
+          .slice(0, 40);
       }
       
       // Cache recommendations for this session
@@ -523,11 +527,23 @@ const clearSessionRecommendations = () => {
   };
 
   // Load data on component mount
-  useEffect(() => {
+useEffect(() => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      await loadRecommendations();
+      // Check for cached recommendations first
+      const cached = getSessionRecommendations();
+      if (cached && cached.recommendations.length > 0) {
+        // Load from cache
+        setRecommendedBooks(cached.recommendations);
+        setRecommendationBasis(cached.basis);
+        setRecommendationsLoading(false);
+        console.log('Loaded cached recommendations');
+      } else {
+        // Generate new recommendations
+        await loadRecommendations();
+      }
+      
       await fetchTopRatedBooks();
       
     } catch (error) {
@@ -538,6 +554,29 @@ const clearSessionRecommendations = () => {
   };
 
   fetchData();
+}, []);
+
+// Clear cache when navigating to other pages (except book description)
+useEffect(() => {
+  const handleBeforeUnload = () => {
+    // This will clear cache when the page is refreshed or closed
+    clearSessionRecommendations();
+  };
+
+  const handlePopState = () => {
+    // Check if we're navigating away from homepage
+    if (window.location.pathname !== '/') {
+      clearSessionRecommendations();
+    }
+  };
+
+  window.addEventListener('beforeunload', handleBeforeUnload);
+  window.addEventListener('popstate', handlePopState);
+
+  return () => {
+    window.removeEventListener('beforeunload', handleBeforeUnload);
+    window.removeEventListener('popstate', handlePopState);
+  };
 }, []);
 
   // Scroll functions for recommendations
@@ -562,7 +601,7 @@ const clearSessionRecommendations = () => {
   // Handle book card click
   const handleRecommendationClick = (book) => {
     localStorage.setItem('selectedBook', JSON.stringify(book));
-    navigate('/Book');
+    navigate('/Book', { state: { preserveRecommendations: true } });
   };
 
   const handleTopRatedBookClick = (book) => {
@@ -583,89 +622,87 @@ const clearSessionRecommendations = () => {
 };
 
 
-  const handleAddToReadingList = async (e, book) => {
-  e.stopPropagation();
-  
-  const isTopRatedBook = book.hasOwnProperty('rank') && book.hasOwnProperty('score');
-  
-  let title, author, bookKey, coverId, publishYear, subjects;
-  
-  if (isTopRatedBook) {
-    title = book.title?.trim() || "No title available";
-    author = book.author || "Unknown author";
-    bookKey = book.id; // top-rated books use 'id' instead of 'key'
-    coverId = book.coverID;
-    publishYear = book.publish_year || null;
-    subjects = book.subjects || null;
-  } else {
-    title = book.title?.trim() || "No title available";
-    author = Array.isArray(book.author_name) && book.author_name.length > 0
-      ? book.author_name.filter(name => name?.trim()).slice(0, 2).join(", ")
-      : "Unknown author";
-    bookKey = book.key;
-    coverId = book.cover_i;
-    publishYear = book.first_publish_year;
-    subjects = book.subject ? book.subject.slice(0, 5).join(", ") : null;
-  }
-
-  let readingList = JSON.parse(localStorage.getItem('readingList') || '[]');
-  
-  const bookToAdd = {
-    title: title,
-    author: author,
-    key: bookKey,
-    cover_id: coverId,
-    publish_year: publishYear,
-    subject: subjects
-  };
-  
-  const exists = readingList.some(item => item.key === bookKey);
-  if (!exists) {
-    readingList.push(bookToAdd);
-    localStorage.setItem('readingList', JSON.stringify(readingList));
+  const handleAddToReadingList = async (e, book, index) => {
+    e.stopPropagation();
     
-    clearSessionRecommendations();
+    // Check if this is a top-rated book (has rank and score properties)
+    const isTopRatedBook = book.hasOwnProperty('rank') && book.hasOwnProperty('score');
     
-    //Closure ni bai
-    const shouldRefresh = window.confirm(
-      'Added to reading list! Would you like to refresh recommendations based on your updated reading list? (This will happen automatically next session)'
-    );
+    let title, author, bookKey, coverId, publishYear, subjects;
     
-    if (shouldRefresh) {
-      loadRecommendations(true); // Force refresh
+    if (isTopRatedBook) {
+      // Handle top-rated books structure
+      title = book.title?.trim() || "No title available";
+      author = book.author || "Unknown author";
+      bookKey = book.id; // top-rated books use 'id' instead of 'key'
+      coverId = book.coverID;
+      publishYear = book.publish_year || null;
+      subjects = book.subjects || null;
+    } else {
+      // Handle regular Open Library books structure
+      title = book.title?.trim() || "No title available";
+      author = Array.isArray(book.author_name) && book.author_name.length > 0
+        ? book.author_name.filter(name => name?.trim()).slice(0, 2).join(", ")
+        : "Unknown author";
+      bookKey = book.key;
+      coverId = book.cover_i;
+      publishYear = book.first_publish_year;
+      subjects = book.subject ? book.subject.slice(0, 5).join(", ") : null;
     }
-  } else {
-    alert('Book already in reading list!');
-  }
 
-  if (user) {
-    try {
-      console.log("Book title: ", title);
-      console.log("Author: ", author);
-      const toBeRead = "TO_BE_READ";
-
-      const bookData = {
-        user_id: user.id,
-        book_key: bookKey,
-        title: title,
-        author: author,
-        cover_id: coverId,
-        publish_year: publishYear,
-        isbn: isTopRatedBook ? null : (book.isbn ? book.isbn[0] : null),
-        subject: subjects,
-        added_at: new Date().toISOString(),
-        status: toBeRead
-      };
+    // Get existing reading list
+    let readingList = JSON.parse(localStorage.getItem('readingList') || '[]');
+    
+    const bookToAdd = {
+      title: title,
+      author: author,
+      key: bookKey,
+      cover_id: coverId,
+      publish_year: publishYear,
+      subject: subjects
+    };
+    
+    // Check if book is already in reading list
+    const exists = readingList.some(item => item.key === bookKey);
+    if (!exists) {
+      readingList.push(bookToAdd);
+      localStorage.setItem('readingList', JSON.stringify(readingList));
       
-      const result = await insertReadingList(bookData, book, user.id);
-      console.log("Successfully added to Supabase reading list");
-
-    } catch (error) {
-      console.error('Error handling add to reading list:', error);
-      alert('An error occurred. Please try again.');
+      // Updated success message to match second script
+      alert('Added to reading list! Your recommendations will be updated next time you visit.');
+    } else {
+      alert('Book already in reading list!');
     }
-  }
-};
+
+    // Insert to Supabase - only if user is logged in
+    if (user) {
+      try {
+        console.log("Book title: ", title);
+        console.log("Author: ", author);
+        const toBeRead = "TO_BE_READ";
+
+        const bookData = {
+          user_id: user.id,
+          book_key: bookKey,
+          title: title,
+          author: author,
+          cover_id: coverId,
+          publish_year: publishYear,
+          isbn: isTopRatedBook ? null : (book.isbn ? book.isbn[0] : null),
+          subject: subjects,
+          added_at: new Date().toISOString(),
+          status: toBeRead
+        };
+        
+        const result = await insertReadingList(bookData, book, user.id);
+        console.log("Successfully added to Supabase reading list");
+
+      } catch (error) {
+        console.error('Error handling add to reading list:', error);
+        alert('An error occurred. Please try again.');
+      }
+    }
+  };
 
   const handleRefreshRecommendations = () => {
     clearSessionRecommendations();
@@ -854,7 +891,7 @@ const clearSessionRecommendations = () => {
               <div className="recommendations-grid" ref={recommendationsRef}>
                 {recommendationsLoading ? (
                   // Show 20 loading skeletons
-                  [...Array(20)].map((_, index) => (
+                  [...Array(40)].map((_, index) => (
                     <RecommendationSkeleton key={index} />
                   ))
                 ) : (
