@@ -5,7 +5,7 @@ const team = [
   {
     name: 'Bartolabac, Axziel Jay',
     role: 'Front End Developer',
-    bio: 'UI/UX enthusiast making sure every click feels just right.',
+    bio: 'UI/UX developer. Mostly survived the CSS wars and Figma handoffs.',
     img: '/Screenshot 2025-07-06 231352.png',
     github: 'https://github.com/AxzielB',
     linkedin: '#',
@@ -13,7 +13,7 @@ const team = [
   {
     name: 'Ybañez, Aaron Lee ',
     role: 'Front End Developer',
-    bio: 'Passionate about intuitive and accessible design.',
+    bio: 'Built clean, responsive interfaces — and only cried a little.',
     img: '/Screenshot 2025-07-06 231416.png',
     github: 'https://github.com/Unholyes',
     linkedin: 'https://www.linkedin.com/in/aaron-lee-ybanez-957723373/',
@@ -21,15 +21,15 @@ const team = [
   {
     name: 'Rosal, Clyde Justine',
     role: 'Project Lead / Back End Developer',
-    bio: 'API wizard and database enthusiast.',
+    bio: 'Team lead. API guy. Not a magician, but close or smth.',
     img: '/Screenshot 2025-07-06 231433.png',
     github: 'https://github.com/Lyduke56',
     linkedin: '#',
   },
   {
     name: 'Longakit, Benideck',
-    role: 'Back End Developer',
-    bio: 'Behind-the-scenes problem solver making the complex feel effortless.',
+    role: 'Back End Developer / Database Manager',
+    bio: 'Back end built like a tank. Also the database guy.',
     img: '/Screenshot 2025-07-06 231446.png',
     github: 'https://github.com/BDeckk',
     linkedin: '#',
