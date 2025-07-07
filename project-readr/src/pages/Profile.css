@@ -910,28 +910,22 @@ body {
   gap: 20px;
 }
 
-font-size: 15px;
+.friends{
+  font-size: 15px;
   display: flex;
   align-items: center;
- 
-  
   padding-top: 3px;
   padding-bottom:3px;
   background-color: transparent;
   color: white;
+  gap: 3px;
   border-radius: 4px;
   min-width: 120px;
   border: none;
 }
 
 .friends-text{
-  padding-left: 10px;
-
-}
-
-
-.friends {
-  font-size: 25px;
+  padding-left: 15px;
 }
 
 /* Friend Profile Modal Styles */

@@ -707,6 +707,7 @@ const FriendsListSection = () => {
               {friend.bio && (
                 <p className="friend-bio" title={friend.bio}>
                   {friend.bio.length > 20 ? `${friend.bio.substring(0, 20)}...` : friend.bio}
+
                 </p>
               )}
               <p className="friendship-date">
