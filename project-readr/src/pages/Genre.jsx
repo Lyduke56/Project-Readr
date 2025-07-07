@@ -86,8 +86,14 @@ const genresList = [
         autoSearch: true,
         displaySearchTerm: genre,
         filterBy: 'Subject'
-      }
+      },
+      replace: false // Set to true if you don't want this navigation in history
     });
+    
+    // Reset scroll position after navigation
+    setTimeout(() => {
+      window.scrollTo(0, 0);
+    }, 0);
   };
 
   return (
