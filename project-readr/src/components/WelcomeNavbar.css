@@ -53,3 +53,24 @@ body{
     padding: 0;
     font-family: 'Poppins', sans-serif;
 }
+
+/* Specific styles for iPhone 12 Pro and similar devices (viewport width around 390px) */
+@media (max-width: 414px) and (min-height: 800px) {
+    .welcome-navbar {
+        height: 7vh;
+        padding: 0.01rem 1rem;
+    }
+    .nav-left {
+        gap: 0.3rem;
+        font-size: 0.9em;
+    }
+    .nav-left h1 {
+        font-size: 1.2em;
+    }
+    .nav-right {
+        gap: 1rem;
+    }
+    .wnavbar-button {
+        font-size: 0.8rem;
+    }
+}

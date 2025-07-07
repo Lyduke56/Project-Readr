@@ -306,3 +306,54 @@
         display: none;
     }
 }
+
+/* Specific styles for iPhone 12 Pro and similar devices (viewport width around 390px) */
+@media (max-width: 414px) and (min-height: 800px) {
+    .signin-container {
+        height: auto;
+        min-height: 100vh;
+    }
+    .signin-content {
+        padding: 15px 0;
+        height: auto;
+        min-height: 100vh;
+    }
+    .signin-form-container {
+        width: 95vw;
+        max-width: 390px;
+        margin: 0 auto;
+        padding: 20px 10px;
+        height: auto;
+        min-height: 600px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+    .signin-title {
+        font-size: 22px;
+        margin-top: 15px;
+    }
+    .input-group {
+        margin: 0 0 20px 0;
+    }
+    .input-group label {
+        font-size: 14px;
+    }
+    .input-group input {
+        font-size: 14px;
+        height: 34px;
+        padding: 0 12px;
+    }
+    .signin-button {
+        font-size: 14px;
+        height: 34px;
+    }
+    .below-signin {
+        font-size: 13px;
+        margin-top: 10px;
+    }
+    .signin-error-message {
+        font-size: 13px;
+        margin: 15px 0 0 0;
+    }
+}

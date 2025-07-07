@@ -977,38 +977,40 @@ const handleFeelingLucky = () => {
           <h1 className="pages-title">Meet your next favorite read!</h1>
 
           <div className="search-controls">
-            <select 
-              className="filter-dropdown"
-              value={filterBy}
-              onChange={(e) => setFilterBy(e.target.value)}
-            >
-              <option value="All">All</option>
-              <option value="Title">Title</option>
-              <option value="Author">Author</option>
-              <option value="Subject">Subject</option>
-            </select>
-            
-            <input
-              type="text"
-              className="search-bar"
-              placeholder="Search books, subject, or author..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              onKeyPress={handleKeyPress}
-            />
-            
-            <button 
-              className="search-button"
-              onClick={handleSearch}
-              disabled={isLoading}
-            >
-              {isLoading ? 'Searching...' : 'Search'}
-            </button>
+            <div className="search-row">
+              <select 
+                className="filter-dropdown"
+                value={filterBy}
+                onChange={(e) => setFilterBy(e.target.value)}
+              >
+                <option value="All">All</option>
+                <option value="Title">Title</option>
+                <option value="Author">Author</option>
+                <option value="Subject">Subject</option>
+              </select>
+              
+              <input
+                type="text"
+                className="search-bar"
+                placeholder="Search books, subject, or author..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                onKeyPress={handleKeyPress}
+              />
+              
+              <button 
+                className="search-button"
+                onClick={handleSearch}
+                disabled={isLoading}
+              >
+                {isLoading ? 'Searching...' : 'Search'}
+              </button>
+            </div>
 
             <button
-            className="feeling-lucky-button"
-            onClick={handleFeelingLucky}
-            disabled={isLoading}
+              className="feeling-lucky-button"
+              onClick={handleFeelingLucky}
+              disabled={isLoading}
             >
               {isLoading ? 'Lucky..!' : 'Feeling Lucky..?'}
             </button>
