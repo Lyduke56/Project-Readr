@@ -365,6 +365,16 @@
   margin-top: auto;
 }
 
+.add-to-list-btn.in-reading-list {
+  background-color: #28a745;
+  color: white;
+  opacity: 0.7;
+}
+
+.add-to-list-btn.in-reading-list:hover {
+  background-color: #28a745;
+}
+
 .add-to-list-btn {
   background-color: #6b4b3e;
   color: white;
