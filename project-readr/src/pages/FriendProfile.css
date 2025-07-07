@@ -1,0 +1,591 @@
+/* FriendProfile.css */
+
+.friend-profile-inmodal {
+  max-width: 800px;
+  max-height: 90vh;
+  background: #FFF1E3;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+  padding: 0;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  color: #333;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+}
+
+.profile-header-inmodal {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 32px 24px 32px 24px;
+  background: linear-gradient(135deg, #6b4b3e 0%, #a78f84 40%, #d7c9c1 80%, #f5f1ee 100%);
+  color: white;
+}
+
+.profile-avatar-inmodal {
+  flex-shrink: 0;
+}
+
+.avatar-image-inmodal {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid rgba(255,255,255,0.3);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+}
+
+.avatar-placeholder-inmodal {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36px;
+  font-weight: bold;
+  color: white;
+  border: 3px solid rgba(255,255,255,0.3);
+  backdrop-filter: blur(8px);
+}
+
+.profile-names-inmodal {
+  flex: 1;
+  min-width: 0;
+}
+
+.in-line-display-inmodal {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.display-name-inmodal {
+  font-size: 26px;
+  font-weight: 700;
+  margin: 0;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.15);
+  word-wrap: break-word;
+}
+
+.full-name-inmodal {
+  font-size: 16px;
+  font-weight: 400;
+  margin: 6px 0 0 0;
+  opacity: 0.9;
+  word-wrap: break-word;
+}
+
+.profile-status-inmodal {
+  margin-top: 6px;
+}
+
+.status-badge.private-inmodal {
+  background: rgba(255,193,7,0.2);
+  border: 1px solid rgba(255,193,7,0.3);
+  border-radius: 20px;
+  padding: 4px 10px;
+  font-size: 13px;
+}
+
+.status-badge.public-inmodal {
+  background: #8B4513;
+  border: 1px solid #c49385;
+  border-radius: 20px;
+  padding: 4px 10px;
+  font-size: 13px;
+}
+
+.profile-actions-inmodal {
+  margin-top: 10px;
+}
+
+.unfriend-btn {
+  background: #dc3545;
+  color: white;
+  border: none;
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.unfriend-btn:hover {
+  background: #c82333;
+}
+
+.friends-count-inmodal {
+  margin-top: 8px;
+  color: #f5f1ee;
+  font-size: 14px;
+}
+
+.profile-content-inmodal {
+  padding: 24px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  max-height: calc(90vh - 120px);
+}
+
+.profile-section-inmodal {
+  background: white;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e9ecef;
+  overflow: hidden;
+  margin-bottom: 18px;
+}
+
+.profile-section-inmodal h3 {
+  margin: 0 0 20px 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: #495057;
+  border-bottom: 2px solid #e9ecef;
+  padding-bottom: 8px;
+}
+
+.bio-text-inmodal {
+  font-size: 15px;
+  color: #555;
+  margin: 0;
+  word-wrap: break-word;
+}
+
+.profile-details-inmodal {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.detail-grid-inmodal {
+  display: grid;
+  gap: 10px;
+}
+
+.detail-item-inmodal {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 7px 0;
+  border-bottom: 1px solid #ececec;
+}
+.detail-item-inmodal:last-child {
+  border-bottom: none;
+}
+.detail-label-inmodal {
+  font-weight: 600;
+  color: #6b4b3e;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+.detail-value-inmodal {
+  color: #666;
+  font-size: 14px;
+  text-align: right;
+  word-wrap: break-word;
+  min-width: 0;
+}
+.websites-inmodal {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.websites-inmodal a:hover {
+  transform: scale(1.1);
+  transition: transform 0.2s;
+}
+
+/* Rated Books Section */
+.friend-rated-books-grid-inmodal {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+  overflow-x: hidden;
+  max-width: 100%;
+}
+.rated-book-card-inmodal {
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 14px;
+  border: 1px solid #e9ecef;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  max-width: 100%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.rated-book-card-inmodal:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+}
+.book-cover-inmodal {
+  width: 60px;
+  height: 90px;
+  margin: 0 auto 10px;
+  cursor: pointer;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.book-cover-image-inmodal {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.book-cover-placeholder-inmodal {
+  width: 100%;
+  height: 100%;
+  background: #e9ecef;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: #6c757d;
+  border-radius: 8px;
+}
+.book-info-inmodal {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  min-height: 0;
+}
+.book-title-inmodal {
+  font-size: 14px;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 6px 0;
+  line-height: 1.3;
+  word-wrap: break-word;
+  height: 2.2em;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.book-author-inmodal {
+  font-size: 0.75rem !important;
+  color: #666;
+  margin: 0 0 6px 0;
+  font-style: italic;
+  word-wrap: break-word;
+  height: 2em;
+  line-height: 1.2;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.user-rating-inmodal {
+  margin: 8px 0;
+  padding: 8px;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+}
+.rating-display-inmodal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.rating-text-inmodal {
+  font-size: 12px;
+  color: #666;
+}
+.rating-date-inmodal {
+  font-size: 11px;
+  color: #888;
+  margin: 0 0 8px 0;
+}
+.book-review-inmodal {
+  font-size: 11px;
+  color: #666;
+  font-style: italic;
+  margin: 0;
+  padding: 6px;
+  background: white;
+  border-radius: 6px;
+  border-left: 2px solid #007bff;
+  word-wrap: break-word;
+}
+
+.carousel-loading-inmodal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 20px;
+  text-align: center;
+}
+.loading-spinner-inmodal {
+  width: 24px;
+  height: 24px;
+  border: 2px solid transparent;
+  border-bottom: 2px solid #3e5c45;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 8px;
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+.empty-rated-books-inmodal {
+  text-align: center;
+  padding: 20px 0;
+  color: #666;
+}
+
+.profile-stats-inmodal {
+  margin-top: 10px;
+}
+.stat-card-inmodal {
+  background: #fff;
+  padding: 16px;
+  border-radius: 10px;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.04);
+  border: 1px solid #e9ecef;
+  text-align: center;
+}
+.stat-card-inmodal h4 {
+  margin: 0 0 8px 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: #6b4b3e;
+}
+.stat-grid-inmodal {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-top: 8px;
+}
+.stat-item-inmodal {
+  text-align: center;
+}
+.stat-value-inmodal {
+  display: block;
+  font-size: 18px;
+  font-weight: 700;
+  color: #333;
+  margin-bottom: 2px;
+}
+.stat-label-inmodal {
+  font-size: 11px;
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .friend-profile-inmodal {
+    max-width: 98vw;
+    max-height: 95vh;
+  }
+  .profile-header-inmodal {
+    flex-direction: row;
+    gap: 16px;
+    padding: 20px 16px 12px 16px;
+  }
+  .avatar-image-inmodal, .avatar-placeholder-inmodal {
+    width: 70px;
+    height: 70px;
+  }
+  .display-name-inmodal {
+    font-size: 20px;
+  }
+  .full-name-inmodal {
+    font-size: 14px;
+  }
+  .profile-content-inmodal {
+    padding: 16px;
+  }
+  .profile-section-inmodal {
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+  .profile-section-inmodal h3 {
+    font-size: 18px;
+  }
+  .friend-rated-books-grid-inmodal {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .profile-details-inmodal {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  .stat-grid-inmodal {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+}
+
+@media (max-width: 600px) {
+  .friend-profile-inmodal {
+    max-width: 100vw;
+    border-radius: 0;
+  }
+  .profile-header-inmodal {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 12px;
+    padding: 16px;
+  }
+  .avatar-image-inmodal, .avatar-placeholder-inmodal {
+    width: 60px;
+    height: 60px;
+  }
+  .display-name-inmodal {
+    font-size: 18px;
+  }
+  .full-name-inmodal {
+    font-size: 13px;
+  }
+  .in-line-display-inmodal {
+    flex-direction: column;
+    gap: 8px;
+  }
+  .profile-actions-inmodal {
+    margin-top: 8px;
+    display: flex;
+    justify-content: center;
+  }
+  .unfriend-btn {
+    padding: 6px 14px;
+    font-size: 13px;
+  }
+  .profile-content-inmodal {
+    padding: 12px;
+    max-height: calc(95vh - 100px);
+  }
+  .profile-section-inmodal {
+    padding: 12px;
+  }
+  .profile-section-inmodal h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+  }
+  .bio-text-inmodal {
+    font-size: 14px;
+  }
+  .detail-item-inmodal {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  .detail-label-inmodal, .detail-value-inmodal {
+    text-align: left;
+    font-size: 12px;
+  }
+  .rated-book-card-inmodal {
+    padding: 10px;
+  }
+  .book-cover-inmodal {
+    width: 50px;
+    height: 75px;
+  }
+  .book-title-inmodal {
+    font-size: 13px;
+    height: 1.8em;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+  }
+  .book-author-inmodal {
+    font-size: 11px;
+    height: 1.5em;
+  }
+  .user-rating-inmodal {
+    padding: 6px;
+    margin: 6px 0;
+  }
+  .rating-date-inmodal {
+    font-size: 10px;
+  }
+  .stat-card-inmodal {
+    padding: 12px;
+  }
+  .stat-value-inmodal {
+    font-size: 16px;
+  }
+  .stat-label-inmodal {
+    font-size: 10px;
+  }
+}
+
+@media (max-width: 400px) {
+  .friend-profile-inmodal {
+    font-size: 14px;
+  }
+  .profile-header-inmodal {
+    padding: 12px;
+  }
+  .avatar-image-inmodal, .avatar-placeholder-inmodal {
+    width: 50px;
+    height: 50px;
+    font-size: 24px;
+  }
+  .display-name-inmodal {
+    font-size: 16px;
+  }
+  .full-name-inmodal {
+    font-size: 12px;
+  }
+  .profile-content-inmodal {
+    padding: 10px;
+  }
+  .profile-section-inmodal {
+    padding: 10px;
+  }
+  .profile-section-inmodal h3 {
+    font-size: 14px;
+    margin-bottom: 10px;
+  }
+  .bio-text-inmodal {
+    font-size: 13px;
+  }
+  .rated-book-card-inmodal {
+    padding: 8px;
+  }
+  .book-cover-inmodal {
+    width: 45px;
+    height: 67px;
+  }
+  .book-title-inmodal {
+    font-size: 12px;
+  }
+  .book-author-inmodal {
+    font-size: 10px;
+  }
+  .user-rating-inmodal {
+    padding: 5px;
+  }
+  .rating-text-inmodal {
+    font-size: 11px;
+  }
+  .rating-date-inmodal {
+    font-size: 9px;
+  }
+  .book-review-inmodal {
+    font-size: 10px;
+    padding: 5px;
+  }
+}
