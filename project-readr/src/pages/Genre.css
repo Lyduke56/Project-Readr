@@ -12,7 +12,8 @@
   min-height: 100vh;
   background-color: #FFF1E3;
   font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
-  padding: 20px 0;
+  padding-top: 20px;
+  padding-bottom: 50px;
 }
 
 .genre-container {

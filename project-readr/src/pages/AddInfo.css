@@ -2,7 +2,7 @@
   max-width: 700px;
   margin: 0 auto;
   padding: 2rem 1.5rem;
-  background: white;
+  background: #FFF1E3;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -23,7 +23,7 @@
 }
 
 .highlight {
-  background: linear-gradient(45deg, #ffd700, #ffed4e);
+  background: #6b4b3e;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -31,6 +31,7 @@
 }
 
 .form-subtitle {
+  padding-top: 1rem;
   color: #6b7280;
   font-size: 1.1rem;
   font-weight: 300;
@@ -54,7 +55,7 @@
   width: 200px;
   height: 200px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #0f2027, #2c5364);
+  background:  #8B4513;
   border: 3px solid;
   display: flex;
   align-items: center;
@@ -69,9 +70,9 @@
 }
 
 .avatar-circle:hover {
-  transform: scale(1.05);
-  box-shadow: 0 10px 30px rgba(255, 215, 0, 0.3);
-  border-color: #ffed4e;
+  background-color: #A0522D;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(139, 69, 19, 0.3);
 }
 
 .avatar-circle img {
@@ -175,7 +176,7 @@
 }
 
 .submit-button {
-  background: linear-gradient(135deg, #0f2027 0%, #2c5364 100%);
+  background-color: #8B4513;
   color: white;
   padding: 1rem 2rem;
   border-radius: 12px;
@@ -192,9 +193,9 @@
 }
 
 .submit-button:hover:not(:disabled) {
+  background-color: #A0522D;
   transform: translateY(-2px);
-  box-shadow: 0 10px 25px rgba(255, 215, 0, 0.3);
-  background: linear-gradient(135deg, #203a43 0%, #2c5364 100%);
+  box-shadow: 0 4px 12px rgba(139, 69, 19, 0.3);
 }
 
 .submit-button:active {
