@@ -17,6 +17,7 @@ export const Home = () => {
   const [classicBooks, setClassicBooks] = useState([]);
   const [booksWeLove, setBooksWeLove] = useState([]);
   const [sectionsLoading, setSectionsLoading] = useState(true);
+  const [searchDetails, setSearchDetails] = useState({ term: '', filter: '' });
   
   const navigate = useNavigate();
   const location = useLocation();
@@ -47,7 +48,7 @@ export const Home = () => {
       
       // Set all the necessary states
       setSearchTerm(displayTerm);
-      setFilterBy('All');
+      setFilterBy(location.state?.filterBy || 'All');
       setCurrentPage(1);
       setSearchResults([]);
       setError('');
@@ -348,12 +349,14 @@ export const Home = () => {
           case 'Author':
             searchUrl = `https://openlibrary.org/search.json?author=${encodedTitle}&limit=${resultsPerPage}&offset=${offset}`;
             break;
+          case 'Subject':
+            searchUrl = `https://openlibrary.org/search.json?subject=${encodedTitle}&limit=${resultsPerPage}&offset=${offset}`;
+            break;
           case 'All':
           default:
             searchUrl = `https://openlibrary.org/search.json?q=${encodedTitle}&limit=${resultsPerPage}&offset=${offset}`;
             break;
         }
-        console.log('Using regular search URL:', searchUrl); // Debug log
       }
 
       const response = await fetch(searchUrl);
@@ -373,6 +376,7 @@ export const Home = () => {
         setSearchResults(prev => [...prev, ...(data.docs || [])]);
       }
       
+      setSearchDetails({ term: searchQuery, filter: filterBy });
       setTotalResults(data.numFound || 0);
       setCurrentPage(page);
 
@@ -601,8 +605,6 @@ export const Home = () => {
     </div>
   );
 
-  // Add this function to your Home component
-
 const handleFeelingLucky = () => {
   const luckyKeywords = [
   // Fiction genres
@@ -724,15 +726,6 @@ const handleFeelingLucky = () => {
         <div className="error-message">
           <h3>Error</h3>
           <p>{error}</p>
-        </div>
-      );
-    }
-
-    if (searchResults.length === 0 && hasSearched) {
-      return (
-        <div className="no-results">
-          <h3>No results found</h3>
-          <p>Try a different search term or check your spelling.</p>
         </div>
       );
     }
@@ -873,12 +866,13 @@ const handleFeelingLucky = () => {
               <option value="All">All</option>
               <option value="Title">Title</option>
               <option value="Author">Author</option>
+              <option value="Subject">Subject</option>
             </select>
             
             <input
               type="text"
               className="search-bar"
-              placeholder="Search for books by title, or author..."
+              placeholder="Search books, subject, or author..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               onKeyPress={handleKeyPress}
@@ -1017,11 +1011,33 @@ const handleFeelingLucky = () => {
       )}
 
       {/* Show search results when search has been performed */}
-      {hasSearched && (
+      {hasSearched && !isLoading && (
         <div className= "rcontainer">
-          <div className="books-grid-home">
-            {renderBookCards()}
-          </div>
+          {(searchResults.length > 0 || totalResults > 0) ? (
+            <>
+              <div className="search-details">
+                <h2 className="search-details-title">
+                  Showing Results for "{searchDetails.term}" ({searchDetails.filter})
+                </h2>
+                <p className="search-details-info">
+                  Displaying {searchResults.length} results out of {totalResults.toLocaleString()}.
+                </p>
+              </div>
+              
+              <div className="books-grid-home">
+                {renderBookCards()}
+              </div>
+            </>
+          ) : (
+            <div className="search-details">
+              <h2 className="search-details-title">
+                No results found for "{searchDetails.term}" ({searchDetails.filter})
+              </h2>
+              <p className="search-details-info">
+                Try a different search term or check your spelling.
+              </p>
+            </div>
+          )}
         </div>
       )}
 
