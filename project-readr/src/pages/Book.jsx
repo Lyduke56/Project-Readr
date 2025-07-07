@@ -706,7 +706,7 @@ export const Book = () => {
 
   return (
     <div className="book-page">
-        <button onClick={handleBack} className="back-btn">
+        <button onClick={handleBack} className="b-back-btn">
           ← Go Back
         </button>
       <div className="book-container">
