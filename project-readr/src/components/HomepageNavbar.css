@@ -7,12 +7,12 @@
     gap: 1rem;
 }
 
-.icon-button {
-   position: relative;
+.hpn-icon-button {
+    position: relative;
     background: none;
     border: none;
     font-size: 1.5rem;
-    color: #666;
+    color: #ffd6af;
     cursor: pointer;
     padding: 0.5rem;
     border-radius: 50%;
@@ -24,15 +24,57 @@
     height: 44px;
 }
 
-.icon-button :hover {
-    background-color: #2a2a2a;
-    color: #fff;
+.hpn-icon-button:hover {
+    background-color: #f0f0f0;
+    color: #333;
+}
+
+/* Make the back button bigger */
+.hpn-back-button {
+    width: 54px;
+    height: 54px;
+    font-size: 1.8rem;
 }
 
 .icon {
     width: 24px;
     height: 24px;
-    object-fit: contain;
+    color: #ffd6af;
+}
+
+.hpn-back-icon {
+    width: 28px;
+    height: 28px;
+    font-size: 28px;
+    color: #ffd6af;
+    transition: color 0.3s ease;
+}
+
+.hpn-home-icon {
+    width: 24px;
+    height: 24px;
+    color: #ffd6af;
+    transition: color 0.3s ease;
+}
+
+.hpn-add-icon {
+    width: 24px;
+    height: 24px;
+    color: #ffd6af;
+    transition: color 0.3s ease;
+}
+
+/* Fix hover states - target the icon inside the button */
+.hpn-icon-button:hover .hpn-back-icon {
+    color: #333;
+}
+
+.hpn-icon-button:hover .hpn-home-icon {
+    color: #333;
+}
+
+.hpn-icon-button:hover .hpn-add-icon {
+    color: #333;
 }
 
 .mask-group {
@@ -79,10 +121,15 @@
 
 .dropdown-arrow {
     transition: transform 0.2s ease;
+    color: #ffd6af;
 }
 
 .dropdown-arrow.rotated {
     transform: rotate(180deg);
+}
+
+.overlap-group-2:hover .dropdown-arrow {
+    color: #ffd6af;
 }
 
 .arrow-drop-down {
