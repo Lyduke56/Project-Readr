@@ -324,6 +324,7 @@ export const Book = () => {
   const [reviews, setReviews] = useState([]);
   const [reviewsLoading, setReviewsLoading] = useState(false);
   const [userHasReview, setUserHasReview] = useState(false);
+  
 
   const { session } = UserAuth();
   const user = session?.user;
@@ -334,8 +335,10 @@ export const Book = () => {
   };
 
   useEffect(() => {
-  window.scrollTo(0, 0);
-}, []);
+    window.scrollTo(0, 0);
+  }, []);
+
+  
 
   useEffect(() => {
         const getCurrentUser = async () => {
@@ -429,6 +432,69 @@ export const Book = () => {
 
     fetchBookData();
   }, []);
+
+  useEffect(() => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const hideFromUrl = urlParams.get('hideBack');
+  
+  // Clean up URL parameter if it exists
+  if (hideFromUrl === 'true') {
+    // Remove the parameter from URL without refreshing the page
+    const newUrl = window.location.pathname;
+    window.history.replaceState({}, document.title, newUrl);
+  }
+  
+  // Clean up localStorage flag
+  const hideBackData = localStorage.getItem('hideBackButton');
+  if (hideBackData) {
+    try {
+      const parsedData = JSON.parse(hideBackData);
+      if (parsedData.value === true) {
+        // Clean up localStorage after using it
+        localStorage.removeItem('hideBackButton');
+      }
+    } catch (error) {
+      // Clean up malformed data
+      localStorage.removeItem('hideBackButton');
+    }
+  }
+}, []);
+
+const shouldShowBackButton = () => {
+  // Check URL parameter first
+  const urlParams = new URLSearchParams(window.location.search);
+  const hideFromUrl = urlParams.get('hideBack');
+  
+  if (hideFromUrl === 'true') {
+    return false;
+  }
+  
+  // Check localStorage with timestamp validation
+  const hideBackData = localStorage.getItem('hideBackButton');
+  
+  if (hideBackData) {
+    try {
+      const parsedData = JSON.parse(hideBackData);
+      const currentTime = Date.now();
+      
+      // Check if the flag is still valid (not expired)
+      if (parsedData.value === true && 
+          parsedData.timestamp && 
+          parsedData.expires && 
+          currentTime < parsedData.expires) {
+        return false;
+      } else {
+        // Clean up expired flag
+        localStorage.removeItem('hideBackButton');
+      }
+    } catch (error) {
+      // If parsing fails, assume it's the old format and clean it up
+      localStorage.removeItem('hideBackButton');
+    }
+  }
+  
+  return true;
+};
 
   const fetchBookRatings = async (bookId) => {
     if (!bookId) return;
@@ -710,9 +776,11 @@ export const Book = () => {
 
   return (
     <div className="book-page">
-        <button onClick={handleBack} className="b-back-btn">
-          ← Go Back
-        </button>
+        {shouldShowBackButton() && (
+          <button className="b-back-btn" onClick={handleBack}>
+            ← Go Back
+          </button>
+        )}
       <div className="book-container">
         <div className="book-detail-header">
           <div className="book-cover-container">

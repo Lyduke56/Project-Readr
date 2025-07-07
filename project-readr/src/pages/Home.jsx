@@ -9,6 +9,7 @@ export const Home = () => {
   const [filterBy, setFilterBy] = useState('All');
   const [searchResults, setSearchResults] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [readingListBooks, setReadingListBooks] = useState(new Set());
   const [totalResults, setTotalResults] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
@@ -47,14 +48,21 @@ export const Home = () => {
   }, []);
 
   useEffect(() => {
-  if (!hasSearched && trendingBooks.length > 0 && classicBooks.length > 0 && booksWeLove.length > 0) {
-    setPreviousSections({
-      trending: trendingBooks,
-      classics: classicBooks,
-      booksWeLove: booksWeLove
-    });
-  }
-  }, [trendingBooks, classicBooks, booksWeLove, hasSearched]);
+    if (!hasSearched && trendingBooks.length > 0 && classicBooks.length > 0 && booksWeLove.length > 0) {
+      setPreviousSections({
+        trending: trendingBooks,
+        classics: classicBooks,
+        booksWeLove: booksWeLove
+      });
+    }
+    }, [trendingBooks, classicBooks, booksWeLove, hasSearched]);
+
+    useEffect(() => {
+    // Load existing reading list from localStorage
+    const existingList = JSON.parse(localStorage.getItem('readingList') || '[]');
+    const bookKeys = new Set(existingList.map(book => book.key));
+    setReadingListBooks(bookKeys);
+  }, []);
 
 useEffect(() => {
   // Handle restoration from book page
@@ -124,6 +132,45 @@ useEffect(() => {
 }, [location.state]);
 
 useEffect(() => {
+  // Listen for reading list changes from other components
+  const handleReadingListChange = (event) => {
+    const updatedList = JSON.parse(localStorage.getItem('readingList') || '[]');
+    const bookKeys = new Set(updatedList.map(book => book.key));
+    setReadingListBooks(bookKeys);
+  };
+
+  // Handle custom event with specific book removal
+  const handleCustomReadingListEvent = (event) => {
+    if (event.detail && event.detail.action === 'removed' && event.detail.bookKey) {
+      // Remove the specific book from the reading list state
+      setReadingListBooks(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(event.detail.bookKey);
+        return newSet;
+      });
+    } else {
+      // For other actions, refresh the entire list
+      handleReadingListChange();
+    }
+  };
+
+  // Listen for custom event
+  window.addEventListener('readingListUpdated', handleCustomReadingListEvent);
+  
+  // Listen for storage changes (if modified in another tab)
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'readingList') {
+      handleReadingListChange();
+    }
+  });
+
+  return () => {
+    window.removeEventListener('readingListUpdated', handleCustomReadingListEvent);
+    window.removeEventListener('storage', handleReadingListChange);
+  };
+}, []);
+
+useEffect(() => {
   // Restore scroll position after loading more results
   if (isLoadingMore === false && scrollPosition > 0 && currentPage > 1) {
     console.log('Restoring scroll position to:', scrollPosition);
@@ -139,6 +186,58 @@ useEffect(() => {
     return () => clearTimeout(timer);
   }
 }, [isLoadingMore, scrollPosition, currentPage]);
+
+// Function to handle reading list button click
+const handleReadingListButtonClick = (e, book, index) => {
+  e.stopPropagation();
+  
+  if (readingListBooks.has(book.key)) {
+    // If book is already in reading list, redirect to ReadingList page
+    window.open('/ReadingList', '_blank');
+  } else {
+    // If book is not in reading list, add it
+    handleAddToReadingList(e, book, index);
+  }
+};
+
+useEffect(() => {
+  // Listen for reading list changes from other components
+  const handleReadingListChange = (event) => {
+    const updatedList = JSON.parse(localStorage.getItem('readingList') || '[]');
+    const bookKeys = new Set(updatedList.map(book => book.key));
+    setReadingListBooks(bookKeys);
+  };
+
+  // Handle custom event with specific book removal
+  const handleCustomReadingListEvent = (event) => {
+    if (event.detail && event.detail.action === 'removed' && event.detail.bookKey) {
+      // Remove the specific book from the reading list state
+      setReadingListBooks(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(event.detail.bookKey);
+        return newSet;
+      });
+    } else {
+      // For other actions, refresh the entire list
+      handleReadingListChange();
+    }
+  };
+
+  // Listen for custom event
+  window.addEventListener('readingListUpdated', handleCustomReadingListEvent);
+  
+  // Listen for storage changes (if modified in another tab)
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'readingList') {
+      handleReadingListChange();
+    }
+  });
+
+  return () => {
+    window.removeEventListener('readingListUpdated', handleCustomReadingListEvent);
+    window.removeEventListener('storage', handleReadingListChange);
+  };
+}, []);
 
   // Function to load all sections data
   const loadSectionsData = async () => {
@@ -590,64 +689,92 @@ const handleCardClick = (book) => {
     }
   };
 
-  // Handle add to reading list
-  const handleAddToReadingList = async (e, book, index) => {
-    e.stopPropagation();
-    
-    const title = book.title?.trim() || "No title available";
-    const author = Array.isArray(book.author_name) && book.author_name.length > 0
-      ? book.author_name.filter(name => name?.trim()).slice(0, 2).join(", ")
-      : "Unknown author";
+const handleAddToReadingList = async (e, book, index) => {
+  e.stopPropagation();
+  
+  const title = book.title?.trim() || "No title available";
+  const author = Array.isArray(book.author_name) && book.author_name.length > 0
+    ? book.author_name.filter(name => name?.trim()).slice(0, 2).join(", ")
+    : "Unknown author";
 
-    // Get existing reading list
-    let readingList = JSON.parse(localStorage.getItem('readingList') || '[]');
-    const bookToAdd = {
+  // Get existing reading list
+  let readingList = JSON.parse(localStorage.getItem('readingList') || '[]');
+  const bookToAdd = {
+    title: title,
+    author: author,
+    key: book.key,
+    cover_id: book.cover_i,
+    publish_year: book.first_publish_year
+  };
+  
+  // Check if book is already in reading list
+  const exists = readingList.some(item => item.key === book.key);
+  if (!exists) {
+    readingList.push(bookToAdd);
+    localStorage.setItem('readingList', JSON.stringify(readingList));
+    
+    // Update the state to reflect the change
+    setReadingListBooks(prev => new Set([...prev, book.key]));
+  }
+
+  // Insert to Supabase
+  try {
+    console.log("Book title: ", title);
+    console.log("Author: ", author);
+    const toBeRead = "TO_BE_READ";
+
+    const bookData = {
+      user_id: user.id,
+      book_key: book.key,
       title: title,
       author: author,
-      key: book.key,
       cover_id: book.cover_i,
-      publish_year: book.first_publish_year
+      publish_year: book.first_publish_year,
+      isbn: book.isbn ? book.isbn[0] : null,
+      subject: book.subject ? book.subject.slice(0, 5).join(", ") : null,
+      added_at: new Date().toISOString(),
+      status: toBeRead
     };
     
-    // Check if book is already in reading list
-    const exists = readingList.some(item => item.key === book.key);
-    if (!exists) {
-      readingList.push(bookToAdd);
-      localStorage.setItem('readingList', JSON.stringify(readingList));
-      
-      // Show success feedback (you could use a toast library here)
-      alert('Added to reading list!');
-    } else {
-      alert('Book already in reading list!');
-    }
-
-      // Insert to Supabase - uwu duje
-     try {
-
-          console.log("Book title: ", title);
-          console.log("Author: ", author);
-          const toBeRead = "TO_BE_READ";
-
-          const bookData = {
-          user_id: user.id,
-          book_key: book.key,
-          title: title,
-          author: author,
-          cover_id: book.cover_i,
-          publish_year: book.first_publish_year,
-          isbn: book.isbn ? book.isbn[0] : null,
-          subject: book.subject ? book.subject.slice(0, 5).join(", ") : null,
-          added_at: new Date().toISOString(),
-          status: toBeRead
-         };
-         
     const result = await insertReadingList(bookData, book, user.id);
-
-     }catch (error) {
+  } catch (error) {
     console.error('Error handling add to reading list:', error);
-    alert('An error occurred. Please try again.');
-     }
-  };
+    // If there's an error, revert the local state
+    setReadingListBooks(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(book.key);
+      return newSet;
+    });
+  }
+};
+
+const handleRemoveFromReadingList = async (bookKey) => {
+  try {
+    // Remove from localStorage
+    let readingList = JSON.parse(localStorage.getItem('readingList') || '[]');
+    readingList = readingList.filter(item => item.key !== bookKey);
+    localStorage.setItem('readingList', JSON.stringify(readingList));
+    
+    // Update the state to reflect the change
+    setReadingListBooks(prev => {
+      const newSet = new Set(prev);
+      newSet.delete(bookKey);
+      return newSet;
+    });
+    
+    // If you have a function to remove from Supabase, call it here
+    // await removeFromSupabase(bookKey, user.id);
+    
+  } catch (error) {
+    console.error('Error removing from reading list:', error);
+  }
+};
+
+const refreshReadingListState = () => {
+  const updatedList = JSON.parse(localStorage.getItem('readingList') || '[]');
+  const bookKeys = new Set(updatedList.map(book => book.key));
+  setReadingListBooks(bookKeys);
+};
 
   // Load more results (pagination)
   const loadMoreResults = () => {
@@ -664,65 +791,97 @@ const handleCardClick = (book) => {
       fetchDataSearch(nextPage);
     }
   };
+  
   // Recommendation Card Component
-  const RecommendationCard = ({ book, sections}) => {
-    const title = book.title?.trim() || "No title available";
-    const author = Array.isArray(book.author_name) && book.author_name.length > 0
-      ? book.author_name.filter(name => name?.trim()).slice(0, 2).join(", ")
-      : "Unknown author";
-    const coverId = book.cover_i?.toString().trim() ? book.cover_i : null;
-    const publishYear = book.first_publish_year || '';
+const RecommendationCard = ({ book, sections, onReadingListButtonClick, readingListBooks }) => {
+  const title = book.title?.trim() || "No title available";
+  const author = Array.isArray(book.author_name) && book.author_name.length > 0
+    ? book.author_name.filter(name => name?.trim()).slice(0, 2).join(", ")
+    : "Unknown author";
+  const coverId = book.cover_i?.toString().trim() ? book.cover_i : null;
+  const publishYear = book.first_publish_year || '';
 
-    const handleRecommendationClick = () => {
-      localStorage.setItem('selectedBook', JSON.stringify(book));
-      window.open('/Book', '_blank');
-    };
+  const handleRecommendationClick = (e) => {
+    // Don't navigate if clicking on the button
+    if (e.target.closest('.add-to-list-btn')) {
+      return;
+    }
+    
+    // Save the book data
+    localStorage.setItem('selectedBook', JSON.stringify(book));
+    
+    // Open new tab with URL parameter to hide back button
+    const newTab = window.open('/Book?hideBack=true', '_blank');
+    
+    // Alternative approach: Set a timestamp-based flag that expires quickly
+    // This ensures the flag is only used once
+    const timestamp = Date.now();
+    localStorage.setItem('hideBackButton', JSON.stringify({
+      value: true,
+      timestamp: timestamp,
+      expires: timestamp + 5000 // 5 seconds expiry
+    }));
+  };
 
-    return (
-      <div className="books-card" onClick={handleRecommendationClick}>
-        <div className='books-cover'>
-          {coverId ? (
-            <>
-              <img 
-                src={`https://covers.openlibrary.org/b/id/${coverId}-M.jpg`}
-                alt={`Cover of ${title}`} 
-                className="books-cover-holder"
-                onError={(e) => {
-                  e.target.style.display = 'none';
-                  e.target.nextElementSibling.style.display = 'block';
-                }}
-              />
-              <div className="books-cover-holder" style={{display: 'none'}}>
-                <span>Book Cover</span>
-              </div>
-            </>
-          ) : (
-            <div className="books-cover-holder">
+  const handleReadingListClick = (e) => {
+    e.stopPropagation(); // Prevent card click
+    
+    if (readingListBooks.has(book.key)) {
+      // If book is already in reading list, redirect to ReadingList page
+      window.open('/ReadingList', '_blank');
+    } else {
+      // If book is not in reading list, add it
+      onReadingListButtonClick(e, book, 0);
+    }
+  };
+
+  const isInReadingList = readingListBooks.has(book.key);
+
+  return (
+    <div className="books-card" onClick={handleRecommendationClick}>
+      <div className='books-cover'>
+        {coverId ? (
+          <>
+            <img 
+              src={`https://covers.openlibrary.org/b/id/${coverId}-M.jpg`}
+              alt={`Cover of ${title}`} 
+              className="books-cover-holder"
+              onError={(e) => {
+                e.target.style.display = 'none';
+                e.target.nextElementSibling.style.display = 'block';
+              }}
+            />
+            <div className="books-cover-holder" style={{display: 'none'}}>
               <span>Book Cover</span>
             </div>
-          )}
-        </div>
-      
-        <div className='book-information'>
-          <div className='book-text-group'>
-            <h3 className={getTitleClass(title)} title={title}>
-              {truncateText(title, 50)}
-            </h3>
-            <p className={getAuthorClass(author)} title={author}>
-              by {truncateText(author, 40)}
-            </p>
-            {publishYear && <p className={getYearClass(title, author)}>({publishYear})</p>}
+          </>
+        ) : (
+          <div className="books-cover-holder">
+            <span>Book Cover</span>
           </div>
-          <button 
-            className="add-to-list-btn"
-            onClick={(e) => handleAddToReadingList(e, book, 0)}
-          >
-            Add to Reading List
-          </button>
-        </div>
+        )}
       </div>
-    );
-  };
+    
+      <div className='book-information'>
+        <div className='book-text-group'>
+          <h3 className={getTitleClass(title)} title={title}>
+            {truncateText(title, 50)}
+          </h3>
+          <p className={getAuthorClass(author)} title={author}>
+            by {truncateText(author, 40)}
+          </p>
+          {publishYear && <p className={getYearClass(title, author)}>({publishYear})</p>}
+        </div>
+        <button 
+          className={`add-to-list-btn ${isInReadingList ? 'in-reading-list' : ''}`}
+          onClick={handleReadingListClick}
+        >
+          {isInReadingList ? 'In Reading List' : 'Add to Reading List'}
+        </button>
+      </div>
+    </div>
+  );
+};
 
   // Loading component for sections
   const SectionLoading = () => (
@@ -989,12 +1148,12 @@ const handleFeelingLucky = () => {
               </p>
               {publishYear && <p className={getYearClass(title, author)}>({publishYear})</p>}
             </div>
-            <button 
-              className="add-to-list-btn"
-              onClick={(e) => handleAddToReadingList(e, book, index)}
-            >
-              Add to Reading List
-            </button>
+              <button 
+                className={`add-to-list-btn ${readingListBooks.has(book.key) ? 'in-reading-list' : ''}`}
+                onClick={(e) => handleReadingListButtonClick(e, book, index)}
+              >
+                {readingListBooks.has(book.key) ? 'In Reading List' : 'Add to Reading List'}
+              </button>
           </div>
         </div>
       );
@@ -1030,7 +1189,7 @@ const handleFeelingLucky = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
               onKeyPress={handleKeyPress}
             />
-            
+
             <button 
               className="search-button"
               onClick={handleSearch}
@@ -1042,9 +1201,8 @@ const handleFeelingLucky = () => {
             <button
             className="feeling-lucky-button"
             onClick={handleFeelingLucky}
-            disabled={isLoading}
             >
-              {isLoading ? 'Lucky..!' : 'Feeling Lucky..?'}
+              Feeling Lucky..?
             </button>
           </div>
         </div>
@@ -1080,6 +1238,8 @@ const handleFeelingLucky = () => {
                             classics: classicBooks,
                             booksWeLove: booksWeLove
                           }}
+                          onReadingListButtonClick={handleReadingListButtonClick}
+                          readingListBooks={readingListBooks}
                         />
                       ))
                     )}
@@ -1124,6 +1284,8 @@ const handleFeelingLucky = () => {
                             classics: classicBooks,
                             booksWeLove: booksWeLove
                           }}
+                          onReadingListButtonClick={handleReadingListButtonClick}
+                          readingListBooks={readingListBooks}
                         />
                       ))
                     )}
@@ -1168,6 +1330,8 @@ const handleFeelingLucky = () => {
                             classics: classicBooks,
                             booksWeLove: booksWeLove
                           }}
+                          onReadingListButtonClick={handleReadingListButtonClick}
+                            readingListBooks={readingListBooks}
                         />
                       ))
                     )}
