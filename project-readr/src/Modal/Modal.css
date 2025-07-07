@@ -6,18 +6,19 @@
     width: 100%;
     background-color: rgba(0, 0, 0, 0.3);
     backdrop-filter: blur(2px);
-
-    display: block;
-
+    display: flex;
+    align-items: center;
+    justify-content: center;
     padding: 20px;
     z-index: 9999; /*surpasses navbar*/
 }
 
 .modal-container{
-padding: 8px;
-max-width: 600px;
-margin-left: 28%;
-border-radius: 8px;
+    padding: 8px;
+    max-width: 90%;
+    width: 600px;
+    margin: 0 auto;
+    border-radius: 8px;
 }
 
 .icon-mask {
