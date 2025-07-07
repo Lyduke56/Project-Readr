@@ -334,6 +334,10 @@ export const Book = () => {
   };
 
   useEffect(() => {
+  window.scrollTo(0, 0);
+}, []);
+
+  useEffect(() => {
         const getCurrentUser = async () => {
         if (!user?.id) {
             setLoading(false);
