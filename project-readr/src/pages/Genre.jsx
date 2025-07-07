@@ -7,8 +7,7 @@ const GenrePage = () => {
   const [filteredGenres, setFilteredGenres] = useState([]);
   const navigate = useNavigate();
 
-  // Mock data for genres - this will be replaced with API integration later
-const mockGenres = [
+const genresList = [
   'Action', 'Adult Fiction', 'Adventure', 'Adventurous', 'Aliens', 'American Literature', 
   'Ancient Egypt', 'Ancient Greece', 'Ancient Rome', 'Anthology', 'Art', 'Artificial Intelligence', 
   'Assassins', 'Autobiography', 'Award Winner', 'Belonging', 'Bestseller', 'Betrayal', 
@@ -50,9 +49,9 @@ const mockGenres = [
   // Filter genres based on selected letter
   useEffect(() => {
     if (selectedLetter === 'All') {
-      setFilteredGenres(mockGenres);
+      setFilteredGenres(genresList);
     } else {
-      const filtered = mockGenres.filter(genre => 
+      const filtered = genresList.filter(genre => 
         genre.toLowerCase().startsWith(selectedLetter.toLowerCase())
       );
       setFilteredGenres(filtered);
@@ -85,9 +84,16 @@ const mockGenres = [
       state: { 
         searchTerm: `subject:${formattedGenre}`,
         autoSearch: true,
-        displaySearchTerm: genre
-      }
+        displaySearchTerm: genre,
+        filterBy: 'Subject'
+      },
+      replace: false // Set to true if you don't want this navigation in history
     });
+    
+    // Reset scroll position after navigation
+    setTimeout(() => {
+      window.scrollTo(0, 0);
+    }, 0);
   };
 
   return (

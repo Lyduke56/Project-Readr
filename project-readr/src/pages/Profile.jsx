@@ -914,7 +914,7 @@ const FriendsListSection = () => {
           
           <button className="friends" onClick={handleFriendList}> 
             <FaUserFriends />
-             { (totalFriends?.length || 0) + (totalFriendsFromOther?.length || 0) }Friends
+             { (totalFriends?.length || 0) + (totalFriendsFromOther?.length || 0) } Friends
           </button>
 
         </div>

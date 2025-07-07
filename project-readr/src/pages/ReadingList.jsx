@@ -101,6 +101,30 @@ export const ReadingList = () => {
   }
 };
 
+const handleRemoveBook = async (bookId) => {
+  try {
+    // Remove from Supabase
+    const { error } = await supabase
+      .from('reading_list')
+      .delete()
+      .eq('id', bookId)
+      .eq('user_id', user.id);
+
+    if (error) {
+      console.error('Error removing book:', error);
+      alert('Failed to remove book!');
+      return;
+    }
+
+    // Update local state to remove the book
+    setBooks(prev => prev.filter(book => book.id !== bookId));
+    alert('Book removed from reading list!');
+  } catch (err) {
+    console.error('Unexpected error removing book:', err);
+    alert('Failed to remove book!');
+  }
+};
+
 
   const handleSearch = (query) => {
     setSearchQuery(query);
@@ -189,7 +213,10 @@ export const ReadingList = () => {
           
           <button 
             className="remove-button"
-            onClick={(e) => e.stopPropagation()} // Prevent card click when clicking remove
+            onClick={(e) => {
+              e.stopPropagation(); // Prevent card click when clicking remove
+              handleRemoveBook(book.id);
+            }}
           >
             Remove
           </button>

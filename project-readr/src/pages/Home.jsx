@@ -17,7 +17,16 @@ export const Home = () => {
   const [classicBooks, setClassicBooks] = useState([]);
   const [booksWeLove, setBooksWeLove] = useState([]);
   const [sectionsLoading, setSectionsLoading] = useState(true);
-  
+  const [searchDetails, setSearchDetails] = useState({ term: '', filter: '' });
+  const [scrollPosition, setScrollPosition] = useState(0);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [previousSections, setPreviousSections] = useState({
+    trending: [],
+    classics: [],
+    booksWeLove: []
+  });
+  const [shouldRestoreSections, setShouldRestoreSections] = useState(false);
+  const [shouldRestoreSearch, setShouldRestoreSearch] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const trendingRef = useRef(null);
@@ -30,39 +39,118 @@ export const Home = () => {
 
   // Load sections data on component mount
   useEffect(() => {
-    loadSectionsData();
+    // Only load sections if we're not restoring from saved state
+    const savedState = localStorage.getItem('homePageState');
+    if (!savedState) {
+      loadSectionsData();
+    }
   }, []);
 
   useEffect(() => {
-    if (location.state?.autoSearch && location.state?.searchTerm) {
-      // Set the search term and display term
-      const searchTerm = location.state.searchTerm;
-      const displayTerm = location.state.displaySearchTerm || searchTerm;
+  if (!hasSearched && trendingBooks.length > 0 && classicBooks.length > 0 && booksWeLove.length > 0) {
+    setPreviousSections({
+      trending: trendingBooks,
+      classics: classicBooks,
+      booksWeLove: booksWeLove
+    });
+  }
+  }, [trendingBooks, classicBooks, booksWeLove, hasSearched]);
+
+useEffect(() => {
+  // Handle restoration from book page
+  const savedState = localStorage.getItem('homePageState');
+  if (savedState) {
+    const { 
+      searchTerm: savedSearchTerm,
+      filterBy: savedFilterBy,
+      searchResults: savedSearchResults,
+      currentPage: savedCurrentPage,
+      totalResults: savedTotalResults,
+      hasSearched: savedHasSearched,
+      searchDetails: savedSearchDetails,
+      sections
+    } = JSON.parse(savedState);
+    
+    console.log('Restoring state:', { savedHasSearched, sections }); // Debug log
+    
+    if (savedHasSearched && savedSearchResults && savedSearchResults.length > 0) {
+      // Restore search state
+      console.log('Restoring search state'); // Debug log
+      setSearchTerm(savedSearchTerm);
+      setFilterBy(savedFilterBy);
+      setSearchResults(savedSearchResults);
+      setCurrentPage(savedCurrentPage);
+      setTotalResults(savedTotalResults);
+      setHasSearched(savedHasSearched);
+      setSearchDetails(savedSearchDetails);
+      setShouldRestoreSearch(true);
+    } else if (sections && (sections.trending || sections.classics || sections.booksWeLove)) {
+      // Restore sections state
+      console.log('Restoring sections state'); // Debug log
+      if (sections.trending) setTrendingBooks(sections.trending);
+      if (sections.classics) setClassicBooks(sections.classics);
+      if (sections.booksWeLove) setBooksWeLove(sections.booksWeLove);
       
-      console.log('Auto-searching for:', searchTerm);
-      console.log('Display term:', displayTerm);
-      
-      // Set hasSearched to true IMMEDIATELY to hide default sections
-      setHasSearched(true);
-      
-      // Set all the necessary states
-      setSearchTerm(displayTerm);
-      setFilterBy('All');
-      setCurrentPage(1);
-      setSearchResults([]);
-      setError('');
-      setIsLoading(true); // Show loading state
-      
-      // Fetch search results
-      fetchDataSearch(1, searchTerm);
-      
-      // Clear the navigation state to prevent repeated searches
-      window.history.replaceState({}, document.title);
+      setPreviousSections(sections);
+      setShouldRestoreSections(true);
+      setSectionsLoading(false);
+      setHasSearched(false); // Ensure we show sections, not search results
     }
-  }, [location.state]);
+    
+    // Clear the saved state
+    localStorage.removeItem('homePageState');
+    return;
+  }
+
+  // Handle auto-search from navigation (existing code)
+  if (location.state?.autoSearch && location.state?.searchTerm) {
+    const searchTerm = location.state.searchTerm;
+    const displayTerm = location.state.displaySearchTerm || searchTerm;
+    
+    console.log('Auto-searching for:', searchTerm);
+    console.log('Display term:', displayTerm);
+    
+    setHasSearched(true);
+    setSearchTerm(displayTerm);
+    setFilterBy(location.state?.filterBy || 'All');
+    setCurrentPage(1);
+    setSearchResults([]);
+    setError('');
+    setIsLoading(true);
+    
+    fetchDataSearch(1, searchTerm);
+    window.history.replaceState({}, document.title);
+  }
+}, [location.state]);
+
+useEffect(() => {
+  // Restore scroll position after loading more results
+  if (isLoadingMore === false && scrollPosition > 0 && currentPage > 1) {
+    console.log('Restoring scroll position to:', scrollPosition);
+    
+    // Use a small delay to ensure DOM is fully rendered
+    const timer = setTimeout(() => {
+      window.scrollTo({
+        top: scrollPosition,
+        behavior: 'auto'
+      });
+    }, 50);
+    
+    return () => clearTimeout(timer);
+  }
+}, [isLoadingMore, scrollPosition, currentPage]);
 
   // Function to load all sections data
   const loadSectionsData = async () => {
+    // Don't load if we're restoring state or if sections are already loaded
+    if (shouldRestoreSections || (trendingBooks.length > 0 && classicBooks.length > 0 && booksWeLove.length > 0)) {
+      console.log('Skipping section load - restoring or already loaded'); // Debug log
+      setShouldRestoreSections(false);
+      setSectionsLoading(false);
+      return;
+    }
+    
+    console.log('Loading sections data'); // Debug log
     setSectionsLoading(true);
     try {
       await Promise.all([
@@ -312,19 +400,25 @@ export const Home = () => {
 
   // Fetch search results
   const fetchDataSearch = async (page = 1, searchQuery = searchTerm) => {
-    console.log('fetchDataSearch called with:', { page, searchQuery, filterBy }); // Debug log
+    console.log('fetchDataSearch called with:', { page, searchQuery, filterBy });
     
     if (!searchQuery?.trim()) {
       setError('Please enter a book title.');
       return;
     }
 
+    // Set loading states
     setIsLoading(true);
     setError('');
+    
+    // Track if this is loading more results
+    const loadingMore = page > 1;
+    setIsLoadingMore(loadingMore);
     
     if (page === 1) {
       setSearchResults([]);
       setHasSearched(true);
+      setScrollPosition(0); // Reset scroll position for new searches
     }
 
     try {
@@ -332,13 +426,13 @@ export const Home = () => {
       let searchUrl;
       const encodedTitle = encodeURIComponent(searchQuery);
       
-      console.log('Search query:', searchQuery); // Debug log
-      console.log('Filter by:', filterBy); // Debug log
+      console.log('Search query:', searchQuery);
+      console.log('Filter by:', filterBy);
       
       // Check if it's a subject search (from genre page)
       if (searchQuery.startsWith('subject:')) {
         searchUrl = `https://openlibrary.org/search.json?q=${encodedTitle}&limit=${resultsPerPage}&offset=${offset}`;
-        console.log('Using subject search URL:', searchUrl); // Debug log
+        console.log('Using subject search URL:', searchUrl);
       } else {
         // Regular search logic
         switch (filterBy) {
@@ -348,12 +442,14 @@ export const Home = () => {
           case 'Author':
             searchUrl = `https://openlibrary.org/search.json?author=${encodedTitle}&limit=${resultsPerPage}&offset=${offset}`;
             break;
+          case 'Subject':
+            searchUrl = `https://openlibrary.org/search.json?subject=${encodedTitle}&limit=${resultsPerPage}&offset=${offset}`;
+            break;
           case 'All':
           default:
             searchUrl = `https://openlibrary.org/search.json?q=${encodedTitle}&limit=${resultsPerPage}&offset=${offset}`;
             break;
         }
-        console.log('Using regular search URL:', searchUrl); // Debug log
       }
 
       const response = await fetch(searchUrl);
@@ -364,8 +460,8 @@ export const Home = () => {
 
       const data = await response.json();
       
-      console.log('Search results:', data); // Debug log
-      console.log('Number of results:', data.docs?.length || 0); // Debug log
+      console.log('Search results:', data);
+      console.log('Number of results:', data.docs?.length || 0);
       
       if (page === 1) {
         setSearchResults(data.docs || []);
@@ -373,6 +469,7 @@ export const Home = () => {
         setSearchResults(prev => [...prev, ...(data.docs || [])]);
       }
       
+      setSearchDetails({ term: searchQuery, filter: filterBy });
       setTotalResults(data.numFound || 0);
       setCurrentPage(page);
 
@@ -389,6 +486,7 @@ export const Home = () => {
       setError(errorMessage);
     } finally {
       setIsLoading(false);
+      setIsLoadingMore(false);
     }
   };
 
@@ -447,15 +545,29 @@ export const Home = () => {
 
   // Handle book card click
   const handleCardClick = (book) => {
-    // Store selected book in localStorage
+    // Save current state to localStorage
+    const currentState = {
+      searchTerm,
+      filterBy,
+      searchResults,
+      currentPage,
+      totalResults,
+      hasSearched,
+      searchDetails,
+      sections: hasSearched ? null : {
+        trending: trendingBooks,
+        classics: classicBooks,
+        booksWeLove: booksWeLove
+      }
+    };
+    
+    localStorage.setItem('homePageState', JSON.stringify(currentState));
     localStorage.setItem('selectedBook', JSON.stringify(book));
 
     if (filterBy === 'Author') {
-      // Open Author.jsx in a new tab
-      window.open('/Author', '_blank');
+      navigate('/Author');
     } else {
-      // Open Book.jsx in a new tab
-      window.open('/Book', '_blank');
+      navigate('/Book');
     }
   };
 
@@ -522,13 +634,19 @@ export const Home = () => {
   const loadMoreResults = () => {
     const nextPage = currentPage + 1;
     const totalPages = Math.ceil(totalResults / resultsPerPage);
+    
     if (nextPage <= totalPages) {
+      // Save current scroll position before loading more
+      const currentScrollY = window.scrollY;
+      setScrollPosition(currentScrollY);
+      
+      console.log('Loading more results, saving scroll position:', currentScrollY);
+      
       fetchDataSearch(nextPage);
     }
   };
-
   // Recommendation Card Component
-  const RecommendationCard = ({ book }) => {
+  const RecommendationCard = ({ book, sections}) => {
     const title = book.title?.trim() || "No title available";
     const author = Array.isArray(book.author_name) && book.author_name.length > 0
       ? book.author_name.filter(name => name?.trim()).slice(0, 2).join(", ")
@@ -536,8 +654,13 @@ export const Home = () => {
     const coverId = book.cover_i?.toString().trim() ? book.cover_i : null;
     const publishYear = book.first_publish_year || '';
 
+    const handleRecommendationClick = () => {
+      localStorage.setItem('selectedBook', JSON.stringify(book));
+      window.open('/Book', '_blank');
+    };
+
     return (
-      <div className="books-card" onClick={() => handleCardClick(book)}>
+      <div className="books-card" onClick={handleRecommendationClick}>
         <div className='books-cover'>
           {coverId ? (
             <>
@@ -600,8 +723,6 @@ export const Home = () => {
       ))}
     </div>
   );
-
-  // Add this function to your Home component
 
 const handleFeelingLucky = () => {
   const luckyKeywords = [
@@ -728,15 +849,6 @@ const handleFeelingLucky = () => {
       );
     }
 
-    if (searchResults.length === 0 && hasSearched) {
-      return (
-        <div className="no-results">
-          <h3>No results found</h3>
-          <p>Try a different search term or check your spelling.</p>
-        </div>
-      );
-    }
-
     // 📘 If author view
     if (filterBy === 'Author' && searchResults.length > 0) {
       const uniqueAuthors = new Map();
@@ -761,31 +873,31 @@ const handleFeelingLucky = () => {
       });
 
       return Array.from(uniqueAuthors.values()).map((author, index) => (
-        <div className="books-card" key={index} onClick={() => handleCardClick({
+        <div className="h-author-card" key={index} onClick={() => handleCardClick({
           author_name: [author.name],
           author_key: [author.key],
           title: author.books[0] || 'Unknown Book'
         })}>
         
-        <div className="books-cover">
-          <div className="books-cover-holder">
+        <div className="h-author-photo">
+          <div className="h-author-photo-holder">
             <img
               src={`https://covers.openlibrary.org/a/olid/${author.key}-M.jpg`}
               alt={`Photo of ${author.name}`}
-              className="books-cover-holder"
+              className="h-author-photo-holder"
               onError={(e) => {
                 e.target.style.display = 'none';
                 e.target.nextElementSibling.style.display = 'block';
               }}
             />
-            <div className="books-cover-holder" style={{ display: 'none' }}>
+            <div className="h-author-photo-holder" style={{ display: 'none' }}>
               <span>Author Photo</span>
             </div>
           </div>
         </div>
 
-        <div className="book-information">
-          <div className='book-text-group'>
+        <div className="h-author-information">
+          <div className='h-author-text-group'>
            <h3 className={getTitleClass(author.name)} title={author.name}>
               {truncateText(author.name, 50)}
             </h3>
@@ -873,12 +985,13 @@ const handleFeelingLucky = () => {
               <option value="All">All</option>
               <option value="Title">Title</option>
               <option value="Author">Author</option>
+              <option value="Subject">Subject</option>
             </select>
             
             <input
               type="text"
               className="search-bar"
-              placeholder="Search for books by title, or author..."
+              placeholder="Search books, subject, or author..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               onKeyPress={handleKeyPress}
@@ -925,7 +1038,15 @@ const handleFeelingLucky = () => {
                       <SectionLoading />
                     ) : (
                       trendingBooks.map(book => (
-                        <RecommendationCard key={book.key} book={book} />
+                        <RecommendationCard 
+                          key={book.key} 
+                          book={book} 
+                          sections={{
+                            trending: trendingBooks,
+                            classics: classicBooks,
+                            booksWeLove: booksWeLove
+                          }}
+                        />
                       ))
                     )}
                   </div>
@@ -961,7 +1082,15 @@ const handleFeelingLucky = () => {
                       <SectionLoading />
                     ) : (
                       classicBooks.map(book => (
-                        <RecommendationCard key={book.key} book={book} />
+                      <RecommendationCard 
+                          key={book.key} 
+                          book={book} 
+                          sections={{
+                            trending: trendingBooks,
+                            classics: classicBooks,
+                            booksWeLove: booksWeLove
+                          }}
+                        />
                       ))
                     )}
                   </div>
@@ -997,7 +1126,15 @@ const handleFeelingLucky = () => {
                       <SectionLoading />
                     ) : (
                       booksWeLove.map(book => (
-                        <RecommendationCard key={book.key} book={book} />
+                      <RecommendationCard 
+                          key={book.key} 
+                          book={book} 
+                          sections={{
+                            trending: trendingBooks,
+                            classics: classicBooks,
+                            booksWeLove: booksWeLove
+                          }}
+                        />
                       ))
                     )}
                   </div>
@@ -1017,11 +1154,33 @@ const handleFeelingLucky = () => {
       )}
 
       {/* Show search results when search has been performed */}
-      {hasSearched && (
+      {hasSearched && !isLoading && (
         <div className= "rcontainer">
-          <div className="books-grid-home">
-            {renderBookCards()}
-          </div>
+          {(searchResults.length > 0 || totalResults > 0) ? (
+            <>
+              <div className="search-details">
+                <h2 className="search-details-title">
+                  Showing Results for "{searchDetails.term}" ({searchDetails.filter})
+                </h2>
+                <p className="search-details-info">
+                  Displaying {searchResults.length} results out of {totalResults.toLocaleString()}.
+                </p>
+              </div>
+              
+              <div className="books-grid-home">
+                {renderBookCards()}
+              </div>
+            </>
+          ) : (
+            <div className="search-details">
+              <h2 className="search-details-title">
+                No results found for "{searchDetails.term}" ({searchDetails.filter})
+              </h2>
+              <p className="search-details-info">
+                Try a different search term or check your spelling.
+              </p>
+            </div>
+          )}
         </div>
       )}
 
@@ -1035,6 +1194,13 @@ const handleFeelingLucky = () => {
           >
             {isLoading ? 'Loading...' : `Load More (${currentPage} of ${totalPages})`}
           </button>
+
+          <button 
+            className="back-to-top-btn"
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          >
+            Back to Top
+</button>
         </div>
       )}
 

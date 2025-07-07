@@ -536,7 +536,7 @@ export function EditProfile({ onSaveSuccess }) {
                 onChange={handleInputChange}
               />
               <span className="checkmark"></span>
-              <span className="label-text">
+              <span className="ep-label-text">
                 {profileData.is_private ? <FaLock /> : <FaGlobe />}
                 Make my profile private
               </span>
