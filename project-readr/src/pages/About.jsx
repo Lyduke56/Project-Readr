@@ -20,7 +20,7 @@ const team = [
   },
   {
     name: 'Rosal, Clyde Justine',
-    role: 'Project Lead',
+    role: 'Project Lead / Back End Developer',
     bio: 'Keeps the team on track and motivated.',
     img: '/Screenshot 2025-07-06 231433.png',
     github: '#',

@@ -13,6 +13,7 @@ export function SignIn() {
     const [loading, setLoading] = useState(false);
     const [greeting, setGreeting] = useState('');
     const [isOpened, setIsOpened] = useState(false);
+    const [showCarousel, setShowCarousel] = useState(true);
 
     const navigate = useNavigate();
     const { signInUser } = UserAuth();
@@ -28,6 +29,14 @@ export function SignIn() {
         ];
         const randomIndex = Math.floor(Math.random() * greetings.length);
         setGreeting(greetings[randomIndex]);
+
+        // Responsive: hide carousel on small screens
+        const checkScreen = () => {
+            setShowCarousel(window.innerWidth > 768);
+        };
+        checkScreen();
+        window.addEventListener('resize', checkScreen);
+        return () => window.removeEventListener('resize', checkScreen);
     }, []);
 
     const handleSignIn = async (e) => {
@@ -135,9 +144,12 @@ export function SignIn() {
                     </div>
                 </div>
 
-                <div className="signin-image-container">
-                    <ImageCarousel imagePath="/WhyReadr.png" sectionPositions={[-5, 30, 60, 90]} />
-                </div>
+                {/* Only show carousel on larger screens */}
+                {showCarousel && (
+                  <div className="signin-image-container">
+                      <ImageCarousel imagePath="/WhyReadr.png" sectionPositions={[-5, 30, 60, 90]} />
+                  </div>
+                )}
 
                 {isOpened && (
                     <Modal isOpened={isOpened} onClose={() => setIsOpened(false)}>
