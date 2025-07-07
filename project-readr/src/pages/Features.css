@@ -192,11 +192,45 @@
   .features-grid {
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   }
+  
+  .features-hero {
+    padding: 60px 15px 30px 15px;
+  }
+  
+  .features-hero h1 {
+    font-size: 3rem;
+  }
+  
+  .features-tagline {
+    font-size: 1.2rem;
+  }
+  
+  .features-section {
+    padding: 40px 15px;
+    margin-top: -30px;
+  }
+  
+  .features-section h2 {
+    font-size: 2.2rem;
+    margin-bottom: 30px;
+  }
+  
+  .features-stats {
+    padding: 30px 15px;
+  }
+  
+  .features-cta {
+    padding: 40px 20px;
+  }
 }
 
 @media (max-width: 768px) {
   .features-hero h1 {
     font-size: 2.5rem;
+  }
+  
+  .features-tagline {
+    font-size: 1.1rem;
   }
   
   .features-section h2,
@@ -219,6 +253,32 @@
   
   .feature-icon {
     align-self: center;
+    font-size: 2.5rem;
+  }
+  
+  .feature-content h3 {
+    font-size: 1.2rem;
+  }
+  
+  .feature-content p {
+    font-size: 0.9rem;
+  }
+  
+  .stat-item h3 {
+    font-size: 2rem;
+  }
+  
+  .stat-item p {
+    font-size: 1rem;
+  }
+  
+  .features-cta p {
+    font-size: 1rem;
+  }
+  
+  .features-cta-btn {
+    padding: 12px 30px;
+    font-size: 1rem;
   }
 }
 
@@ -233,5 +293,135 @@
   
   .features-cta h2 {
     font-size: 1.8rem;
+  }
+  
+  .features-hero {
+    padding: 40px 10px 20px 10px;
+  }
+  
+  .features-hero h1 {
+    font-size: 2rem;
+  }
+  
+  .features-tagline {
+    font-size: 1rem;
+  }
+  
+  .features-section {
+    padding: 30px 10px;
+    margin-top: -20px;
+    border-radius: 10px;
+  }
+  
+  .features-section h2 {
+    font-size: 1.8rem;
+    margin-bottom: 20px;
+  }
+  
+  .feature-card {
+    padding: 20px;
+    gap: 10px;
+  }
+  
+  .features-stats {
+    padding: 20px 10px;
+  }
+  
+  .stat-item {
+    padding: 20px 10px;
+  }
+  
+  .features-cta p {
+    font-size: 0.9rem;
+    margin-bottom: 20px;
+  }
+}
+
+/* Specific styles for iPhone 12 Pro and similar devices (viewport width around 390px) */
+@media (max-width: 414px) and (min-height: 800px) {
+  .features-page {
+    padding-bottom: 40px;
+  }
+  
+  .features-hero {
+    padding: 30px 10px 15px 10px;
+    min-height: 40vh;
+  }
+  
+  .features-hero h1 {
+    font-size: 1.8rem;
+  }
+  
+  .features-tagline {
+    font-size: 0.9rem;
+  }
+  
+  .features-section {
+    padding: 20px 10px;
+    margin-bottom: 40px;
+  }
+  
+  .features-section h2 {
+    font-size: 1.6rem;
+    margin-bottom: 15px;
+  }
+  
+  .feature-card {
+    padding: 15px;
+  }
+  
+  .feature-icon {
+    font-size: 2rem;
+  }
+  
+  .feature-content h3 {
+    font-size: 1rem;
+    margin-bottom: 5px;
+  }
+  
+  .feature-content p {
+    font-size: 0.8rem;
+  }
+  
+  .features-stats {
+    padding: 15px 10px;
+    margin-bottom: 40px;
+  }
+  
+  .stats-grid {
+    gap: 10px;
+  }
+  
+  .stat-item {
+    padding: 15px 10px;
+  }
+  
+  .stat-item h3 {
+    font-size: 1.8rem;
+    margin-bottom: 5px;
+  }
+  
+  .stat-item p {
+    font-size: 0.9rem;
+  }
+  
+  .features-cta {
+    padding: 30px 15px;
+    margin-bottom: 30px;
+  }
+  
+  .features-cta h2 {
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+  }
+  
+  .features-cta p {
+    font-size: 0.8rem;
+    margin-bottom: 15px;
+  }
+  
+  .features-cta-btn {
+    padding: 10px 25px;
+    font-size: 0.9rem;
   }
 }

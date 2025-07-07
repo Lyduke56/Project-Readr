@@ -59,6 +59,26 @@ body {
   }
 }
 
+/* Specific styles for iPhone 12 Pro and similar devices (viewport width around 390px) */
+@media (max-width: 414px) and (min-height: 800px) {
+  .footer {
+    padding: 3%;
+    font-size: 0.7em;
+  }
+  .footer .row {
+    margin: 2% 0%;
+    padding: 0.4% 0%;
+  }
+  .footer .row ul li {
+    margin: 8px 0px;
+  }
+  .social-logo {
+    width: 24px;
+    height: 24px;
+    margin: 0% 2%;
+  }
+}
+
 .social-logo {
   width: 32px;
   height: 32px;

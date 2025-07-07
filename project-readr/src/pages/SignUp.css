@@ -40,8 +40,8 @@
 .signup-title {
     width: 336px;
     margin-top: 70px;
-    font-family: 'Merriweather-Regular', Helvetica;
-    font-weight: normal;
+    font-family: 'Merriweather-Regular', serif;
+    font-weight: 600;
     color: #2d2d2d;
     font-size: 40px;
     text-align: center;
@@ -169,4 +169,153 @@
     background-color: #d9d9d9;
     border: 1px solid black;
     box-shadow: 0px 4px 4px 2px rgba(0, 0, 0, 0.25);
+}
+
+/* Responsive styles */
+@media (max-width: 1024px) {
+    .signup-content {
+        flex-direction: column;
+        height: auto;
+        min-height: 100vh;
+        padding: 40px 0;
+    }
+    .signup-form-container {
+        margin: 0 auto;
+        margin-top: 40px;
+        margin-bottom: 40px;
+    }
+    .signup-image {
+        width: 100vw;
+        height: 300px;
+        left: 0;
+        top: 0;
+        position: relative;
+    }
+}
+
+@media (max-width: 768px) {
+    .signup-container {
+        flex-direction: column;
+        height: auto;
+        min-height: 100vh;
+    }
+    .signup-content {
+        flex-direction: column;
+        align-items: center;
+        height: auto;
+        min-height: 100vh;
+        padding: 20px 0;
+    }
+    .signup-form-container {
+        width: 95vw;
+        min-width: 0;
+        max-width: 400px;
+        height: 700px;
+        padding: 30px 10px;
+        margin: 0 auto;
+        margin-top: 20px;
+        margin-bottom: 20px;
+    }
+    .signup-title {
+        font-size: 32px;
+        width: 100%;
+        margin-top: 30px;
+    }
+    .input-group, .signup-link, .signup-button, .error-message {
+        width: 100%;
+        min-width: 0;
+        max-width: 350px;
+    }
+    .input-group input {
+        width: 100%;
+        min-width: 0;
+        max-width: 350px;
+    }
+    .signup-image-container {
+        display: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .signup-form-container {
+        width: 100vw;
+        max-width: 100vw;
+        padding: 20px 5px;
+        margin: 0;
+        border-radius: 0;
+        box-shadow: none;
+    }
+    .signup-title {
+        font-size: 24px;
+        margin-top: 10px;
+    }
+    .input-group label {
+        font-size: 15px;
+    }
+    .input-group input {
+        font-size: 15px;
+        height: 36px;
+        padding: 0 10px;
+    }
+    .signup-button {
+        font-size: 15px;
+        height: 36px;
+    }
+    .signup-link {
+        font-size: 14px;
+    }
+    .signup-image-container {
+        display: none;
+    }
+}
+
+/* Specific styles for iPhone 12 Pro and similar devices (viewport width around 390px) */
+@media (max-width: 414px) and (min-height: 800px) {
+    .signup-container {
+        height: auto;
+        min-height: 100vh;
+    }
+    .signup-content {
+        padding: 15px 0;
+        height: auto;
+        min-height: 100vh;
+    }
+    .signup-form-container {
+        width: 95vw;
+        max-width: 390px;
+        margin: 0 auto;
+        padding: 20px 10px;
+        height: auto;
+        min-height: 600px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+    .signup-title {
+        font-size: 22px;
+        margin-top: 15px;
+    }
+    .input-group {
+        margin: 0 0 20px 0;
+    }
+    .input-group label {
+        font-size: 14px;
+    }
+    .input-group input {
+        font-size: 14px;
+        height: 34px;
+        padding: 0 12px;
+    }
+    .signup-button {
+        font-size: 14px;
+        height: 34px;
+    }
+    .signup-link {
+        font-size: 13px;
+        margin-top: 10px;
+    }
+    .error-message {
+        font-size: 13px;
+        margin: 15px 0 0 0;
+    }
 }

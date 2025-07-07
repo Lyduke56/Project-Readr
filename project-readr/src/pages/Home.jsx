@@ -1163,13 +1163,13 @@ const handleFeelingLucky = () => {
   const totalPages = Math.ceil(totalResults / resultsPerPage);
   const hasMoreResults = currentPage < totalPages;
 
-  return (
-    <div className="home-container">
-      <header className="header">
-        <div className="controls">
-          <h1 className="pages-title">Meet your next favorite read!</h1>
-
-          <div className="search-controls">
+ return (
+  <div className="home-container">
+    <header className="header">
+      <div className="controls">
+        <h1 className="pages-title">Meet your next favorite read!</h1>
+        <div className="search-controls">
+          <div className="search-row">
             <select 
               className="filter-dropdown"
               value={filterBy}
@@ -1189,7 +1189,7 @@ const handleFeelingLucky = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
               onKeyPress={handleKeyPress}
             />
-
+            
             <button 
               className="search-button"
               onClick={handleSearch}
@@ -1197,16 +1197,17 @@ const handleFeelingLucky = () => {
             >
               {isLoading ? 'Searching...' : 'Search'}
             </button>
-
-            <button
+          </div>
+          <button
             className="feeling-lucky-button"
             onClick={handleFeelingLucky}
-            >
-              Feeling Lucky..?
-            </button>
-          </div>
+            disabled={isLoading}
+          >
+            Feeling Lucky..?
+          </button>
         </div>
-      </header>
+      </div>
+    </header>
 
       {/* Show default sections when no search has been performed */}
       {!hasSearched && (
