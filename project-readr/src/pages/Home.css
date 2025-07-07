@@ -148,16 +148,37 @@
 .load-more-btn{
   padding: 5px;
   align-self: center;
-  border: 3px solid #e0e0e0;
+  border: none;
   border-radius: 8px;
-  background-color: #6b4b3e;
+  cursor: pointer;
+  background-color: #8B4513;
+  font-family: 'Libre Baskerville', serif;
   color: white;
-  font-size: 1rem;
-  width: 200px;
+  font-size: .8rem;
+  width: 175px;
   outline: none;
   transition: border-color 0.3s ease;
 }
 
+.back-to-top-btn{
+  padding: 5px;
+  align-self: center;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  background-color: #8B4513;
+  font-family: 'Libre Baskerville', serif;
+  color: white;
+  font-size: .8rem;
+  width: 175px;
+  outline: none;
+  transition: border-color 0.3s ease;
+}
+
+.back-to-top-btn:hover, .load-more-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
 .pagination-container{
   margin-top: 70px;
   display: flex;

@@ -1194,6 +1194,13 @@ const handleFeelingLucky = () => {
           >
             {isLoading ? 'Loading...' : `Load More (${currentPage} of ${totalPages})`}
           </button>
+
+          <button 
+            className="back-to-top-btn"
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          >
+            Back to Top
+</button>
         </div>
       )}
 
