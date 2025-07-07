@@ -2,7 +2,8 @@ import { useNavigate, useLocation  } from "react-router-dom"
 import { useState, useRef, useEffect } from "react"
 import { supabase } from '../supabaseClient';
 import "./HomepageNavbar.css"
-import { FaUserPlus } from "react-icons/fa";
+import { FaUserPlus, FaHome } from "react-icons/fa";
+import { IoArrowBack, IoChevronDown } from "react-icons/io5"; // Add these imports
 import { FriendRequestBell } from "./FriendRequestBell";
 
 export function HomepageNavbar() {
@@ -17,6 +18,10 @@ export function HomepageNavbar() {
     };
     
     const handleBackClick = () => {
+        navigate('/Home');
+    };
+
+    const handleHomeClick = () => {
         navigate('/Home');
     };
 
@@ -146,25 +151,25 @@ export function HomepageNavbar() {
                     <div className="overlap-2">
 
                         {location.pathname !== '/Home' && (
-                            <button className="icon-button" onClick={handleBackClick}>
-                                <img className="icon" alt="Arrow icon" src="arrow.png" />
+                            <button className="hpn-icon-button hpn-back-button" onClick={handleBackClick}>
+                                <IoArrowBack className="hpn-back-icon" />
                             </button>
                         )}
 
+                        <button className="hpn-icon-button" onClick={handleHomeClick}>
+                            <FaHome className="hpn-home-icon" />
+                        </button>
+
                         <FriendRequestBell currentUserId={user?.id} />
 
-                        <button className="icon-button" onClick={handleAddProfile}>
-                            <FaUserPlus  className="icon"/>
+                        <button className="hpn-icon-button" onClick={handleAddProfile}>
+                            <FaUserPlus className="hpn-add-icon"/>
                         </button>
                         
                         <div className="group" ref={dropdownRef}>
                             <div className="overlap-group-2" onClick={toggleDropdown}>
                                 <div className="text-wrapper-18">{profileData?.display_name || "User"}</div>
-                                <img 
-                                    className={`icon dropdown-arrow ${isDropdownOpen ? 'rotated' : ''}`} 
-                                    alt="Dropdown icon" 
-                                    src="down.png" 
-                                />
+                                <IoChevronDown className={`icon dropdown-arrow ${isDropdownOpen ? 'rotated' : ''}`} />
                             </div>
                             {isDropdownOpen && (
                                 <div className="dropdown-menu">
