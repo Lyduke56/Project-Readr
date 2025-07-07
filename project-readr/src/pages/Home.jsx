@@ -543,8 +543,7 @@ useEffect(() => {
     }
   }, [filterBy]);
 
-  // Handle book card click
-  const handleCardClick = (book) => {
+const handleCardClick = (book) => {
     // Save current state to localStorage
     const currentState = {
       searchTerm,
@@ -563,9 +562,29 @@ useEffect(() => {
     
     localStorage.setItem('homePageState', JSON.stringify(currentState));
     localStorage.setItem('selectedBook', JSON.stringify(book));
-
+    
     if (filterBy === 'Author') {
-      navigate('/Author');
+      // Clean the author key if it exists
+      let cleanAuthorKey = null;
+      if (book.author_key && Array.isArray(book.author_key)) {
+        cleanAuthorKey = book.author_key[0];
+      } else if (book.authorKey) {
+        cleanAuthorKey = book.authorKey;
+      } else if (book.key) {
+        cleanAuthorKey = book.key;
+      }
+      
+      // Clean the key format
+      if (cleanAuthorKey && cleanAuthorKey.startsWith('/authors/')) {
+        cleanAuthorKey = cleanAuthorKey.replace('/authors/', '');
+      }
+      
+      navigate('/author', {
+        state: {
+          authorName: book.author_name ? book.author_name[0] : (book.authorName || book.name),
+          authorKey: cleanAuthorKey
+        }
+      });
     } else {
       navigate('/Book');
     }
@@ -860,12 +879,18 @@ const handleFeelingLucky = () => {
               uniqueAuthors.set(authorName, {
                 name: authorName,
                 key: Array.isArray(book.author_key) ? book.author_key[i] : null,
-                books: [book.title]
+                books: [book.title],
+                // Add bio from book data if available
+                bio: book.author_bio || null
               });
             } else {
               const existing = uniqueAuthors.get(authorName);
               if (book.title && !existing.books.includes(book.title)) {
                 existing.books.push(book.title);
+              }
+              // Update bio if we don't have one yet
+              if (!existing.bio && book.author_bio) {
+                existing.bio = book.author_bio;
               }
             }
           });
@@ -874,41 +899,50 @@ const handleFeelingLucky = () => {
 
       return Array.from(uniqueAuthors.values()).map((author, index) => (
         <div className="h-author-card" key={index} onClick={() => handleCardClick({
-          author_name: [author.name],
-          author_key: [author.key],
+          authorName: author.name,
+          authorKey: author.key,
           title: author.books[0] || 'Unknown Book'
         })}>
         
         <div className="h-author-photo">
           <div className="h-author-photo-holder">
-            <img
-              src={`https://covers.openlibrary.org/a/olid/${author.key}-M.jpg`}
-              alt={`Photo of ${author.name}`}
-              className="h-author-photo-holder"
-              onError={(e) => {
-                e.target.style.display = 'none';
-                e.target.nextElementSibling.style.display = 'block';
-              }}
-            />
-            <div className="h-author-photo-holder" style={{ display: 'none' }}>
-              <span>Author Photo</span>
-            </div>
+            {author.key ? (
+              <>
+                <img
+                  src={`https://covers.openlibrary.org/a/olid/${author.key}-M.jpg`}
+                  alt={`Photo of ${author.name}`}
+                  className="h-author-photo-holder"
+                  onError={(e) => {
+                    e.target.style.display = 'none';
+                    e.target.nextElementSibling.style.display = 'block';
+                  }}
+                />
+                <div className="h-author-photo-holder" style={{ display: 'none' }}>
+                  <span>No Photo Available</span>
+                </div>
+              </>
+            ) : (
+              <div className="h-author-photo-holder">
+                <span>No Photo Available</span>
+              </div>
+            )}
           </div>
         </div>
 
         <div className="h-author-information">
           <div className='h-author-text-group'>
-           <h3 className={getTitleClass(author.name)} title={author.name}>
+            <h3 className={getTitleClass(author.name)} title={author.name}>
               {truncateText(author.name, 50)}
             </h3>
-            <p className={getAuthorClass(`${author.books.length} books`)} title={`${author.books.length} books`}>
-              {author.books.length} books
+            <p className={getAuthorClass(author.bio ? truncateText(author.bio, 100) : 'No biography available')} 
+              title={author.bio || 'No biography available'}>
+              {author.bio ? truncateText(author.bio, 100) : 'No biography available'}
             </p>
           </div>
         </div>
 
-      </div>
-    ));
+        </div>
+      ));
     }
 
     // 📚 Otherwise, render books
@@ -1200,7 +1234,7 @@ const handleFeelingLucky = () => {
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
           >
             Back to Top
-</button>
+          </button>
         </div>
       )}
 

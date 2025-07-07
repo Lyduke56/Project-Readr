@@ -98,7 +98,7 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: center;
 }
 
 .author-header-top {
@@ -109,7 +109,7 @@
 }
 
 .author-name {
-  font-size: 1.75rem;
+  font-size: 2.5rem;
   font-family: 'Merriweather', sans-serif;
   color: #2d2d2d;
   margin: 0;
@@ -187,9 +187,21 @@
   list-style: none;
   padding: 0;
   margin: 0;
+  text-align: center;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 16px;
+}
+
+.work-item {
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.work-item:hover {
+  background-color: #f0f0f0;
 }
 
 .works-list li {
