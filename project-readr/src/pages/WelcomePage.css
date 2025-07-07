@@ -118,29 +118,39 @@ body{
     max-width: 1600px;
     margin: 0 auto;
     padding: 40px; 
-    min-height: 90vh; 
+    min-height: 95vh; 
     position: relative;
 }
 
 .welcome-hero::before {
     content: '';
-    position: absolute;
+    position: fixed;
     top: 0;
-    left: 40%;
     right: 0;
-    width: auto;
-    height: 100%;
-    background: 
-        linear-gradient(90deg, 
-            rgba(255, 241, 227, 1) 0%, 
-            rgba(255, 241, 227, 0.8) 20%, 
-            rgba(255, 241, 227, 0.1) 100%
-        ), 
-        url('../pictures/WelcomePage2.jpg');
+    width: 60vw;
+    height: 100vh;
+    background-image: url('../pictures/WelcomePage2.jpg');
     background-size: cover;
-    background-position: 70% center;
+    background-position: center left;
     background-repeat: no-repeat;
+    background-attachment: fixed;
     z-index: -1;
+}
+
+.welcome-hero::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 60vw;
+    height: 100vh;
+    background: linear-gradient(90deg, 
+        rgba(255, 241, 227, 1) 0%, 
+        rgba(255, 241, 227, 0.8) 20%, 
+        rgba(255, 241, 227, 0.1) 100%
+    );
+    z-index: -1;
+    pointer-events: none;
 }
 
 /* Mobile styles */
@@ -177,9 +187,32 @@ body{
         min-height: 100vh;
     }
     .welcome-hero::before {
+        position: fixed;
+        top: 0;
         left: 0;
-        background: linear-gradient(180deg, rgba(255, 241, 227, 0.95) 0%, rgba(255, 241, 227, 0.85) 50%, rgba(255, 241, 227, 0.95) 100%), url('../pictures/WelcomePage2.jpg');
+        right: 0;
+        width: 100vw;
+        height: 100vh;
+        background-image: url('../pictures/WelcomePage2.jpg');
         background-position: center center;
+        background-size: cover;
+        background-attachment: fixed;
+    }
+    
+    .welcome-hero::after {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        width: 100vw;
+        height: 100vh;
+        background: linear-gradient(180deg, 
+            rgba(255, 241, 227, 0.95) 0%, 
+            rgba(255, 241, 227, 0.85) 50%, 
+            rgba(255, 241, 227, 0.95) 100%
+        );
+        z-index: -1;
+        pointer-events: none;
     }
 }
 
@@ -232,14 +265,29 @@ body{
     }
     
     .welcome-hero::before {
-        left: 20%;
-        background: 
-            linear-gradient(90deg, 
-                rgba(255, 241, 227, 1) 0%, 
-                rgba(255, 241, 227, 0.9) 25%, 
-                rgba(255, 241, 227, 0.4) 100%
-            ), 
-            url('../pictures/WelcomePage2.jpg');
-        background-position: 75% center;
+        position: fixed;
+        top: 0;
+        right: 0;
+        width: 50vw;
+        height: 100vh;
+        background-image: url('../pictures/WelcomePage2.jpg');
+        background-position: center left;
+        background-size: cover;
+        background-attachment: fixed;
+    }
+    
+    .welcome-hero::after {
+        position: fixed;
+        top: 0;
+        right: 0;
+        width: 50vw;
+        height: 100vh;
+        background: linear-gradient(90deg, 
+            rgba(255, 241, 227, 1) 0%, 
+            rgba(255, 241, 227, 0.9) 25%, 
+            rgba(255, 241, 227, 0.4) 100%
+        );
+        z-index: -1;
+        pointer-events: none;
     }
 }

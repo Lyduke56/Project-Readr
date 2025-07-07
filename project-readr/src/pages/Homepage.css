@@ -651,7 +651,8 @@
 /* Footer Actions */
 .footer-actions {
   background-color: #FFF1E3;
-  padding: 32px 0;
+  padding-top: 32px;
+  padding-bottom: 90px;
 }
 
 .action-buttons {
