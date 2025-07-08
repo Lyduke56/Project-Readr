@@ -220,7 +220,7 @@ const ReviewItem = ({ review, currentUser, onReviewUpdated }) => {
             size={20}
           />
         </div>
-        {!isEditing && (
+        {!isEditing && isCurrentUserReview && (
             <button 
               className="edit-review-btn"
               onClick={() => setIsEditing(true)}
@@ -465,7 +465,7 @@ export const Book = () => {
   const [reviews, setReviews] = useState([]);
   const [reviewsLoading, setReviewsLoading] = useState(false);
   const [userHasReview, setUserHasReview] = useState(false);
-  
+  const [readingListBooks, setReadingListBooks] = useState(new Set());
 
   const { session } = UserAuth();
   const user = session?.user;
@@ -816,6 +816,8 @@ const shouldShowBackButton = () => {
       const author = Array.isArray(book.author_name) && book.author_name.length > 0
         ? book.author_name.filter(name => name?.trim()).slice(0, 2).join(", ")
         : "Unknown author";
+      
+      const toBeRead = "TO_BE_READ";
 
       // Get existing reading list
       let readingList = JSON.parse(localStorage.getItem('readingList') || '[]');
@@ -836,7 +838,7 @@ const shouldShowBackButton = () => {
       // Check if book is already in reading list
       const exists = readingList.some(item => item.key === book.key);
       if (!exists) {
-        readingList.push(bookToAdd);
+        readingList.push(bookData);
         localStorage.setItem('readingList', JSON.stringify(readingList));
         
         // Update the state to reflect the change

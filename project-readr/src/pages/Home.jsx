@@ -739,7 +739,7 @@ const handleAddToReadingList = async (e, book, index) => {
     key: book.key,
     cover_id: book.cover_i,
     publish_year: book.first_publish_year,
-    edition_count:  editionCount
+    edition_count: editionCount
   };
   
   // Check if book is already in reading list
@@ -765,6 +765,7 @@ const handleAddToReadingList = async (e, book, index) => {
       author: author,
       cover_id: book.cover_i,
       publish_year: book.first_publish_year,
+      edition_count: editionCount, // Add this line
       isbn: book.isbn ? book.isbn[0] : null,
       subject: book.subject ? book.subject.slice(0, 5).join(", ") : null,
       added_at: new Date().toISOString(),
