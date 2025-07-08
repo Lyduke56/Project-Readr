@@ -3,7 +3,7 @@ import { FaFacebook, FaInstagram } from 'react-icons/fa';
 import { StarRating } from '../components/StarRating';
 import { UserAuth } from '../context/AuthContext';
 import { supabase } from '../supabaseClient';
-import './FriendsProfile.css';
+import './FriendProfile.css';
 
 export function FriendProfile({ friend, onUnfriend, onClose }) {
   const [ratedBooks, setRatedBooks] = useState([]);
