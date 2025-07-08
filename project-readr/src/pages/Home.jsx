@@ -1431,7 +1431,7 @@ const handleFeelingLucky = () => {
                   Showing Results for "{searchDetails.term}" ({searchDetails.filter})
                 </h2>
                 <p className="search-details-info">
-                  Displaying {getDisplayResultsCount()} results out of {totalResults.toLocaleString()}.
+                  Displaying {searchResults.length} results out of {totalResults.toLocaleString()}.
                 </p>
               </div>
               
