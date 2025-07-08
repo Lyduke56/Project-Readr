@@ -178,13 +178,15 @@ const handleUnfriend = async () => {
             <div className="detail-grid-inmodal">
               <div className="detail-item-inmodal">
                 <span className="detail-label-inmodal">Email:</span>
-                <span className="detail-value-inmodal">{friend.email}</span>
+                <span className="detail-value-inmodal">
+                  {truncateText(friend.email, 20)}
+                </span>
               </div>
               
               {friend.location && (
                 <div className="detail-item-inmodal">
                   <span className="detail-label-inmodal">Location:</span>
-                  <span className="detail-value-inmodal">📍 {friend.location}</span>
+                  <span className="detail-value-inmodal">📍 {truncateText(friend.location, 20)}</span>
                 </div>
               )}
               

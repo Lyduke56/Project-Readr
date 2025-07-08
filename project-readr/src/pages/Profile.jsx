@@ -156,7 +156,7 @@ export function Profile() {
       // Fetch user details for all friends
       const { data: friendsData, error: friendsError } = await supabase
         .from('users')
-        .select('id, display_name, full_name, email, profile_image, bio, location')
+        .select('id, display_name, full_name, email, profile_image, bio, location, gender, created_at, birth_date')
         .in('id', friendIds);
 
       if (friendsError) {

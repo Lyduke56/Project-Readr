@@ -170,10 +170,11 @@
 
 .detail-item-inmodal {
   display: flex;
-  justify-content: space-between;
+  gap: 40px !important;
   align-items: center;
   padding: 7px 0;
   border-bottom: 1px solid #ececec;
+
 }
 .detail-item-inmodal:last-child {
   border-bottom: none;
