@@ -95,6 +95,12 @@
   font-style: italic;
 }
 
+.refresh-container {
+  position: relative;
+  z-index: 9999;
+  pointer-events: auto;
+}
+
 .refresh-books-button{
   margin-top: 130px;
   background-color: #6b4b3e;

@@ -4,6 +4,22 @@ import { UserAuth } from '../context/AuthContext';
 import './Home.css';
 
 export const Home = () => {
+  const getDisplayResultsCount = () => {
+  if (filterBy === 'Author') {
+    const uniqueAuthors = new Map();
+    searchResults.forEach(book => {
+      if (Array.isArray(book.author_name)) {
+        book.author_name.forEach((authorName) => {
+          if (!uniqueAuthors.has(authorName)) {
+            uniqueAuthors.set(authorName, true);
+          }
+        });
+      }
+    });
+    return uniqueAuthors.size;
+  }
+  return searchResults.length;
+}; // HELPER
   // State management
   const [searchTerm, setSearchTerm] = useState('');
   const [filterBy, setFilterBy] = useState('All');
@@ -57,12 +73,18 @@ export const Home = () => {
     }
     }, [trendingBooks, classicBooks, booksWeLove, hasSearched]);
 
-    useEffect(() => {
-    // Load existing reading list from localStorage
-    const existingList = JSON.parse(localStorage.getItem('readingList') || '[]');
-    const bookKeys = new Set(existingList.map(book => book.key));
-    setReadingListBooks(bookKeys);
-  }, []);
+  useEffect(() => {
+    // Load existing reading list from localStorage - make it user-specific
+    if (user?.id) {
+      const userReadingListKey = `readingList_${user.id}`;
+      const existingList = JSON.parse(localStorage.getItem(userReadingListKey) || '[]');
+      const bookKeys = new Set(existingList.map(book => book.key));
+      setReadingListBooks(bookKeys);
+    } else {
+      // If no user, clear the reading list state
+      setReadingListBooks(new Set());
+    }
+  }, [user?.id]);
 
 useEffect(() => {
   // Handle restoration from book page
@@ -134,13 +156,18 @@ useEffect(() => {
 useEffect(() => {
   // Listen for reading list changes from other components
   const handleReadingListChange = (event) => {
-    const updatedList = JSON.parse(localStorage.getItem('readingList') || '[]');
+    if (!user?.id) return;
+    
+    const userReadingListKey = `readingList_${user.id}`;
+    const updatedList = JSON.parse(localStorage.getItem(userReadingListKey) || '[]');
     const bookKeys = new Set(updatedList.map(book => book.key));
     setReadingListBooks(bookKeys);
   };
 
   // Handle custom event with specific book removal
   const handleCustomReadingListEvent = (event) => {
+    if (!user?.id) return;
+    
     if (event.detail && event.detail.action === 'removed' && event.detail.bookKey) {
       // Remove the specific book from the reading list state
       setReadingListBooks(prev => {
@@ -159,7 +186,7 @@ useEffect(() => {
   
   // Listen for storage changes (if modified in another tab)
   window.addEventListener('storage', (e) => {
-    if (e.key === 'readingList') {
+    if (user?.id && e.key === `readingList_${user.id}`) {
       handleReadingListChange();
     }
   });
@@ -168,7 +195,7 @@ useEffect(() => {
     window.removeEventListener('readingListUpdated', handleCustomReadingListEvent);
     window.removeEventListener('storage', handleReadingListChange);
   };
-}, []);
+}, [user?.id]);
 
 useEffect(() => {
   // Restore scroll position after loading more results
@@ -692,26 +719,34 @@ const handleCardClick = (book) => {
 const handleAddToReadingList = async (e, book, index) => {
   e.stopPropagation();
   
+  if (!user?.id) {
+    console.error('User not authenticated');
+    return;
+  }
+
   const title = book.title?.trim() || "No title available";
   const author = Array.isArray(book.author_name) && book.author_name.length > 0
     ? book.author_name.filter(name => name?.trim()).slice(0, 2).join(", ")
     : "Unknown author";
+  const editionCount = book.edition_count || "Unknown";
 
   // Get existing reading list
-  let readingList = JSON.parse(localStorage.getItem('readingList') || '[]');
+  const userReadingListKey = `readingList_${user.id}`;
+  let readingList = JSON.parse(localStorage.getItem(userReadingListKey) || '[]');
   const bookToAdd = {
     title: title,
     author: author,
     key: book.key,
     cover_id: book.cover_i,
-    publish_year: book.first_publish_year
+    publish_year: book.first_publish_year,
+    edition_count: editionCount
   };
   
   // Check if book is already in reading list
   const exists = readingList.some(item => item.key === book.key);
   if (!exists) {
     readingList.push(bookToAdd);
-    localStorage.setItem('readingList', JSON.stringify(readingList));
+    localStorage.setItem(userReadingListKey, JSON.stringify(readingList));
     
     // Update the state to reflect the change
     setReadingListBooks(prev => new Set([...prev, book.key]));
@@ -730,6 +765,7 @@ const handleAddToReadingList = async (e, book, index) => {
       author: author,
       cover_id: book.cover_i,
       publish_year: book.first_publish_year,
+      edition_count: editionCount, // Add this line
       isbn: book.isbn ? book.isbn[0] : null,
       subject: book.subject ? book.subject.slice(0, 5).join(", ") : null,
       added_at: new Date().toISOString(),
@@ -749,11 +785,17 @@ const handleAddToReadingList = async (e, book, index) => {
 };
 
 const handleRemoveFromReadingList = async (bookKey) => {
+  if (!user?.id) {
+    console.error('User not authenticated');
+    return;
+  }
+  
   try {
-    // Remove from localStorage
-    let readingList = JSON.parse(localStorage.getItem('readingList') || '[]');
+    // Remove from user-specific localStorage
+    const userReadingListKey = `readingList_${user.id}`;
+    let readingList = JSON.parse(localStorage.getItem(userReadingListKey) || '[]');
     readingList = readingList.filter(item => item.key !== bookKey);
-    localStorage.setItem('readingList', JSON.stringify(readingList));
+    localStorage.setItem(userReadingListKey, JSON.stringify(readingList));
     
     // Update the state to reflect the change
     setReadingListBooks(prev => {
@@ -762,8 +804,7 @@ const handleRemoveFromReadingList = async (bookKey) => {
       return newSet;
     });
     
-    // If you have a function to remove from Supabase, call it here
-    // await removeFromSupabase(bookKey, user.id);
+    // function to remove from database here pero in readinglist implementation alr so iono
     
   } catch (error) {
     console.error('Error removing from reading list:', error);
@@ -771,7 +812,13 @@ const handleRemoveFromReadingList = async (bookKey) => {
 };
 
 const refreshReadingListState = () => {
-  const updatedList = JSON.parse(localStorage.getItem('readingList') || '[]');
+  if (!user?.id) {
+    setReadingListBooks(new Set());
+    return;
+  }
+  
+  const userReadingListKey = `readingList_${user.id}`;
+  const updatedList = JSON.parse(localStorage.getItem(userReadingListKey) || '[]');
   const bookKeys = new Set(updatedList.map(book => book.key));
   setReadingListBooks(bookKeys);
 };
@@ -1093,10 +1140,6 @@ const handleFeelingLucky = () => {
             <h3 className={getTitleClass(author.name)} title={author.name}>
               {truncateText(author.name, 50)}
             </h3>
-            <p className={getAuthorClass(author.bio ? truncateText(author.bio, 100) : 'No biography available')} 
-              title={author.bio || 'No biography available'}>
-              {author.bio ? truncateText(author.bio, 100) : 'No biography available'}
-            </p>
           </div>
         </div>
 
@@ -1160,10 +1203,24 @@ const handleFeelingLucky = () => {
     });
   };
 
+  //const clearAndRebuildReadingList = () => {
+  // Clear the localStorage
+     // localStorage.removeItem('readingList');
+      
+      // Reset the state
+    //  setReadingListBooks(new Set());
+      
+      // If you have Supabase data, you can rebuild from there
+      // Otherwise, start fresh
+    //  console.log('Reading list cleared and reset');
+    //  alert('Reading list has been cleared. You can now add books fresh.');
+    //};
+
   const totalPages = Math.ceil(totalResults / resultsPerPage);
   const hasMoreResults = currentPage < totalPages;
 
  return (
+  
   <div className="home-container">
     <header className="header">
       <div className="controls">
@@ -1180,7 +1237,21 @@ const handleFeelingLucky = () => {
               <option value="Author">Author</option>
               <option value="Subject">Subject</option>
             </select>
-            
+            {/*<button 
+                    className="clear-reading-list-btn" 
+                    onClick={clearAndRebuildReadingList}
+                    style={{ 
+                      marginLeft: '10px', 
+                      padding: '5px 10px', 
+                      fontSize: '12px',
+                      backgroundColor: '#ff4444',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '4px'
+                    }}
+                    >
+                  Clear Reading List(Reset)
+            </button> */}
             <input
               type="text"
               className="search-bar"
@@ -1338,7 +1409,6 @@ const handleFeelingLucky = () => {
                     )}
                   </div>
                 </div>
-                
                 <button 
                   className="scroll-button right" 
                   onClick={() => scrollSection(booksWeLoveRef, 'right')}
